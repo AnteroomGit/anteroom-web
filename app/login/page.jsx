@@ -25,10 +25,10 @@ export default function Login() {
         </form>
 
         <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center' }}>
-          Don&apos;t have an account? <a href="/signup/client" style={{ color: 'var(--teal)' }}>Sign up</a>
+          Don&apos;t have an account? <a href="/signup/client" style={{ color: 'var(--brand)' }}>Sign up</a>
         </p>
         <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '0.5rem' }}>
-          Listing a practice? <a href="/signup/practitioner" style={{ color: 'var(--teal)' }}>Sign up as a practitioner</a>
+          Listing a practice? <a href="/signup/practitioner" style={{ color: 'var(--brand)' }}>Sign up as a practitioner</a>
         </p>
       </div>
       <Footer />

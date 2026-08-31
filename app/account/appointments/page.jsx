@@ -22,7 +22,7 @@ export default function Appointments() {
                   <div style={{ fontWeight: 300 }}>{a.name} — {a.firm}</div>
                   <div style={{ fontSize: '0.84rem', color: 'var(--ink-soft)' }}>{a.when}</div>
                 </div>
-                <span className="ar-tag" style={{ color: a.status === 'Upcoming' ? 'var(--teal)' : 'var(--ink-soft)' }}>{a.status}</span>
+                <span className="ar-tag" style={{ color: a.status === 'Upcoming' ? 'var(--brand)' : 'var(--ink-soft)' }}>{a.status}</span>
               </div>
             ))}
           </div>

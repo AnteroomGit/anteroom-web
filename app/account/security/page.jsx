@@ -55,7 +55,7 @@ export default function Security() {
             <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
               You can request a copy of the information we hold about you, or ask us to delete
               your account and data, at any time. Get in touch through our{' '}
-              <a href="/contact" style={{ color: 'var(--teal)' }}>Contact page</a> to make either
+              <a href="/contact" style={{ color: 'var(--brand)' }}>Contact page</a> to make either
               request.
             </p>
           </div>

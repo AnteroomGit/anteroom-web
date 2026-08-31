@@ -10,7 +10,7 @@ import 'leaflet/dist/leaflet.css';
 const pinIcon = new L.DivIcon({
   html: `<div style="
     width: 26px; height: 26px; border-radius: 50% 50% 50% 0;
-    background: #1F4A47; transform: rotate(-45deg);
+    background: #392061; transform: rotate(-45deg);
     border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.35);
   "></div>`,
   className: '',
@@ -36,12 +36,12 @@ export default function PractitionerMap({ practitioners, onBook }) {
             <Popup>
               <div style={{ fontFamily: 'Karst, sans-serif', minWidth: 160 }}>
                 <div style={{ fontWeight: 700, marginBottom: 2 }}>{p.name}</div>
-                <div style={{ fontSize: '0.82rem', color: '#566159', marginBottom: 2 }}>{p.title}</div>
-                <div style={{ fontSize: '0.82rem', color: '#566159', marginBottom: 8 }}>{p.suburb}</div>
+                <div style={{ fontSize: '0.82rem', color: '#6B5F7A', marginBottom: 2 }}>{p.title}</div>
+                <div style={{ fontSize: '0.82rem', color: '#6B5F7A', marginBottom: 8 }}>{p.suburb}</div>
                 <button
                   onClick={() => onBook(p)}
                   style={{
-                    background: '#1F4A47', color: '#fff', border: 'none', borderRadius: 6,
+                    background: '#392061', color: '#fff', border: 'none', borderRadius: 6,
                     padding: '0.4rem 0.7rem', fontSize: '0.78rem', cursor: 'pointer', width: '100%',
                   }}
                 >

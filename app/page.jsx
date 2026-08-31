@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import Footer from './components/Footer';
 import Header from './components/Header';
+import Dropdown from './components/Dropdown';
 import { REASONS } from './constants';
 import dynamic from 'next/dynamic';
 
@@ -282,7 +283,7 @@ function PractitionerCard({ p, onBook }) {
       <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
         {p.tags.map((t) => <span key={t} className="ar-tag">{t}</span>)}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--teal)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--brand)' }}>
         <Clock size={13} /> Next available: {p.next}
       </div>
       <button className="ar-btn-primary" onClick={() => onBook(p)}>Book consultation</button>
@@ -301,10 +302,12 @@ function HomeScreen({ onPickReason, reason, setReason, location, setLocation }) 
         <div className="ar-searchbar">
           <div className="ar-search-field">
             <Search size={16} style={{ color: 'var(--ink-soft)' }} />
-            <select value={reason} onChange={(e) => setReason(e.target.value)}>
-              <option value="">What&apos;s going on?</option>
-              {REASONS.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
-            </select>
+            <Dropdown
+              value={reason}
+              onChange={setReason}
+              placeholder="What's going on?"
+              options={REASONS.map((r) => ({ value: r.id, label: r.label }))}
+            />
           </div>
           <div className="ar-search-divider" />
           <div className="ar-search-field">
@@ -333,15 +336,15 @@ function HomeScreen({ onPickReason, reason, setReason, location, setLocation }) 
 
       <div className="ar-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', textAlign: 'center' }}>
         <div>
-          <ShieldCheck size={22} style={{ color: 'var(--teal)' }} />
+          <ShieldCheck size={22} style={{ color: 'var(--brand)' }} />
           <p style={{ fontSize: '0.88rem', marginTop: '0.5rem' }}>Every practitioner is registered and verified</p>
         </div>
         <div>
-          <Clock size={22} style={{ color: 'var(--teal)' }} />
+          <Clock size={22} style={{ color: 'var(--brand)' }} />
           <p style={{ fontSize: '0.88rem', marginTop: '0.5rem' }}>Book a consultation online, no phone call needed</p>
         </div>
         <div>
-          <FileText size={22} style={{ color: 'var(--teal)' }} />
+          <FileText size={22} style={{ color: 'var(--brand)' }} />
           <p style={{ fontSize: '0.88rem', marginTop: '0.5rem' }}>Share your documents ahead, so your first meeting isn&apos;t a cold start</p>
         </div>
       </div>
@@ -381,7 +384,7 @@ function DeadlineCalculator({ days }) {
       <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <input type="date" className="ar-input" style={{ maxWidth: 180 }} value={dateStr} onChange={(e) => setDateStr(e.target.value)} />
         {remaining !== null && (
-          <span style={{ fontWeight: 300, color: remaining <= 5 ? 'var(--clay)' : 'var(--teal)' }}>
+          <span style={{ fontWeight: 300, color: remaining <= 5 ? 'var(--clay)' : 'var(--brand)' }}>
             {remaining > 0 ? `${remaining} days left` : 'Window may have passed — get advice today'}
           </span>
         )}
@@ -403,7 +406,7 @@ function ResultsScreen({ type, setType, onBook, result }) {
         </div>
       )}
       {result?.pathway && (
-        <div className="ar-card" style={{ marginBottom: '1.25rem', borderLeft: '3px solid var(--teal)' }}>
+        <div className="ar-card" style={{ marginBottom: '1.25rem', borderLeft: '3px solid var(--brand)' }}>
           <span className="ar-tag" style={{ marginBottom: '0.5rem', display: 'inline-block' }}>{result.pathway.label}</span>
           <p style={{ fontWeight: 300, margin: '0 0 0.3rem' }}>{result.pathway.title}</p>
           <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', margin: 0 }}>{result.pathway.text}</p>
