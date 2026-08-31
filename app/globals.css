@@ -83,7 +83,11 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-chip:hover { border-color: var(--teal); background: var(--teal-tint); }
 .ar-chip.active { background: var(--teal); border-color: var(--teal); color: #fff; }
 
-.ar-section { max-width: 1080px; margin: 0 auto; padding: 2.25rem 1.5rem; }
+.ar-section { max-width: 1080px; margin: 0 auto; padding: 2.25rem 1.5rem; animation: ar-fade-in 0.25s ease; }
+@keyframes ar-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .ar-section h2 { font-size: 1.2rem; font-weight: 300; margin: 0 0 1.1rem; }
 
 .ar-type-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
@@ -195,13 +199,13 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-404 { max-width: 480px; margin: 4rem auto; padding: 0 1.5rem; text-align: center; }
 
 .ar-cookie-banner {
-  position: fixed; bottom: 0; left: 0; right: 0; background: var(--ink); color: #fff;
+  position: fixed; bottom: 0; left: 0; right: 0; background: #1C2621; color: #fff;
   padding: 1rem 1.5rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
-  z-index: 50; font-size: 0.84rem;
+  z-index: 50; font-size: 0.84rem; font-family: 'Karst', sans-serif; font-weight: 300;
 }
 .ar-cookie-banner a { color: #fff; text-decoration: underline; }
 .ar-cookie-btn {
-  background: #fff; color: var(--ink); border: none; border-radius: 8px; padding: 0.5rem 1.1rem;
+  background: #fff; color: #1C2621; border: none; border-radius: 8px; padding: 0.5rem 1.1rem;
   font-family: 'Karst', sans-serif; font-weight: 300; font-size: 0.84rem; cursor: pointer;
 }
 .ar-cookie-btn.ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.4); }

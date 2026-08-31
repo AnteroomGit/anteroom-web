@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Check, X, Mail } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
+import BotCheck from '../../components/BotCheck';
 import { REASONS } from '../../constants';
 
 function checkPassword(pw) {
@@ -43,6 +44,7 @@ export default function ClientSignup() {
   const [reasons, setReasons] = useState([]);
   const [keepSignedIn, setKeepSignedIn] = useState(true);
   const [agreed, setAgreed] = useState(false);
+  const [botVerified, setBotVerified] = useState(false);
 
   const pw = checkPassword(password);
   const pwValid = pw.length && pw.letterNumber && pw.noRepeat && pw.noSequence;
@@ -115,7 +117,9 @@ export default function ClientSignup() {
                 </span>
               </label>
 
-              <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!pwValid || !agreed}>
+              <BotCheck checked={botVerified} onChange={setBotVerified} />
+
+              <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!pwValid || !agreed || !botVerified}>
                 Create account
               </button>
             </form>

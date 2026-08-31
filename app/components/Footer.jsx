@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Footer() {
   return (
     <div className="ar-footer-main">
@@ -9,18 +11,18 @@ export default function Footer() {
         </div>
         <div>
           <h4>Company</h4>
-          <a href="/about">About</a>
-          <a href="/contact">Contact</a>
-          <a href="/help">Help</a>
+          <Link href="/about">About</Link>
+          <Link href="/contact">Contact</Link>
+          <Link href="/help">Help</Link>
         </div>
         <div>
           <h4>Legal</h4>
-          <a href="/privacy">Privacy Policy</a>
-          <a href="/terms">Terms of Service</a>
+          <Link href="/privacy">Privacy Policy</Link>
+          <Link href="/terms">Terms of Service</Link>
         </div>
         <div>
           <h4>For practitioners</h4>
-          <a href="/signup/practitioner">List your practice</a>
+          <Link href="/signup/practitioner">List your practice</Link>
         </div>
       </div>
       <div className="ar-footer-bottom">

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
+import BotCheck from '../../components/BotCheck';
 
 const TYPES = ['Liquidator', 'Small Business Restructuring Practitioner', 'Accountant', 'Lawyer'];
 
@@ -13,6 +14,7 @@ export default function PractitionerSignup() {
   const [type, setType] = useState('');
   const [regNumber, setRegNumber] = useState('');
   const [agreed, setAgreed] = useState(false);
+  const [botVerified, setBotVerified] = useState(false);
   const [done, setDone] = useState(false);
 
   return (
@@ -61,7 +63,9 @@ export default function PractitionerSignup() {
               </span>
             </label>
 
-            <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!agreed}>
+            <BotCheck checked={botVerified} onChange={setBotVerified} />
+
+            <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!agreed || !botVerified}>
               Submit for verification
             </button>
           </form>

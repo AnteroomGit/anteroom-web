@@ -14,6 +14,12 @@ import {
 import Footer from './components/Footer';
 import Header from './components/Header';
 import { REASONS } from './constants';
+import dynamic from 'next/dynamic';
+
+// Leaflet touches window/document directly, so it can only run in the
+// browser — dynamic import with ssr:false keeps it out of the server
+// render entirely, avoiding a "window is not defined" build error.
+const PractitionerMap = dynamic(() => import('./components/PractitionerMap'), { ssr: false });
 
 /* ---------------------------------------------------------------
    Data
@@ -23,13 +29,14 @@ const TYPES = ['All', 'Liquidator', 'Small Business Restructuring Practitioner',
 const NOTICE_OPTIONS = ['Director Penalty Notice', 'Garnishee notice', 'Statutory demand', 'Not sure'];
 
 const PRACTITIONERS = [
-  { id: 1, name: 'Marcus Reid', initials: 'MR', title: 'Registered Liquidator', type: 'Liquidator', firm: 'Reid & Associates', suburb: 'Melbourne CBD', tags: ['Construction', 'SBR appointments'], next: 'Today', verified: true },
-  { id: 2, name: 'Priya Nair', initials: 'PN', title: 'Registered Liquidator', type: 'Liquidator', firm: 'Nair Advisory', suburb: 'Richmond', tags: ['Hospitality', 'Retail'], next: 'Tomorrow', verified: true },
-  { id: 3, name: 'Daniel Osei', initials: 'DO', title: 'Small Business Restructuring Practitioner', type: 'Small Business Restructuring Practitioner', firm: 'Osei Restructuring', suburb: 'South Yarra', tags: ['SBR plans', 'ATO negotiation'], next: 'This week', verified: true },
-  { id: 4, name: 'Claire Whitfield', initials: 'CW', title: 'Chartered Accountant, CA ANZ', type: 'Accountant', firm: 'Whitfield Partners', suburb: 'Fitzroy', tags: ['BAS review', 'Cash flow'], next: 'Today', verified: true },
-  { id: 5, name: 'James Okafor', initials: 'JO', title: 'Principal Lawyer', type: 'Lawyer', firm: 'Okafor Legal', suburb: 'Collingwood', tags: ['Statutory demands', 'Director advice'], next: 'Tomorrow', verified: true },
-  { id: 6, name: 'Sophie Tran', initials: 'ST', title: 'Registered Liquidator', type: 'Liquidator', firm: 'Tran Insolvency', suburb: 'Brunswick', tags: ['Hospitality', 'SBR appointments'], next: 'This week', verified: true },
+  { id: 1, name: 'Marcus Reid', initials: 'MR', title: 'Registered Liquidator', type: 'Liquidator', firm: 'Reid & Associates', suburb: 'Melbourne CBD', tags: ['Construction', 'SBR appointments'], next: 'Today', verified: true, lat: -37.8136, lng: 144.9631 },
+  { id: 2, name: 'Priya Nair', initials: 'PN', title: 'Registered Liquidator', type: 'Liquidator', firm: 'Nair Advisory', suburb: 'Richmond', tags: ['Hospitality', 'Retail'], next: 'Tomorrow', verified: true, lat: -37.8183, lng: 144.9946 },
+  { id: 3, name: 'Daniel Osei', initials: 'DO', title: 'Small Business Restructuring Practitioner', type: 'Small Business Restructuring Practitioner', firm: 'Osei Restructuring', suburb: 'South Yarra', tags: ['SBR plans', 'ATO negotiation'], next: 'This week', verified: true, lat: -37.8385, lng: 144.9922 },
+  { id: 4, name: 'Claire Whitfield', initials: 'CW', title: 'Chartered Accountant, CA ANZ', type: 'Accountant', firm: 'Whitfield Partners', suburb: 'Fitzroy', tags: ['BAS review', 'Cash flow'], next: 'Today', verified: true, lat: -37.7996, lng: 144.9784 },
+  { id: 5, name: 'James Okafor', initials: 'JO', title: 'Principal Lawyer', type: 'Lawyer', firm: 'Okafor Legal', suburb: 'Collingwood', tags: ['Statutory demands', 'Director advice'], next: 'Tomorrow', verified: true, lat: -37.8025, lng: 144.9880 },
+  { id: 6, name: 'Sophie Tran', initials: 'ST', title: 'Registered Liquidator', type: 'Liquidator', firm: 'Tran Insolvency', suburb: 'Brunswick', tags: ['Hospitality', 'SBR appointments'], next: 'This week', verified: true, lat: -37.7663, lng: 144.9614 },
 ];
+
 
 const QUICK_LINKS = ['Director Penalty Notice', 'Statutory demand', "Can't pay super", 'Garnishee notice', 'Voluntary deregistration', 'Small Business Restructuring'];
 
@@ -384,6 +391,7 @@ function DeadlineCalculator({ days }) {
 }
 
 function ResultsScreen({ type, setType, onBook, result }) {
+  const [view, setView] = useState('list');
   const filtered = type === 'All' ? PRACTITIONERS : PRACTITIONERS.filter((p) => p.type === type);
   return (
     <div className="ar-section">
@@ -414,14 +422,25 @@ function ResultsScreen({ type, setType, onBook, result }) {
         </div>
       )}
 
-      <div className="ar-type-row">
-        {TYPES.map((t) => (
-          <button key={t} className={`ar-type-chip ${type === t ? 'active' : ''}`} onClick={() => setType(t)}>{t}</button>
-        ))}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.9rem' }}>
+        <div className="ar-type-row" style={{ marginBottom: 0 }}>
+          {TYPES.map((t) => (
+            <button key={t} className={`ar-type-chip ${type === t ? 'active' : ''}`} onClick={() => setType(t)}>{t}</button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: '0.4rem' }}>
+          <button className={`ar-type-chip ${view === 'list' ? 'active' : ''}`} onClick={() => setView('list')}>List</button>
+          <button className={`ar-type-chip ${view === 'map' ? 'active' : ''}`} onClick={() => setView('map')}>Map</button>
+        </div>
       </div>
-      <div className="ar-grid">
-        {filtered.map((p) => <PractitionerCard key={p.id} p={p} onBook={onBook} />)}
-      </div>
+
+      {view === 'list' ? (
+        <div className="ar-grid">
+          {filtered.map((p) => <PractitionerCard key={p.id} p={p} onBook={onBook} />)}
+        </div>
+      ) : (
+        <PractitionerMap practitioners={filtered} onBook={onBook} />
+      )}
     </div>
   );
 }
