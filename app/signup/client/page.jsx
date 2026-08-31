@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import BotCheck from '../../components/BotCheck';
 import { REASONS } from '../../constants';
+import { supabase } from '../../../lib/supabase';
 
 function checkPassword(pw) {
   return {
@@ -45,12 +46,60 @@ export default function ClientSignup() {
   const [keepSignedIn, setKeepSignedIn] = useState(true);
   const [agreed, setAgreed] = useState(false);
   const [botVerified, setBotVerified] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [signupError, setSignupError] = useState(null);
+  const [resent, setResent] = useState(false);
 
   const pw = checkPassword(password);
   const pwValid = pw.length && pw.letterNumber && pw.noRepeat && pw.noSequence;
 
   function toggleReason(id) {
     setReasons((r) => (r.includes(id) ? r.filter((x) => x !== id) : [...r, id]));
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!pwValid || !agreed || !botVerified) return;
+
+    setSubmitting(true);
+    setSignupError(null);
+
+    // Create the account, passing the profile details as signup metadata.
+    // A database trigger (set up in supabase-schema.sql) reads this
+    // automatically and creates the matching row in `clients` itself —
+    // this avoids trying to write to the database before the account
+    // has an active session, which is what caused the error before.
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          account_type: 'client',
+          first_name: firstName,
+          last_name: lastName,
+          mobile,
+          reasons,
+        },
+      },
+    });
+
+    if (error) {
+      setSignupError(
+        error.message.includes('already registered')
+          ? 'An account with that email already exists — try logging in instead.'
+          : error.message
+      );
+      setSubmitting(false);
+      return;
+    }
+
+    setSubmitting(false);
+    setStep('verifying');
+  }
+
+  async function handleResend() {
+    await supabase.auth.resend({ type: 'signup', email });
+    setResent(true);
   }
 
   return (
@@ -64,7 +113,7 @@ export default function ClientSignup() {
               Keep track of your consultations by creating an account.
             </p>
 
-            <form onSubmit={(e) => { e.preventDefault(); if (pwValid && agreed) setStep('verifying'); }}>
+            <form onSubmit={handleSubmit}>
               <label className="ar-label">Email</label>
               <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
 
@@ -112,15 +161,19 @@ export default function ClientSignup() {
               <label className="ar-checkbox-row">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} style={{ marginTop: '0.15rem' }} />
                 <span>
-                  I agree to the <a href="/terms">Terms of Service</a>, and to Anteroom&apos;s use of my
+                  I agree to the <a href="/terms">Terms of Service</a>, and to Anteroom's use of my
                   information in accordance with its <a href="/privacy">Privacy Policy</a>.
                 </span>
               </label>
 
               <BotCheck checked={botVerified} onChange={setBotVerified} />
 
-              <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!pwValid || !agreed || !botVerified}>
-                Create account
+              {signupError && (
+                <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{signupError}</p>
+              )}
+
+              <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!pwValid || !agreed || !botVerified || submitting}>
+                {submitting ? 'Creating account...' : 'Create account'}
               </button>
             </form>
 
@@ -135,23 +188,17 @@ export default function ClientSignup() {
             <Mail size={28} style={{ color: 'var(--brand)', marginBottom: '0.75rem' }} />
             <h2 style={{ marginTop: 0 }}>Check your email</h2>
             <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
-              We&apos;ve sent a verification link to <strong>{email || 'your email'}</strong>. Your
-              account is active once you click it.
+              We've sent a real verification link to <strong>{email}</strong>. Click it, then come
+              back and log in — your account is active from that point on.
             </p>
-            <button className="ar-btn-ghost" onClick={() => setStep('done')}>
-              Simulate clicking the verification link
-            </button>
-            <p style={{ fontSize: '0.74rem', color: 'var(--ink-soft)', marginTop: '0.9rem' }}>
-              (This button exists because there&apos;s no real email server behind this prototype yet.)
-            </p>
-          </div>
-        )}
-
-        {step === 'done' && (
-          <div className="ar-card" style={{ textAlign: 'center', padding: '2rem 1.5rem' }}>
-            <Check size={28} style={{ color: 'var(--sage)', marginBottom: '0.75rem' }} />
-            <h2 style={{ marginTop: 0 }}>Account verified</h2>
-            <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)' }}>Welcome to Anteroom.</p>
+            <a href="/login" className="ar-btn-primary" style={{ display: 'inline-block', textDecoration: 'none', marginBottom: '0.9rem' }}>
+              Go to login
+            </a>
+            <div>
+              <button className="ar-btn-ghost" onClick={handleResend} disabled={resent}>
+                {resent ? 'Email resent' : "Didn't get it? Resend"}
+              </button>
+            </div>
           </div>
         )}
       </div>

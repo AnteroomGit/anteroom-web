@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Search,
   MapPin,
@@ -15,6 +16,7 @@ import Footer from './components/Footer';
 import Header from './components/Header';
 import Dropdown from './components/Dropdown';
 import { REASONS } from './constants';
+import { supabase } from '../lib/supabase';
 import dynamic from 'next/dynamic';
 
 // Leaflet touches window/document directly, so it can only run in the
@@ -107,28 +109,15 @@ const TRIAGE = {
   'close-2': {
     question: 'Any debts at all right now?',
     options: [
-      { label: 'No debts', value: 'no', next: 'close-3' },
-      { label: 'Some, but fully payable', value: 'yes', next: 'close-mvl' },
-    ],
-  },
-  'close-3': {
-    question: 'Assets worth more than $1,000?',
-    options: [
-      { label: 'No', value: 'no', next: 'close-4' },
-      { label: 'Yes', value: 'yes', next: 'close-mvl' },
+      { label: 'No debts', value: 'no', next: 'assets-check' },
+      { label: 'Some, but fully payable', value: 'yes', next: 'assets-check' },
     ],
   },
   'close-4': {
     question: 'All tax returns and BAS lodgements up to date?',
     options: [
       { label: 'Yes', value: 'yes', next: 'done' },
-      { label: 'No', value: 'no', next: 'close-mvl' },
-    ],
-  },
-  'close-mvl': {
-    question: 'Just to confirm — solvent, but more to sort out than a simple close?',
-    options: [
-      { label: 'Yes, that’s right', value: 'yes', next: 'done' },
+      { label: 'No', value: 'no', next: 'done' },
     ],
   },
   'scale-check': {
@@ -156,18 +145,61 @@ const TRIAGE = {
   'viability-check': {
     question: 'Do you think the business is still viable, or is it time to close it?',
     options: [
-      { label: 'Still viable, worth exploring', value: 'viable', next: 'done' },
-      { label: 'Time to close it down', value: 'close', next: 'done' },
+      { label: 'Still viable, worth exploring', value: 'viable', next: 'assets-check' },
+      { label: 'Time to close it down', value: 'close', next: 'assets-check' },
+      { label: 'Not sure', value: 'notsure', next: 'assets-check' },
+    ],
+  },
+  'assets-check': {
+    question: 'Roughly what are the company’s assets worth?',
+    options: [
+      { label: 'Under $1,000', value: 'under1000', next: 'route-after-assets' },
+      { label: '$1,000\u2013$10,000', value: '1kto10k', next: 'route-after-assets' },
+      { label: '$10,000\u2013$100,000', value: '10kto100k', next: 'route-after-assets' },
+      { label: 'Over $100,000', value: 'over100k', next: 'route-after-assets' },
+    ],
+  },
+  'loan-account-check': {
+    question: 'Do you personally owe the company money, or does the company owe you?',
+    options: [
+      { label: 'I owe the company', value: 'directorOwes', next: 'creditor-count-check' },
+      { label: 'The company owes me', value: 'companyOwes', next: 'creditor-count-check' },
+      { label: 'Neither', value: 'neither', next: 'creditor-count-check' },
+      { label: 'Not sure', value: 'notsure', next: 'creditor-count-check' },
+    ],
+  },
+  'creditor-count-check': {
+    question: 'Roughly how many people or businesses does the company owe money to?',
+    options: [
+      { label: 'One or two', value: 'few', next: 'security-check' },
+      { label: 'A handful', value: 'some', next: 'security-check' },
+      { label: 'Many', value: 'many', next: 'security-check' },
+    ],
+  },
+  'security-check': {
+    question: 'Has anyone registered a formal claim over your business assets?',
+    subtext: 'Sometimes called a PPSR registration.',
+    options: [
+      { label: 'Yes', value: 'yes', next: 'done' },
+      { label: 'No', value: 'no', next: 'done' },
       { label: 'Not sure', value: 'notsure', next: 'done' },
     ],
   },
 };
 
-// Not every screen has a fixed "next" — lodgements-check branches on
-// whether the answers so far already qualify for SBR.
+// A couple of screens branch on more than a fixed "next" value.
 function resolveAfterLodgements(a) {
   const sbrEligible = a.debtScale === 'under' && a.entitlementsOk === 'yes' && a.lodgementsOk === 'yes';
-  return sbrEligible ? 'done' : 'viability-check';
+  return sbrEligible ? 'assets-check' : 'viability-check';
+}
+
+function resolveAfterAssets(a) {
+  // Only the solvent close-down path still needs the lodgements question —
+  // every other path (including the insolvent close-down path) already
+  // covered it through the shared eligibility questions, so asking again
+  // here would just repeat the same question in different words.
+  if (a.category === 'close' && a.closeSolvency === 'yes') return 'close-4';
+  return 'loan-account-check';
 }
 
 const REASON_START = { ato: 'notice-type', money: 'worried-1', debts: 'worried-1', close: 'close-solvency' };
@@ -226,27 +258,29 @@ function getResult(a) {
     else noticeKey = 'noticeUnsure';
 
     const pathwayKey = getPathwayKey(a);
-    return { notice: NOTICE_INFO[noticeKey], pathway: pathwayKey ? PATHWAY_INFO[pathwayKey] : null };
+    return { notice: NOTICE_INFO[noticeKey], pathway: pathwayKey ? PATHWAY_INFO[pathwayKey] : null, pathwayKey };
   }
 
   // Close branch
   if (a.closeSolvency !== undefined) {
     if (a.closeSolvency === 'yes') {
-      if (a.closeStoppedTrading === 'no') return { close: CLOSE_INFO.stillTrading };
-      if (a.closeDebts === 'no' && a.closeAssets === 'no' && a.closeLodgements === 'yes') return { close: CLOSE_INFO.simple };
-      return { close: CLOSE_INFO.mvl };
+      if (a.closeStoppedTrading === 'no') return { close: CLOSE_INFO.stillTrading, pathwayKey: null };
+      if (a.closeDebts === 'no' && a.assetsValue === 'under1000' && a.closeLodgements === 'yes') {
+        return { close: CLOSE_INFO.simple, pathwayKey: 'simple-close' };
+      }
+      return { close: CLOSE_INFO.mvl, pathwayKey: 'mvl' };
     }
     const pathwayKey = getPathwayKey(a);
-    return { pathway: pathwayKey ? PATHWAY_INFO[pathwayKey] : null };
+    return { pathway: pathwayKey ? PATHWAY_INFO[pathwayKey] : null, pathwayKey };
   }
 
   // Worried/debts branch
   if (a.worriedSuper) {
-    if (a.worriedSuper === 'current' && a.worriedSuppliers === 'normal') return { calm: CALM_INFO.low };
-    if (a.worriedSuper === 'current' && a.worriedSuppliers === 'stretched') return { calm: CALM_INFO.mild };
-    if (a.worriedSuper === 'behind' && a.superBehindLength === 'short') return { calm: CALM_INFO.mild };
+    if (a.worriedSuper === 'current' && a.worriedSuppliers === 'normal') return { calm: CALM_INFO.low, pathwayKey: null };
+    if (a.worriedSuper === 'current' && a.worriedSuppliers === 'stretched') return { calm: CALM_INFO.mild, pathwayKey: null };
+    if (a.worriedSuper === 'behind' && a.superBehindLength === 'short') return { calm: CALM_INFO.mild, pathwayKey: null };
     const pathwayKey = getPathwayKey(a);
-    return { pathway: pathwayKey ? PATHWAY_INFO[pathwayKey] : null };
+    return { pathway: pathwayKey ? PATHWAY_INFO[pathwayKey] : null, pathwayKey };
   }
 
   return null;
@@ -258,6 +292,48 @@ function getPathwayKey(a) {
   if (sbrEligible) return 'sbr';
   if (a.viability === 'close') return 'cvl';
   return 'va';
+}
+
+/* ---------------------------------------------------------------
+   Anonymous-answers-through-login handling. Someone can answer every
+   triage question with no account at all — the moment they try to
+   book, if they're not logged in, their answers get held in the
+   browser (not sent anywhere) until an account exists to attach them
+   to. Expires after 24 hours so old, abandoned attempts don't
+   resurface confusingly much later.
+--------------------------------------------------------------- */
+const PENDING_KEY = 'anteroom_pending_booking';
+
+function savePendingBooking(practitionerId, answers) {
+  try {
+    localStorage.setItem(PENDING_KEY, JSON.stringify({ practitionerId, answers, savedAt: Date.now() }));
+  } catch {
+    // Storage can fail (private browsing, disabled, full) — worst case
+    // the person just re-answers the questions, nothing crashes.
+  }
+}
+
+function loadPendingBooking() {
+  try {
+    const raw = localStorage.getItem(PENDING_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (Date.now() - data.savedAt > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(PENDING_KEY);
+      return null;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function clearPendingBooking() {
+  try {
+    localStorage.removeItem(PENDING_KEY);
+  } catch {
+    // nothing to do if this fails — it'll just expire naturally after 24h
+  }
 }
 
 /* ---------------------------------------------------------------
@@ -448,12 +524,19 @@ function ResultsScreen({ type, setType, onBook, result }) {
   );
 }
 
-function BookingScreen({ practitioner, onConfirm, onBack }) {
+function BookingScreen({ practitioner, onConfirm, onBack, restored }) {
   const [slot, setSlot] = useState(null);
   const slots = ['9:00 AM', '11:30 AM', '2:00 PM', '4:15 PM'];
   return (
     <div className="ar-section" style={{ maxWidth: 520 }}>
       <button className="ar-btn-ghost" style={{ marginBottom: '1rem' }} onClick={onBack}>&larr; Back to results</button>
+      {restored && (
+        <div className="ar-card" style={{ marginBottom: '1rem', borderLeft: '3px solid var(--sage)' }}>
+          <p style={{ margin: 0, fontSize: '0.86rem' }}>
+            Welcome back — your earlier answers are still here. Just pick a time to continue.
+          </p>
+        </div>
+      )}
       <div className="ar-card" style={{ marginBottom: '1.25rem' }}>
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
           <div className="ar-avatar">{practitioner.initials}</div>
@@ -482,11 +565,24 @@ function PortalScreen({ practitioner, onDone, onBack }) {
   const [notes, setNotes] = useState('');
   const [files, setFiles] = useState([]);
   const [consent, setConsent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
   const fileInput = useRef(null);
 
   function handleFiles(e) {
     const chosen = Array.from(e.target.files || []);
     setFiles((f) => [...f, ...chosen.map((c) => c.name)]);
+  }
+
+  async function handleConfirm() {
+    setSubmitting(true);
+    setError(null);
+    const result = await onDone({ noticeType, noticeDate: noticeDate || null, notes });
+    if (result?.error) {
+      setError(result.error);
+      setSubmitting(false);
+    }
+    // on success, the parent switches screens — nothing else to do here
   }
 
   return (
@@ -537,8 +633,10 @@ function PortalScreen({ practitioner, onDone, onBack }) {
         I consent to this information being shared with {practitioner.name} ahead of our consultation.
       </label>
 
-      <button className="ar-btn-primary" disabled={!consent} style={{ opacity: consent ? 1 : 0.5 }} onClick={onDone}>
-        Confirm booking
+      {error && <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{error}</p>}
+
+      <button className="ar-btn-primary" disabled={!consent || submitting} style={{ opacity: consent ? 1 : 0.5 }} onClick={handleConfirm}>
+        {submitting ? 'Confirming...' : 'Confirm booking'}
       </button>
     </div>
   );
@@ -563,6 +661,7 @@ function ConfirmedScreen({ practitioner, slot, onHome }) {
    Page
 --------------------------------------------------------------- */
 export default function Page() {
+  const router = useRouter();
   const [screen, setScreen] = useState('home');
   const [reason, setReason] = useState('');
   const [location, setLocation] = useState('');
@@ -571,8 +670,10 @@ export default function Page() {
   const [slot, setSlot] = useState(null);
   const [answers, setAnswers] = useState({});
   const [triageStep, setTriageStep] = useState(null);
+  const [restored, setRestored] = useState(false);
 
   function pickReason(r) {
+    setAnswers((a) => ({ ...a, category: r }));
     const start = REASON_START[r];
     if (start) {
       setTriageStep(start);
@@ -591,13 +692,15 @@ export default function Page() {
     'close-solvency': 'closeSolvency',
     'close-1': 'closeStoppedTrading',
     'close-2': 'closeDebts',
-    'close-3': 'closeAssets',
     'close-4': 'closeLodgements',
-    'close-mvl': 'closeMvlConfirm',
     'scale-check': 'debtScale',
     'entitlements-check': 'entitlementsOk',
     'lodgements-check': 'lodgementsOk',
     'viability-check': 'viability',
+    'assets-check': 'assetsValue',
+    'loan-account-check': 'loanAccount',
+    'creditor-count-check': 'creditorCount',
+    'security-check': 'securityInterest',
   };
 
   function answerTriage(step, opt) {
@@ -607,6 +710,7 @@ export default function Page() {
 
     let next = opt.next;
     if (next === 'route-after-lodgements') next = resolveAfterLodgements(updated);
+    if (next === 'route-after-assets') next = resolveAfterAssets(updated);
 
     if (next === 'done') {
       setScreen('results');
@@ -617,10 +721,89 @@ export default function Page() {
 
   const result = getResult(answers);
 
+  // A short, plain-English line summarising the result, stored alongside
+  // the full answers so a practitioner (or the client) can read it at a
+  // glance without parsing the raw question data.
+  function getResultSummary(r) {
+    if (!r) return null;
+    return r.notice?.title || r.pathway?.title || r.close?.title || r.calm?.title || null;
+  }
+
   function goHome() {
     setScreen('home');
     setAnswers({});
     setTriageStep(null);
+  }
+
+  // Booking requires a real account, since the whole point is linking the
+  // triage answers to a specific client — check auth before letting anyone
+  // past the results screen. If they're not logged in, hold their answers
+  // in the browser rather than losing them, so they pick up right where
+  // they left off once they've logged in or verified a new account.
+  async function handleBook(p) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      savePendingBooking(p.id, answers);
+      router.push('/login');
+      return;
+    }
+    setPractitioner(p);
+    setScreen('booking');
+  }
+
+  // Runs once on load — catches someone landing back on the homepage
+  // already authenticated (either just logged in, or just clicked a real
+  // email verification link) with answers still waiting to be resumed.
+  useEffect(() => {
+    async function tryRestore() {
+      const pending = loadPendingBooking();
+      if (!pending) return;
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return; // not authenticated yet — nothing to restore
+
+      const foundPractitioner = PRACTITIONERS.find((p) => p.id === pending.practitionerId);
+      if (!foundPractitioner) {
+        clearPendingBooking();
+        return;
+      }
+
+      setAnswers(pending.answers);
+      setPractitioner(foundPractitioner);
+      setScreen('booking');
+      setRestored(true);
+      clearPendingBooking();
+    }
+    tryRestore();
+  }, []);
+
+  // The actual database write — everything the client answered, plus what
+  // they added in the portal step, saved as one real appointment row.
+  async function handleConfirmBooking(portalData) {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      router.push('/login');
+      return { error: 'You were logged out — please log in again.' };
+    }
+
+    const { error } = await supabase.from('appointments').insert({
+      client_id: user.id,
+      practitioner_id: practitioner.id,
+      slot_time: slot,
+      notice_type: portalData.noticeType || null,
+      notice_date: portalData.noticeDate,
+      notes: portalData.notes || null,
+      pathway: result?.pathwayKey || null,
+      triage_answers: answers,
+      triage_summary: getResultSummary(result),
+    });
+
+    if (error) {
+      return { error: error.message };
+    }
+
+    setScreen('confirmed');
+    return { error: null };
   }
 
   return (
@@ -638,13 +821,13 @@ export default function Page() {
         <TriageScreen step={triageStep} onAnswer={answerTriage} onBack={goHome} />
       )}
       {screen === 'results' && (
-        <ResultsScreen type={type} setType={setType} result={result} onBook={(p) => { setPractitioner(p); setScreen('booking'); }} />
+        <ResultsScreen type={type} setType={setType} result={result} onBook={handleBook} />
       )}
       {screen === 'booking' && (
-        <BookingScreen practitioner={practitioner} onBack={() => setScreen('results')} onConfirm={(s) => { setSlot(s); setScreen('portal'); }} />
+        <BookingScreen practitioner={practitioner} restored={restored} onBack={() => setScreen('results')} onConfirm={(s) => { setSlot(s); setScreen('portal'); }} />
       )}
       {screen === 'portal' && (
-        <PortalScreen practitioner={practitioner} onBack={() => setScreen('booking')} onDone={() => setScreen('confirmed')} />
+        <PortalScreen practitioner={practitioner} onBack={() => setScreen('booking')} onDone={handleConfirmBooking} />
       )}
       {screen === 'confirmed' && (
         <ConfirmedScreen practitioner={practitioner} slot={slot} onHome={goHome} />
