@@ -48,19 +48,43 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-nav-link { font-size: 0.88rem; color: var(--ink-soft); text-decoration: none; }
 
 .ar-hero {
-  padding: 4rem 1.5rem 3rem; text-align: center;
+  padding: 6rem 1.5rem 4.5rem; text-align: left;
   border-bottom: 1px solid var(--line);
-  position: relative;
+  position: relative; overflow: hidden;
   background:
-    linear-gradient(180deg, rgba(33,21,48,0.72) 0%, rgba(57,32,97,0.55) 100%),
+    linear-gradient(180deg, rgba(33,21,48,0.78) 0%, rgba(57,32,97,0.62) 100%),
     url('/images/hero.jpg');
   background-size: cover;
   background-position: center;
 }
-.ar-hero h1 { font-size: 1.9rem; font-weight: 300; margin: 0 0 1.5rem; line-height: 1.3; color: #fff; }
+.ar-hero-inner { max-width: 720px; margin: 0 auto; }
+.ar-hero-headline {
+  font-family: 'Karst', sans-serif; font-weight: 800; color: #fff;
+  font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 0.98; letter-spacing: -0.02em;
+  margin: 0 0 1.5rem;
+}
+.ar-hero-sub {
+  font-size: 1.05rem; color: rgba(255,255,255,0.82); max-width: 480px;
+  line-height: 1.55; margin: 0 0 2.25rem;
+}
+.ar-hero-cta {
+  background: #fff; color: var(--brand); border: none; border-radius: 999px;
+  padding: 1rem 1.9rem; font-family: 'Karst', sans-serif; font-weight: 800;
+  font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.6rem;
+  transition: transform 0.15s ease;
+}
+.ar-hero-cta:hover { transform: translateY(-2px); }
+.ar-hero-meta { font-size: 0.82rem; color: rgba(255,255,255,0.65); margin-top: 0.85rem; }
+
+.ar-secondary-search summary {
+  color: rgba(255,255,255,0.85); font-size: 0.86rem; cursor: pointer;
+  list-style: none; display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 2.25rem;
+}
+.ar-secondary-search summary::-webkit-details-marker { display: none; }
+.ar-secondary-search[open] summary { margin-bottom: 0.9rem; }
 
 .ar-searchbar {
-  max-width: 780px; margin: 0 auto; background: var(--paper-raised);
+  max-width: 620px; background: var(--paper-raised);
   border: 1.5px solid var(--line); border-radius: 14px; padding: 0.5rem;
   display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: stretch;
 }
@@ -80,7 +104,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 }
 .ar-search-btn:hover { background: var(--brand-dark); }
 
-.ar-chip-row { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin-top: 1.1rem; }
+.ar-chip-row { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: flex-start; }
 .ar-chip {
   background: var(--paper-raised); border: 1.5px solid var(--line); border-radius: 999px;
   padding: 0.5rem 1rem; font-size: 0.86rem; cursor: pointer; color: var(--ink);
@@ -89,12 +113,17 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-chip:hover { border-color: var(--brand); background: var(--brand-tint); }
 .ar-chip.active { background: var(--brand); border-color: var(--brand); color: #fff; }
 
-.ar-section { max-width: 1080px; margin: 0 auto; padding: 2.25rem 1.5rem; animation: ar-fade-in 0.25s ease; }
-@keyframes ar-fade-in {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+.ar-section { max-width: 1080px; margin: 0 auto; padding: 2.25rem 1.5rem; }
 .ar-section h2 { font-size: 1.2rem; font-weight: 300; margin: 0 0 1.1rem; }
+
+/* Deliberate motion, scoped to the one place it's earning its keep — the
+   quiz advancing from one question to the next — rather than applied
+   blanket across every section on every page. */
+.ar-quiz-step { animation: ar-step-in 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes ar-step-in {
+  from { opacity: 0; transform: translateX(14px); }
+  to { opacity: 1; transform: translateX(0); }
+}
 
 .ar-type-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
 .ar-type-chip {

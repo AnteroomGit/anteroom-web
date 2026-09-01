@@ -159,32 +159,6 @@ const TRIAGE = {
       { label: 'Over $100,000', value: 'over100k', next: 'route-after-assets' },
     ],
   },
-  'loan-account-check': {
-    question: 'Do you personally owe the company money, or does the company owe you?',
-    options: [
-      { label: 'I owe the company', value: 'directorOwes', next: 'creditor-count-check' },
-      { label: 'The company owes me', value: 'companyOwes', next: 'creditor-count-check' },
-      { label: 'Neither', value: 'neither', next: 'creditor-count-check' },
-      { label: 'Not sure', value: 'notsure', next: 'creditor-count-check' },
-    ],
-  },
-  'creditor-count-check': {
-    question: 'Roughly how many people or businesses does the company owe money to?',
-    options: [
-      { label: 'One or two', value: 'few', next: 'security-check' },
-      { label: 'A handful', value: 'some', next: 'security-check' },
-      { label: 'Many', value: 'many', next: 'security-check' },
-    ],
-  },
-  'security-check': {
-    question: 'Has anyone registered a formal claim over your business assets?',
-    subtext: 'Sometimes called a PPSR registration.',
-    options: [
-      { label: 'Yes', value: 'yes', next: 'done' },
-      { label: 'No', value: 'no', next: 'done' },
-      { label: 'Not sure', value: 'notsure', next: 'done' },
-    ],
-  },
 };
 
 // A couple of screens branch on more than a fixed "next" value.
@@ -199,7 +173,7 @@ function resolveAfterAssets(a) {
   // covered it through the shared eligibility questions, so asking again
   // here would just repeat the same question in different words.
   if (a.category === 'close' && a.closeSolvency === 'yes') return 'close-4';
-  return 'loan-account-check';
+  return 'context-check';
 }
 
 const REASON_START = { ato: 'notice-type', money: 'worried-1', debts: 'worried-1', close: 'close-solvency' };
@@ -370,36 +344,43 @@ function PractitionerCard({ p, onBook }) {
 /* ---------------------------------------------------------------
    Screens
 --------------------------------------------------------------- */
-function HomeScreen({ onPickReason, reason, setReason, location, setLocation }) {
+function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearch }) {
   return (
     <>
       <div className="ar-hero">
-        <h1>Find and book insolvency and restructuring professionals near you</h1>
-        <div className="ar-searchbar">
-          <div className="ar-search-field">
-            <Search size={16} style={{ color: 'var(--ink-soft)' }} />
-            <Dropdown
-              value={reason}
-              onChange={setReason}
-              placeholder="What's going on?"
-              options={REASONS.map((r) => ({ value: r.id, label: r.label }))}
-            />
-          </div>
-          <div className="ar-search-divider" />
-          <div className="ar-search-field">
-            <MapPin size={16} style={{ color: 'var(--ink-soft)' }} />
-            <input placeholder="Suburb or postcode" value={location} onChange={(e) => setLocation(e.target.value)} />
-          </div>
-          <button className="ar-search-btn" onClick={() => onPickReason(reason)}>
-            <Search size={15} /> Search
+        <div className="ar-hero-inner">
+          <h1 className="ar-hero-headline">Know before<br />you call.</h1>
+          <p className="ar-hero-sub">
+            A free, two-minute check that tells you plainly what your situation means, and connects
+            you with the right verified professional — already briefed, before you speak.
+          </p>
+          <button className="ar-hero-cta" onClick={onStart}>
+            Start the free check <Search size={16} />
           </button>
-        </div>
-        <div className="ar-chip-row">
-          {REASONS.map((r) => (
-            <button key={r.id} className={`ar-chip ${reason === r.id ? 'active' : ''}`} onClick={() => { setReason(r.id); onPickReason(r.id); }}>
-              {r.label}
-            </button>
-          ))}
+          <div className="ar-hero-meta">No account needed to answer. Two minutes, honestly.</div>
+
+          <details className="ar-secondary-search">
+            <summary>Already know who you're looking for? Search directly</summary>
+            <div className="ar-searchbar">
+              <div className="ar-search-field">
+                <Search size={16} style={{ color: 'var(--ink-soft)' }} />
+                <Dropdown
+                  value={reason}
+                  onChange={setReason}
+                  placeholder="What's going on?"
+                  options={REASONS.map((r) => ({ value: r.id, label: r.label }))}
+                />
+              </div>
+              <div className="ar-search-divider" />
+              <div className="ar-search-field">
+                <MapPin size={16} style={{ color: 'var(--ink-soft)' }} />
+                <input placeholder="Suburb or postcode" value={location} onChange={(e) => setLocation(e.target.value)} />
+              </div>
+              <button className="ar-search-btn" onClick={onSearch}>
+                <Search size={15} /> Search
+              </button>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -428,11 +409,38 @@ function HomeScreen({ onPickReason, reason, setReason, location, setLocation }) 
   );
 }
 
-function TriageScreen({ step, onAnswer, onBack }) {
+// The actual first question of the check — presented as its own focused
+// moment, not competing with a search bar for attention.
+function ReasonSelectScreen({ onPick, onBack }) {
+  return (
+    <div className="ar-section ar-quiz-step" style={{ maxWidth: 480 }}>
+      <button className="ar-btn-ghost" style={{ marginBottom: '1.25rem' }} onClick={onBack}>&larr; Back</button>
+      <h2 style={{ marginBottom: '1.1rem' }}>What&apos;s going on?</h2>
+      <div className="ar-chip-row" style={{ flexDirection: 'column' }}>
+        {REASONS.map((r) => (
+          <button key={r.id} className="ar-chip" style={{ textAlign: 'left', borderRadius: 10, padding: '0.9rem 1.1rem' }} onClick={() => onPick(r.id)}>
+            {r.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProgressBar({ progress }) {
+  return (
+    <div style={{ height: 4, background: 'var(--line)', borderRadius: 4, marginBottom: '1.5rem', overflow: 'hidden' }}>
+      <div style={{ height: '100%', width: `${Math.min(progress, 1) * 100}%`, background: 'var(--brand)', borderRadius: 4, transition: 'width 0.3s ease' }} />
+    </div>
+  );
+}
+
+function TriageScreen({ step, onAnswer, onBack, progress }) {
   const q = TRIAGE[step];
   return (
-    <div className="ar-section" style={{ maxWidth: 480 }}>
-      <button className="ar-btn-ghost" style={{ marginBottom: '1.25rem' }} onClick={onBack}>&larr; Back</button>
+    <div className="ar-section ar-quiz-step" style={{ maxWidth: 480 }}>
+      <button className="ar-btn-ghost" style={{ marginBottom: '1rem' }} onClick={onBack}>&larr; Back</button>
+      <ProgressBar progress={progress} />
       <h2 style={{ marginBottom: '0.3rem' }}>{q.question}</h2>
       {q.subtext && <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1.1rem' }}>{q.subtext}</p>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: q.subtext ? 0 : '1.1rem' }}>
@@ -442,6 +450,82 @@ function TriageScreen({ step, onAnswer, onBack }) {
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+function CompactChoice({ label, options, value, onChange }) {
+  return (
+    <div style={{ marginBottom: '1.25rem' }}>
+      <p className="ar-label" style={{ marginBottom: '0.5rem' }}>{label}</p>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+        {options.map((opt) => (
+          <button
+            key={opt.value} type="button" onClick={() => onChange(opt.value)}
+            className={`ar-chip ${value === opt.value ? 'active' : ''}`}
+            style={{ borderRadius: 999, fontSize: '0.86rem' }}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Combines what were three separate full-screen questions into one screen —
+// these three are all quick, similarly-weighted context questions, so
+// asking them together genuinely feels shorter without losing any data.
+function ContextScreen({ onAnswer, onBack, progress }) {
+  const [loanAccount, setLoanAccount] = useState('');
+  const [creditorCount, setCreditorCount] = useState('');
+  const [securityInterest, setSecurityInterest] = useState('');
+  const canContinue = loanAccount && creditorCount && securityInterest;
+
+  return (
+    <div className="ar-section ar-quiz-step" style={{ maxWidth: 480 }}>
+      <button className="ar-btn-ghost" style={{ marginBottom: '1rem' }} onClick={onBack}>&larr; Back</button>
+      <ProgressBar progress={progress} />
+      <h2 style={{ marginBottom: '0.3rem' }}>A few more quick details</h2>
+      <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1.25rem' }}>
+        Three short ones, then you're done.
+      </p>
+
+      <CompactChoice
+        label="Do you personally owe the company money, or does the company owe you?"
+        value={loanAccount} onChange={setLoanAccount}
+        options={[
+          { label: 'I owe the company', value: 'directorOwes' },
+          { label: 'The company owes me', value: 'companyOwes' },
+          { label: 'Neither', value: 'neither' },
+          { label: 'Not sure', value: 'notsure' },
+        ]}
+      />
+      <CompactChoice
+        label="Roughly how many people or businesses does the company owe money to?"
+        value={creditorCount} onChange={setCreditorCount}
+        options={[
+          { label: 'One or two', value: 'few' },
+          { label: 'A handful', value: 'some' },
+          { label: 'Many', value: 'many' },
+        ]}
+      />
+      <CompactChoice
+        label="Has anyone registered a formal claim over your assets? (Sometimes called a PPSR registration.)"
+        value={securityInterest} onChange={setSecurityInterest}
+        options={[
+          { label: 'Yes', value: 'yes' },
+          { label: 'No', value: 'no' },
+          { label: 'Not sure', value: 'notsure' },
+        ]}
+      />
+
+      <button
+        className="ar-btn-primary" disabled={!canContinue} style={{ opacity: canContinue ? 1 : 0.5 }}
+        onClick={() => onAnswer({ loanAccount, creditorCount, securityInterest })}
+      >
+        Continue
+      </button>
     </div>
   );
 }
@@ -499,6 +583,15 @@ function ResultsScreen({ type, setType, onBook, result }) {
           <p style={{ fontWeight: 300, margin: '0 0 0.3rem' }}>{result.calm.title}</p>
           <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', margin: 0 }}>{result.calm.text}</p>
         </div>
+      )}
+
+      {result && (
+        <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', lineHeight: 1.5, marginBottom: '1.75rem' }}>
+          This assessment is general information only and is not financial, legal, accounting or
+          insolvency advice. It does not determine whether your company is insolvent or recommend
+          that you enter any particular insolvency process. You should obtain independent
+          professional advice regarding your circumstances.
+        </p>
       )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.9rem' }}>
@@ -719,6 +812,22 @@ export default function Page() {
     }
   }
 
+  // The combined context screen answers three fields at once rather than
+  // one, so it has its own handler instead of going through answerTriage.
+  function answerContext({ loanAccount, creditorCount, securityInterest }) {
+    setAnswers((a) => ({ ...a, loanAccount, creditorCount, securityInterest }));
+    setScreen('results');
+  }
+
+  // Rough, approximate progress through the current branch — not a precise
+  // step count (the real length varies by path), just enough to give a
+  // genuine sense of "getting somewhere" rather than an open-ended list.
+  const APPROX_MAX_STEPS = 8;
+  const triageProgress = Math.max(
+    0.08,
+    (Object.keys(answers).filter((k) => k !== 'category').length) / APPROX_MAX_STEPS
+  );
+
   const result = getResult(answers);
 
   // A short, plain-English line summarising the result, stored alongside
@@ -812,13 +921,20 @@ export default function Page() {
 
       {screen === 'home' && (
         <HomeScreen
-          onPickReason={pickReason}
+          onStart={() => setScreen('reason-select')}
+          onSearch={() => pickReason(reason)}
           reason={reason} setReason={setReason}
           location={location} setLocation={setLocation}
         />
       )}
-      {screen === 'triage' && (
-        <TriageScreen step={triageStep} onAnswer={answerTriage} onBack={goHome} />
+      {screen === 'reason-select' && (
+        <ReasonSelectScreen key="reason-select" onPick={pickReason} onBack={goHome} />
+      )}
+      {screen === 'triage' && triageStep === 'context-check' && (
+        <ContextScreen key="context-check" onAnswer={answerContext} onBack={goHome} progress={triageProgress} />
+      )}
+      {screen === 'triage' && triageStep !== 'context-check' && (
+        <TriageScreen key={triageStep} step={triageStep} onAnswer={answerTriage} onBack={goHome} progress={triageProgress} />
       )}
       {screen === 'results' && (
         <ResultsScreen type={type} setType={setType} result={result} onBook={handleBook} />
