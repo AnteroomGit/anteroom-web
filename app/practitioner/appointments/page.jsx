@@ -2,18 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileDown } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { supabase } from '../../../lib/supabase';
 
-const STATUSES = ['New', 'Consulted', 'Engaged — SBR', 'Engaged — VA', 'Engaged — Liquidation', 'Engaged — Other', 'No further action'];
+const STATUSES = ['New', 'Consulted', 'Engaged: SBR', 'Engaged: VA', 'Engaged: Liquidation', 'Engaged: Other', 'No further action'];
 
 export default function PractitionerAppointments() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
   const [expanded, setExpanded] = useState(null);
+  const [generatingId, setGeneratingId] = useState(null);
+  const [genError, setGenError] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -40,6 +42,36 @@ export default function PractitionerAppointments() {
     await supabase.from('appointments').update({ status }).eq('id', id);
   }
 
+  async function handleGeneratePdf(appointmentId) {
+    setGeneratingId(appointmentId);
+    setGenError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/generate-summary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointmentId, accessToken: session?.access_token }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || 'Failed to generate summary');
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `anteroom-summary-${appointmentId}.pdf`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setGenError(err.message);
+    } finally {
+      setGeneratingId(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="ar-root">
@@ -63,6 +95,10 @@ export default function PractitionerAppointments() {
           <p style={{ color: 'var(--ink-soft)', fontSize: '0.9rem' }}>No referrals yet.</p>
         )}
 
+        {genError && (
+          <p style={{ color: 'var(--clay)', fontSize: '0.86rem', marginBottom: '1rem' }}>{genError}</p>
+        )}
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {appointments.map((a) => {
             const name = a.clients ? `${a.clients.first_name || ''} ${a.clients.last_name || ''}`.trim() : 'Client';
@@ -76,7 +112,7 @@ export default function PractitionerAppointments() {
                   <div>
                     <div style={{ fontWeight: 300 }}>{name || 'Client'}</div>
                     <div style={{ fontSize: '0.84rem', color: 'var(--ink-soft)' }}>
-                      {a.triage_summary || 'No summary recorded'} — {a.slot_time}
+                      {a.triage_summary || 'No summary recorded'}, {a.slot_time}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -95,6 +131,17 @@ export default function PractitionerAppointments() {
                   <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--line)', fontSize: '0.86rem' }}>
                     {a.notice_type && <p><strong>Notice:</strong> {a.notice_type}{a.notice_date ? ` (dated ${a.notice_date})` : ''}</p>}
                     {a.notes && <p><strong>Notes from client:</strong> {a.notes}</p>}
+
+                    <button
+                      className="ar-btn-primary"
+                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem', marginBottom: '1rem' }}
+                      onClick={(e) => { e.stopPropagation(); handleGeneratePdf(a.id); }}
+                      disabled={generatingId === a.id}
+                    >
+                      <FileDown size={16} />
+                      {generatingId === a.id ? 'Generating summary...' : 'Download case summary (PDF)'}
+                    </button>
+
                     <p style={{ fontWeight: 300, marginTop: '0.75rem', marginBottom: '0.4rem' }}>Full triage answers</p>
                     <pre style={{
                       background: 'var(--paper)', padding: '0.75rem', borderRadius: 8,

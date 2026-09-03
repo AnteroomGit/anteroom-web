@@ -106,12 +106,12 @@ html, body { margin: 0; padding: 0; height: 100%; }
 
 .ar-chip-row { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: flex-start; }
 .ar-chip {
-  background: var(--paper-raised); border: 1.5px solid var(--line); border-radius: 999px;
-  padding: 0.5rem 1rem; font-size: 0.86rem; cursor: pointer; color: var(--ink);
-  font-family: 'Karst', sans-serif; font-weight: 300;
+  background: var(--paper-raised); border: 1.5px solid var(--line); border-left: 3px solid var(--line);
+  border-radius: 0 10px 10px 0; padding: 0.75rem 1.1rem; font-size: 0.92rem; cursor: pointer; color: var(--ink);
+  font-family: 'Karst', sans-serif; font-weight: 300; text-align: left; transition: border-left-color 0.15s ease;
 }
-.ar-chip:hover { border-color: var(--brand); background: var(--brand-tint); }
-.ar-chip.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+.ar-chip:hover { border-color: var(--line); border-left-color: var(--brand); background: var(--brand-tint); }
+.ar-chip.active { background: var(--brand); border-color: var(--brand); border-left-color: var(--brand); color: #fff; }
 
 .ar-section { max-width: 1080px; margin: 0 auto; padding: 2.25rem 1.5rem; }
 .ar-section h2 { font-size: 1.2rem; font-weight: 300; margin: 0 0 1.1rem; }
@@ -119,20 +119,30 @@ html, body { margin: 0; padding: 0; height: 100%; }
 /* Deliberate motion, scoped to the one place it's earning its keep — the
    quiz advancing from one question to the next — rather than applied
    blanket across every section on every page. */
-.ar-quiz-step { animation: ar-step-in 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+.ar-quiz-step { animation: ar-step-in 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 @keyframes ar-step-in {
-  from { opacity: 0; transform: translateX(14px); }
+  from { opacity: 0; transform: translateX(24px); }
   to { opacity: 1; transform: translateX(0); }
 }
 
-.ar-type-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.ar-type-row { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1.75rem; border-bottom: 1px solid var(--line); }
 .ar-type-chip {
-  border: 1.5px solid var(--line); background: var(--paper-raised); border-radius: 999px;
-  padding: 0.45rem 0.95rem; font-size: 0.84rem; cursor: pointer; font-family: 'Karst', sans-serif; font-weight: 300;
+  border: none; background: transparent; border-radius: 0;
+  padding: 0 0 0.65rem; font-size: 0.86rem; cursor: pointer; font-family: 'Karst', sans-serif; font-weight: 300;
+  color: var(--ink-soft); border-bottom: 2px solid transparent; margin-bottom: -1px;
 }
-.ar-type-chip.active { background: var(--ink); border-color: var(--ink); color: #fff; }
+.ar-type-chip.active { color: var(--brand); border-bottom-color: var(--brand); font-weight: 800; }
 
 .ar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
+
+/* Result banners deliberately don't use .ar-card — a full bordered box
+   with a pill inside it was exactly the "boxes stacked on boxes" pattern
+   worth removing. Just a meaningful colour accent and real typographic
+   weight, closer to an editorial callout than a UI widget. */
+.ar-result-banner { border-left: 3px solid var(--line); padding: 0.1rem 0 0.1rem 1.25rem; margin-bottom: 1.5rem; }
+.ar-result-label { font-size: 0.8rem; font-weight: 800; font-family: 'Karst', sans-serif; margin-bottom: 0.4rem; display: block; }
+.ar-result-title { font-weight: 800; font-family: 'Karst', sans-serif; margin: 0 0 0.4rem; font-size: 1.1rem; }
+.ar-result-text { font-size: 0.9rem; color: var(--ink-soft); margin: 0; line-height: 1.55; }
 
 .ar-card {
   background: var(--paper-raised); border: 1px solid var(--line); border-radius: 14px;
@@ -182,23 +192,40 @@ html, body { margin: 0; padding: 0; height: 100%; }
 
 .ar-footer { border-top: 1px solid var(--line); padding: 2rem 1.5rem; text-align: center; color: var(--ink-soft); font-size: 0.78rem; }
 
+.ar-modal-overlay {
+  position: fixed; inset: 0; background: rgba(33,21,48,0.55); z-index: 100;
+  display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+}
+.ar-modal {
+  background: var(--paper-raised); border-radius: 14px; padding: 1.5rem;
+  max-width: 360px; width: 100%; box-shadow: 0 12px 32px rgba(33,21,48,0.2);
+}
+.ar-modal-title { font-family: 'Karst', sans-serif; font-weight: 800; font-size: 1.05rem; margin: 0 0 0.4rem; }
+.ar-modal-text { font-size: 0.88rem; color: var(--ink-soft); margin: 0; line-height: 1.5; }
+
+.ar-page-transition { animation: ar-page-fade 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes ar-page-fade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* --- Milestone 1 additions: static pages, footer, forms --- */
 .ar-footer-main {
   border-top: 1px solid var(--line); background: var(--paper-raised);
-  padding: 2.5rem 1.5rem 1.5rem;
+  padding: 3rem 1.5rem 0;
 }
 .ar-footer-grid {
   max-width: 1080px; margin: 0 auto; display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem;
+  grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; padding-bottom: 2.5rem;
 }
-.ar-footer-grid h4 { font-size: 0.82rem; color: var(--ink-soft); margin: 0 0 0.7rem; font-weight: 300; text-transform: uppercase; letter-spacing: 0.03em; }
+.ar-footer-grid h4 { font-size: 0.86rem; color: var(--ink); margin: 0 0 0.7rem; font-weight: 800; font-family: 'Karst', sans-serif; }
 .ar-footer-grid a { display: block; font-size: 0.88rem; color: var(--ink); text-decoration: none; margin-bottom: 0.5rem; }
 .ar-footer-grid a:hover { color: var(--brand); }
 .ar-footer-bottom {
-  max-width: 1080px; margin: 1.5rem auto 0; padding-top: 1.25rem; border-top: 1px solid var(--line);
-  font-size: 0.76rem; color: var(--ink-soft);
+  max-width: 1080px; margin: 0 auto; padding: 1.25rem 0; border-top: 1px solid var(--line);
+  font-size: 0.76rem; color: var(--ink-soft); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
 }
-.ar-tagline { font-size: 0.88rem; color: var(--ink-soft); margin: 0.2rem 0 0; }
+.ar-tagline { font-size: 0.88rem; color: var(--ink-soft); margin: 0.2rem 0 0; max-width: 280px; }
 
 .ar-prose { max-width: 680px; margin: 0 auto; padding: 2.5rem 1.5rem; }
 .ar-prose h1 { font-size: 1.7rem; font-weight: 300; margin: 0 0 1.25rem; }

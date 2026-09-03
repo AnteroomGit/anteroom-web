@@ -66,7 +66,7 @@ export default function ClientSignup() {
 
     // Create the account, passing the profile details as signup metadata.
     // A database trigger (set up in supabase-schema.sql) reads this
-    // automatically and creates the matching row in `clients` itself —
+    // automatically and creates the matching row in `clients` itself.
     // this avoids trying to write to the database before the account
     // has an active session, which is what caused the error before.
     const { data, error } = await supabase.auth.signUp({
@@ -86,7 +86,7 @@ export default function ClientSignup() {
     if (error) {
       setSignupError(
         error.message.includes('already registered')
-          ? 'An account with that email already exists — try logging in instead.'
+          ? 'An account with that email already exists. Try logging in instead.'
           : error.message
       );
       setSubmitting(false);
@@ -161,7 +161,7 @@ export default function ClientSignup() {
               <label className="ar-checkbox-row">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} style={{ marginTop: '0.15rem' }} />
                 <span>
-                  I agree to the <a href="/terms">Terms of Service</a>, and to Anteroom's use of my
+                  I agree to the <a href="/terms">Terms of Service</a>, and to AnteRoom's use of my
                   information in accordance with its <a href="/privacy">Privacy Policy</a>.
                 </span>
               </label>
@@ -189,7 +189,7 @@ export default function ClientSignup() {
             <h2 style={{ marginTop: 0 }}>Check your email</h2>
             <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
               We've sent a real verification link to <strong>{email}</strong>. Click it, then come
-              back and log in — your account is active from that point on.
+              back and log in. Your account is active from that point on.
             </p>
             <a href="/login" className="ar-btn-primary" style={{ display: 'inline-block', textDecoration: 'none', marginBottom: '0.9rem' }}>
               Go to login

@@ -1,5 +1,5 @@
 -- Run this in Supabase's SQL Editor (Project → SQL Editor → New query)
--- after creating your project. This creates the three real tables Anteroom
+-- after creating your project. This creates the three real tables AnteRoom
 -- needs, matching the fields the UI already collects.
 
 -- Supabase's built-in auth.users table handles email, password, and

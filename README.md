@@ -1,4 +1,4 @@
-# Anteroom
+# AnteRoom
 
 Real Next.js project version of the homepage prototype — same component, same
 Karst fonts, but the fonts are now loaded as real files in `/public/fonts`
@@ -24,7 +24,7 @@ If you don't already have a repo for this:
 ```bash
 git init
 git add .
-git commit -m "Initial Anteroom site"
+git commit -m "Initial AnteRoom site"
 ```
 
 Then create a new empty repository on github.com (no README, no .gitignore —

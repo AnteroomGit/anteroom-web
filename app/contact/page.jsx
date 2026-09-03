@@ -6,7 +6,7 @@ import Header from '../components/Header';
 
 // Sign up free at formspree.io, create a form, and replace the ID below
 // with the one they give you (the part after "/f/" in your form's endpoint).
-// This is the same tool used for Dahrt's landing page — same idea here.
+// This is the same tool used for Dahrt's landing page, same idea here.
 const FORMSPREE_ID = 'YOUR_FORM_ID';
 
 export default function Contact() {
@@ -44,12 +44,12 @@ export default function Contact() {
       <div className="ar-form-page">
         <h1 style={{ fontSize: '1.5rem', fontWeight: 300, marginBottom: '0.4rem' }}>Get in touch</h1>
         <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
-          Director, practitioner, or press — send a short message and we'll get back to you.
+          Director, practitioner, or press: send a short message and we'll get back to you.
         </p>
 
         {sent ? (
           <div className="ar-card">
-            <p style={{ margin: 0 }}>Thanks — we'll be in touch shortly.</p>
+            <p style={{ margin: 0 }}>Thanks, we'll be in touch shortly.</p>
           </div>
         ) : (
           <form onSubmit={handleSubmit}>
@@ -65,7 +65,7 @@ export default function Contact() {
             />
             {error && (
               <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>
-                Something went wrong sending that — try again, or email jack@anteroom.com.au directly.
+                Something went wrong sending that. Try again, or email jack@anteroom.com.au directly.
               </p>
             )}
             <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={sending}>

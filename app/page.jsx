@@ -20,7 +20,7 @@ import { supabase } from '../lib/supabase';
 import dynamic from 'next/dynamic';
 
 // Leaflet touches window/document directly, so it can only run in the
-// browser — dynamic import with ssr:false keeps it out of the server
+// browser. Dynamic import with ssr:false keeps it out of the server
 // render entirely, avoiding a "window is not defined" build error.
 const PractitionerMap = dynamic(() => import('./components/PractitionerMap'), { ssr: false });
 
@@ -31,20 +31,16 @@ const TYPES = ['All', 'Liquidator', 'Small Business Restructuring Practitioner',
 
 const NOTICE_OPTIONS = ['Director Penalty Notice', 'Garnishee notice', 'Statutory demand', 'Not sure'];
 
-const PRACTITIONERS = [
-  { id: 1, name: 'Marcus Reid', initials: 'MR', title: 'Registered Liquidator', type: 'Liquidator', firm: 'Reid & Associates', suburb: 'Melbourne CBD', tags: ['Construction', 'SBR appointments'], next: 'Today', verified: true, lat: -37.8136, lng: 144.9631 },
-  { id: 2, name: 'Priya Nair', initials: 'PN', title: 'Registered Liquidator', type: 'Liquidator', firm: 'Nair Advisory', suburb: 'Richmond', tags: ['Hospitality', 'Retail'], next: 'Tomorrow', verified: true, lat: -37.8183, lng: 144.9946 },
-  { id: 3, name: 'Daniel Osei', initials: 'DO', title: 'Small Business Restructuring Practitioner', type: 'Small Business Restructuring Practitioner', firm: 'Osei Restructuring', suburb: 'South Yarra', tags: ['SBR plans', 'ATO negotiation'], next: 'This week', verified: true, lat: -37.8385, lng: 144.9922 },
-  { id: 4, name: 'Claire Whitfield', initials: 'CW', title: 'Chartered Accountant, CA ANZ', type: 'Accountant', firm: 'Whitfield Partners', suburb: 'Fitzroy', tags: ['BAS review', 'Cash flow'], next: 'Today', verified: true, lat: -37.7996, lng: 144.9784 },
-  { id: 5, name: 'James Okafor', initials: 'JO', title: 'Principal Lawyer', type: 'Lawyer', firm: 'Okafor Legal', suburb: 'Collingwood', tags: ['Statutory demands', 'Director advice'], next: 'Tomorrow', verified: true, lat: -37.8025, lng: 144.9880 },
-  { id: 6, name: 'Sophie Tran', initials: 'ST', title: 'Registered Liquidator', type: 'Liquidator', firm: 'Tran Insolvency', suburb: 'Brunswick', tags: ['Hospitality', 'SBR appointments'], next: 'This week', verified: true, lat: -37.7663, lng: 144.9614 },
-];
+// No practitioners have signed up yet. This is genuinely empty until
+// real, verified practitioners join. See the empty state in ResultsScreen
+// for what a user sees in the meantime.
+const PRACTITIONERS = [];
 
 
 const QUICK_LINKS = ['Director Penalty Notice', 'Statutory demand', "Can't pay super", 'Garnishee notice', 'Voluntary deregistration', 'Small Business Restructuring'];
 
 /* ---------------------------------------------------------------
-   Triage question flow — short, sharp, one tap each.
+   Triage question flow: short, sharp, one tap each.
    Structure: trigger identification -> (for real distress signals)
    a shared pathway-eligibility check -> a specific outcome that
    names urgency AND which formal mechanism likely fits.
@@ -168,7 +164,7 @@ function resolveAfterLodgements(a) {
 }
 
 function resolveAfterAssets(a) {
-  // Only the solvent close-down path still needs the lodgements question —
+  // Only the solvent close-down path still needs the lodgements question.
   // every other path (including the insolvent close-down path) already
   // covered it through the shared eligibility questions, so asking again
   // here would just repeat the same question in different words.
@@ -179,46 +175,46 @@ function resolveAfterAssets(a) {
 const REASON_START = { ato: 'notice-type', money: 'worried-1', debts: 'worried-1', close: 'close-solvency' };
 
 /* ---------------------------------------------------------------
-   Outcome copy — urgency (the specific notice) and pathway
+   Outcome copy: urgency (the specific notice) and pathway
    (the formal mechanism, if any) are shown as two separate,
    honest pieces rather than one blended verdict.
 --------------------------------------------------------------- */
 const NOTICE_INFO = {
-  dpnNonLockdown: { urgent: true, title: 'Non-lockdown Director Penalty Notice', text: 'You have 21 days from the date on the notice to pay in full or appoint a practitioner — either stops personal liability attaching.', deadlineDays: 21 },
+  dpnNonLockdown: { urgent: true, title: 'Non-lockdown Director Penalty Notice', text: 'You have 21 days from the date on the notice to pay in full or appoint a practitioner. Either stops personal liability attaching.', deadlineDays: 21 },
   dpnLockdown: { urgent: true, title: 'Lockdown Director Penalty Notice', text: 'Because lodgements were late, personal liability has already attached. This is about your options from here, not preventing it.' },
-  dpnUnsure: { urgent: true, title: 'Director Penalty Notice, type unclear', text: 'Whether you have 21 days or none depends on one fact you don’t currently know — worth getting the actual notice checked quickly.' },
+  dpnUnsure: { urgent: true, title: 'Director Penalty Notice, type unclear', text: 'Whether you have 21 days or none depends on one fact you don’t currently know, worth getting the actual notice checked quickly.' },
   garnishee: { urgent: true, title: 'Garnishee notice', text: 'This is already redirecting your cash, not a future risk.' },
   statutory: { urgent: true, title: 'Statutory demand', text: 'You have 21 days to pay or apply to set it aside. No action means the company can be presumed insolvent.', deadlineDays: 21 },
-  noticeUnsure: { urgent: true, title: 'Notice received, type unclear', text: 'Different notices carry very different deadlines — worth confirming which one this is quickly.' },
+  noticeUnsure: { urgent: true, title: 'Notice received, type unclear', text: 'Different notices carry very different deadlines, worth confirming which one this is quickly.' },
 };
 
 const PATHWAY_INFO = {
   sbr: {
     label: 'Likely eligible',
     title: 'Small Business Restructuring may be a strong option',
-    text: 'You keep running the business day to day while a registered practitioner helps put together a formal plan for what’s owed. Creditors vote on it — if approved, you keep trading under it. A practitioner will confirm the finer eligibility details, including whether SBR has been used in the last 7 years.',
+    text: 'You keep running the business day to day while a registered practitioner helps put together a formal plan for what’s owed. Creditors vote on it. If approved, you keep trading under it. A practitioner will confirm the finer eligibility details, including whether SBR has been used in the last 7 years.',
   },
   va: {
     label: 'Worth exploring',
     title: 'Voluntary Administration is likely worth exploring',
-    text: 'Small Business Restructuring probably isn’t available here, but that doesn’t mean the business is finished. An administrator pauses creditor action while properly assessing options — it can still lead to a plan that keeps the business going, not just a wind-up.',
+    text: 'Small Business Restructuring probably isn’t available here, but that doesn’t mean the business is finished. An administrator pauses creditor action while properly assessing options. It can still lead to a plan that keeps the business going, not just a wind-up.',
   },
   cvl: {
     label: 'An orderly path',
     title: 'Creditors Voluntary Liquidation may be the right path',
-    text: 'If the business genuinely isn’t viable to continue, a director-led, orderly wind-up is often the most responsible next step — not a failure, a properly managed close.',
+    text: 'If the business genuinely isn’t viable to continue, a director-led, orderly wind-up is often the most responsible next step, not a failure, a properly managed close.',
   },
 };
 
 const CLOSE_INFO = {
-  simple: { title: 'Voluntary deregistration looks like a fit', text: 'Stopped trading, no debts, minimal assets, lodgements current — that matches ASIC’s criteria for a simple, self-serve close via Form 6010.' },
-  mvl: { title: 'Members Voluntary Liquidation looks like the right fit', text: 'Because the business is solvent, this isn’t really an insolvency situation — an MVL is the formal, orderly way to close a solvent company and distribute what’s left to shareholders.' },
-  stillTrading: { title: 'One step before this applies', text: 'Closing down only applies once trading has genuinely stopped — come back through once that’s the case.' },
+  simple: { title: 'Voluntary deregistration looks like a fit', text: 'Stopped trading, no debts, minimal assets, lodgements current, that matches ASIC’s criteria for a simple, self-serve close via Form 6010.' },
+  mvl: { title: 'Members Voluntary Liquidation looks like the right fit', text: 'Because the business is solvent, this isn’t really an insolvency situation. An MVL is the formal, orderly way to close a solvent company and distribute what’s left to shareholders.' },
+  stillTrading: { title: 'One step before this applies', text: 'Closing down only applies once trading has genuinely stopped. Come back through once that’s the case.' },
 };
 
 const CALM_INFO = {
   low: { title: 'No red flags right now', text: 'Notice, super, and supplier terms are all clear. Worth revisiting if anything changes.' },
-  mild: { title: 'Worth a proactive look, not urgent', text: 'A short delay here and there is common and rarely a crisis on its own — worth a light check-in, nothing more urgent than that.' },
+  mild: { title: 'Worth a proactive look, not urgent', text: 'A short delay here and there is common and rarely a crisis on its own, worth a light check-in, nothing more urgent than that.' },
 };
 
 function getResult(a) {
@@ -270,7 +266,7 @@ function getPathwayKey(a) {
 
 /* ---------------------------------------------------------------
    Anonymous-answers-through-login handling. Someone can answer every
-   triage question with no account at all — the moment they try to
+   triage question with no account at all. The moment they try to
    book, if they're not logged in, their answers get held in the
    browser (not sent anywhere) until an account exists to attach them
    to. Expires after 24 hours so old, abandoned attempts don't
@@ -282,7 +278,7 @@ function savePendingBooking(practitionerId, answers) {
   try {
     localStorage.setItem(PENDING_KEY, JSON.stringify({ practitionerId, answers, savedAt: Date.now() }));
   } catch {
-    // Storage can fail (private browsing, disabled, full) — worst case
+    // Storage can fail (private browsing, disabled, full). Worst case
     // the person just re-answers the questions, nothing crashes.
   }
 }
@@ -306,7 +302,7 @@ function clearPendingBooking() {
   try {
     localStorage.removeItem(PENDING_KEY);
   } catch {
-    // nothing to do if this fails — it'll just expire naturally after 24h
+    // nothing to do if this fails. It'll just expire naturally after 24h
   }
 }
 
@@ -349,15 +345,19 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
     <>
       <div className="ar-hero">
         <div className="ar-hero-inner">
-          <h1 className="ar-hero-headline">Know before<br />you call.</h1>
+          <h1 className="ar-hero-headline">Don&apos;t wait<br />for the knock.</h1>
           <p className="ar-hero-sub">
             A free, two-minute check that tells you plainly what your situation means, and connects
-            you with the right verified professional — already briefed, before you speak.
+            you with the right verified professional, already briefed, before you speak.
           </p>
           <button className="ar-hero-cta" onClick={onStart}>
             Start the free check <Search size={16} />
           </button>
           <div className="ar-hero-meta">No account needed to answer. Two minutes, honestly.</div>
+          <div className="ar-hero-meta" style={{ marginTop: '0.35rem' }}>
+            Free to you, always. Funded by a flat membership fee paid by verified practitioners,
+            never a fee tied to your case. <a href="/how-we-work" style={{ color: '#fff', textDecoration: 'underline' }}>How that works</a>
+          </div>
 
           <details className="ar-secondary-search">
             <summary>Already know who you're looking for? Search directly</summary>
@@ -409,16 +409,16 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
   );
 }
 
-// The actual first question of the check — presented as its own focused
+// The actual first question of the check. Presented as its own focused
 // moment, not competing with a search bar for attention.
 function ReasonSelectScreen({ onPick, onBack }) {
   return (
     <div className="ar-section ar-quiz-step" style={{ maxWidth: 480 }}>
       <button className="ar-btn-ghost" style={{ marginBottom: '1.25rem' }} onClick={onBack}>&larr; Back</button>
-      <h2 style={{ marginBottom: '1.1rem' }}>What&apos;s going on?</h2>
+      <h2 style={{ marginBottom: '1.1rem', fontFamily: 'Karst, sans-serif', fontWeight: 800 }}>What&apos;s going on?</h2>
       <div className="ar-chip-row" style={{ flexDirection: 'column' }}>
         {REASONS.map((r) => (
-          <button key={r.id} className="ar-chip" style={{ textAlign: 'left', borderRadius: 10, padding: '0.9rem 1.1rem' }} onClick={() => onPick(r.id)}>
+          <button key={r.id} className="ar-chip" onClick={() => onPick(r.id)}>
             {r.label}
           </button>
         ))}
@@ -441,11 +441,11 @@ function TriageScreen({ step, onAnswer, onBack, progress }) {
     <div className="ar-section ar-quiz-step" style={{ maxWidth: 480 }}>
       <button className="ar-btn-ghost" style={{ marginBottom: '1rem' }} onClick={onBack}>&larr; Back</button>
       <ProgressBar progress={progress} />
-      <h2 style={{ marginBottom: '0.3rem' }}>{q.question}</h2>
+      <h2 style={{ marginBottom: '0.3rem', fontFamily: 'Karst, sans-serif', fontWeight: 800 }}>{q.question}</h2>
       {q.subtext && <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1.1rem' }}>{q.subtext}</p>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: q.subtext ? 0 : '1.1rem' }}>
         {q.options.map((opt) => (
-          <button key={opt.value} className="ar-chip" style={{ textAlign: 'left', borderRadius: 10 }} onClick={() => onAnswer(step, opt)}>
+          <button key={opt.value} className="ar-chip" onClick={() => onAnswer(step, opt)}>
             {opt.label}
           </button>
         ))}
@@ -473,7 +473,7 @@ function CompactChoice({ label, options, value, onChange }) {
   );
 }
 
-// Combines what were three separate full-screen questions into one screen —
+// Combines what were three separate full-screen questions into one screen.
 // these three are all quick, similarly-weighted context questions, so
 // asking them together genuinely feels shorter without losing any data.
 function ContextScreen({ onAnswer, onBack, progress }) {
@@ -486,7 +486,7 @@ function ContextScreen({ onAnswer, onBack, progress }) {
     <div className="ar-section ar-quiz-step" style={{ maxWidth: 480 }}>
       <button className="ar-btn-ghost" style={{ marginBottom: '1rem' }} onClick={onBack}>&larr; Back</button>
       <ProgressBar progress={progress} />
-      <h2 style={{ marginBottom: '0.3rem' }}>A few more quick details</h2>
+      <h2 style={{ marginBottom: '0.3rem', fontFamily: 'Karst, sans-serif', fontWeight: 800 }}>A few more quick details</h2>
       <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1.25rem' }}>
         Three short ones, then you're done.
       </p>
@@ -505,9 +505,9 @@ function ContextScreen({ onAnswer, onBack, progress }) {
         label="Roughly how many people or businesses does the company owe money to?"
         value={creditorCount} onChange={setCreditorCount}
         options={[
-          { label: 'One or two', value: 'few' },
-          { label: 'A handful', value: 'some' },
-          { label: 'Many', value: 'many' },
+          { label: '1\u20132', value: 'few' },
+          { label: '3\u201310', value: 'some' },
+          { label: '10+', value: 'many' },
         ]}
       />
       <CompactChoice
@@ -545,7 +545,7 @@ function DeadlineCalculator({ days }) {
         <input type="date" className="ar-input" style={{ maxWidth: 180 }} value={dateStr} onChange={(e) => setDateStr(e.target.value)} />
         {remaining !== null && (
           <span style={{ fontWeight: 300, color: remaining <= 5 ? 'var(--clay)' : 'var(--brand)' }}>
-            {remaining > 0 ? `${remaining} days left` : 'Window may have passed — get advice today'}
+            {remaining > 0 ? `${remaining} days left` : 'Window may have passed. Get advice today'}
           </span>
         )}
       </div>
@@ -559,29 +559,29 @@ function ResultsScreen({ type, setType, onBook, result }) {
   return (
     <div className="ar-section">
       {result?.notice && (
-        <div className="ar-card" style={{ marginBottom: '0.9rem', borderLeft: '3px solid var(--clay)' }}>
-          <p style={{ fontWeight: 300, margin: '0 0 0.3rem' }}>{result.notice.title}</p>
-          <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', margin: 0 }}>{result.notice.text}</p>
+        <div className="ar-result-banner" style={{ borderLeftColor: 'var(--clay)' }}>
+          <p className="ar-result-title">{result.notice.title}</p>
+          <p className="ar-result-text">{result.notice.text}</p>
           {result.notice.deadlineDays && <DeadlineCalculator days={result.notice.deadlineDays} />}
         </div>
       )}
       {result?.pathway && (
-        <div className="ar-card" style={{ marginBottom: '1.25rem', borderLeft: '3px solid var(--brand)' }}>
-          <span className="ar-tag" style={{ marginBottom: '0.5rem', display: 'inline-block' }}>{result.pathway.label}</span>
-          <p style={{ fontWeight: 300, margin: '0 0 0.3rem' }}>{result.pathway.title}</p>
-          <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', margin: 0 }}>{result.pathway.text}</p>
+        <div className="ar-result-banner" style={{ borderLeftColor: 'var(--brand)' }}>
+          <span className="ar-result-label" style={{ color: 'var(--brand)' }}>{result.pathway.label}</span>
+          <p className="ar-result-title">{result.pathway.title}</p>
+          <p className="ar-result-text">{result.pathway.text}</p>
         </div>
       )}
       {result?.close && (
-        <div className="ar-card" style={{ marginBottom: '1.25rem', borderLeft: '3px solid var(--sage)' }}>
-          <p style={{ fontWeight: 300, margin: '0 0 0.3rem' }}>{result.close.title}</p>
-          <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', margin: 0 }}>{result.close.text}</p>
+        <div className="ar-result-banner" style={{ borderLeftColor: 'var(--sage)' }}>
+          <p className="ar-result-title">{result.close.title}</p>
+          <p className="ar-result-text">{result.close.text}</p>
         </div>
       )}
       {result?.calm && (
-        <div className="ar-card" style={{ marginBottom: '1.25rem', borderLeft: '3px solid var(--sage)' }}>
-          <p style={{ fontWeight: 300, margin: '0 0 0.3rem' }}>{result.calm.title}</p>
-          <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', margin: 0 }}>{result.calm.text}</p>
+        <div className="ar-result-banner" style={{ borderLeftColor: 'var(--sage)' }}>
+          <p className="ar-result-title">{result.calm.title}</p>
+          <p className="ar-result-text">{result.calm.text}</p>
         </div>
       )}
 
@@ -593,6 +593,12 @@ function ResultsScreen({ type, setType, onBook, result }) {
           professional advice regarding your circumstances.
         </p>
       )}
+
+      <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginBottom: '1.25rem' }}>
+        These are the verified practitioners currently in our network, matched only on location,
+        specialty, and your answers, never on how much anyone pays to be listed.{' '}
+        <a href="/how-we-work" style={{ color: 'var(--brand)' }}>How matching works</a>
+      </p>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '0.9rem' }}>
         <div className="ar-type-row" style={{ marginBottom: 0 }}>
@@ -606,7 +612,21 @@ function ResultsScreen({ type, setType, onBook, result }) {
         </div>
       </div>
 
-      {view === 'list' ? (
+      {filtered.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
+          <p style={{ fontWeight: 800, fontFamily: 'Karst, sans-serif', fontSize: '1.05rem', margin: '0 0 0.6rem' }}>
+            We're onboarding verified practitioners in Victoria right now
+          </p>
+          <p style={{ fontSize: '0.9rem', color: 'var(--ink-soft)', margin: '0 auto 1.5rem', maxWidth: 420 }}>
+            AnteRoom is early. Your triage result above is genuine, but there isn't a practitioner
+            to book with in this category yet. Leave your email and we'll let you know the moment
+            someone verified is listed.
+          </p>
+          <a href="/contact" className="ar-btn-primary" style={{ display: 'inline-block', textDecoration: 'none' }}>
+            Get notified
+          </a>
+        </div>
+      ) : view === 'list' ? (
         <div className="ar-grid">
           {filtered.map((p) => <PractitionerCard key={p.id} p={p} onBook={onBook} />)}
         </div>
@@ -626,7 +646,7 @@ function BookingScreen({ practitioner, onConfirm, onBack, restored }) {
       {restored && (
         <div className="ar-card" style={{ marginBottom: '1rem', borderLeft: '3px solid var(--sage)' }}>
           <p style={{ margin: 0, fontSize: '0.86rem' }}>
-            Welcome back — your earlier answers are still here. Just pick a time to continue.
+            Welcome back. Your earlier answers are still here. Just pick a time to continue.
           </p>
         </div>
       )}
@@ -635,7 +655,7 @@ function BookingScreen({ practitioner, onConfirm, onBack, restored }) {
           <div className="ar-avatar">{practitioner.initials}</div>
           <div>
             <div style={{ fontWeight: 300 }}>{practitioner.name}</div>
-            <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>{practitioner.title} — {practitioner.firm}</div>
+            <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>{practitioner.title}, {practitioner.firm}</div>
           </div>
         </div>
       </div>
@@ -675,7 +695,7 @@ function PortalScreen({ practitioner, onDone, onBack }) {
       setError(result.error);
       setSubmitting(false);
     }
-    // on success, the parent switches screens — nothing else to do here
+    // on success, the parent switches screens. Nothing else to do here
   }
 
   return (
@@ -741,7 +761,7 @@ function ConfirmedScreen({ practitioner, slot, onHome }) {
       <div style={{ width: 48, height: 48, borderRadius: 999, background: 'var(--sage-tint)', color: 'var(--sage)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
         <Check size={24} />
       </div>
-      <h2>You&apos;re booked</h2>
+      <h2>Booking confirmed</h2>
       <p style={{ fontSize: '0.9rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
         {slot} with {practitioner.name}, {practitioner.firm}. They&apos;ll have your details ahead of time.
       </p>
@@ -819,7 +839,7 @@ export default function Page() {
     setScreen('results');
   }
 
-  // Rough, approximate progress through the current branch — not a precise
+  // Rough, approximate progress through the current branch. Not a precise
   // step count (the real length varies by path), just enough to give a
   // genuine sense of "getting somewhere" rather than an open-ended list.
   const APPROX_MAX_STEPS = 8;
@@ -845,7 +865,7 @@ export default function Page() {
   }
 
   // Booking requires a real account, since the whole point is linking the
-  // triage answers to a specific client — check auth before letting anyone
+  // triage answers to a specific client. Check auth before letting anyone
   // past the results screen. If they're not logged in, hold their answers
   // in the browser rather than losing them, so they pick up right where
   // they left off once they've logged in or verified a new account.
@@ -860,7 +880,7 @@ export default function Page() {
     setScreen('booking');
   }
 
-  // Runs once on load — catches someone landing back on the homepage
+  // Runs once on load. Catches someone landing back on the homepage
   // already authenticated (either just logged in, or just clicked a real
   // email verification link) with answers still waiting to be resumed.
   useEffect(() => {
@@ -869,7 +889,7 @@ export default function Page() {
       if (!pending) return;
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return; // not authenticated yet — nothing to restore
+      if (!user) return; // not authenticated yet, nothing to restore
 
       const foundPractitioner = PRACTITIONERS.find((p) => p.id === pending.practitionerId);
       if (!foundPractitioner) {
@@ -886,13 +906,13 @@ export default function Page() {
     tryRestore();
   }, []);
 
-  // The actual database write — everything the client answered, plus what
+  // The actual database write. Everything the client answered, plus what
   // they added in the portal step, saved as one real appointment row.
   async function handleConfirmBooking(portalData) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       router.push('/login');
-      return { error: 'You were logged out — please log in again.' };
+      return { error: 'You were logged out. Please log in again.' };
     }
 
     const { error } = await supabase.from('appointments').insert({
@@ -917,7 +937,7 @@ export default function Page() {
 
   return (
     <div className="ar-root">
-      <Header />
+      <Header confirmBeforeHome={screen !== 'home'} onConfirmedHome={goHome} />
 
       {screen === 'home' && (
         <HomeScreen

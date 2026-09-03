@@ -32,7 +32,7 @@ export default function Notifications() {
           <div style={{ maxWidth: 460 }}>
             <Toggle label="Email reminders" sub="Appointment confirmations and reminders" value={emailReminders} onChange={setEmailReminders} />
             <Toggle label="SMS reminders" sub="Text reminders ahead of a consultation" value={smsReminders} onChange={setSmsReminders} />
-            <Toggle label="Occasional updates from Anteroom" sub="You can opt out of these at any time" value={marketing} onChange={setMarketing} />
+            <Toggle label="Occasional updates from AnteRoom" sub="You can opt out of these at any time" value={marketing} onChange={setMarketing} />
           </div>
         </div>
       </div>

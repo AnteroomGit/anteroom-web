@@ -25,7 +25,7 @@ export default function Login() {
     if (signInError) {
       setError(
         signInError.message === 'Email not confirmed'
-          ? 'Please verify your email first — check your inbox for the link we sent.'
+          ? 'Please verify your email first. Check your inbox for the link we sent.'
           : signInError.message === 'Invalid login credentials'
           ? 'Wrong email or password.'
           : signInError.message

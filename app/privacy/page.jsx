@@ -1,7 +1,7 @@
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 
-export const metadata = { title: 'Privacy Policy — Anteroom' };
+export const metadata = { title: 'Privacy Policy | AnteRoom' };
 
 export default function Privacy() {
   return (
@@ -13,8 +13,8 @@ export default function Privacy() {
 
         <h2>What we collect</h2>
         <p>
-          When you use Anteroom&apos;s triage questions, we collect your answers about your
-          situation — for example, the type of notice you&apos;ve received and relevant dates. If
+          When you use AnteRoom&apos;s triage questions, we collect your answers about your
+          situation, for example the type of notice you&apos;ve received and relevant dates. If
           you book a consultation, we collect your name and contact details. If you choose to
           add financial statements, ATO correspondence, or other documents ahead of a
           consultation, we collect those files. If you sign up as a practitioner, we collect
@@ -25,7 +25,7 @@ export default function Privacy() {
         <p>
           Your triage answers and any documents you add are <strong>only</strong> shared with a
           specific practitioner after you have separately and explicitly agreed to that at the
-          point of booking — not as part of a general signup agreement. You will always see
+          point of booking, not as part of a general signup agreement. You will always see
           exactly who you&apos;re sharing information with, and you can decline to add any
           document or detail you&apos;re not comfortable sharing. We do not sell your information,
           and we do not share it with any practitioner you have not chosen to book with.
@@ -34,7 +34,7 @@ export default function Privacy() {
         <h2>Practitioners</h2>
         <p>
           Practitioner profile and verification information may be displayed publicly on
-          Anteroom (name, firm, registration status, specialty areas) so that directors can
+          AnteRoom (name, firm, registration status, specialty areas) so that directors can
           make an informed choice. Verification details used to confirm registration status
           are kept for our records and are not displayed publicly.
         </p>
@@ -57,7 +57,7 @@ export default function Privacy() {
 
         <h2>Not advice</h2>
         <p>
-          Anteroom provides general information only. Nothing on this site, including anything
+          AnteRoom provides general information only. Nothing on this site, including anything
           generated from your triage answers, is legal, financial, or professional advice.
         </p>
 

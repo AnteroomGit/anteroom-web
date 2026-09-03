@@ -23,7 +23,7 @@ export default function Profile() {
     async function loadProfile() {
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Not logged in — send them to log in rather than showing an
+      // Not logged in: send them to log in rather than showing an
       // empty or fake profile.
       if (!user) {
         router.push('/login');
@@ -101,7 +101,7 @@ export default function Profile() {
             <label className="ar-label">Email</label>
             <input className="ar-input" value={email} disabled style={{ marginBottom: '0.4rem', opacity: 0.7, cursor: 'not-allowed' }} />
             <p style={{ fontSize: '0.76rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1rem' }}>
-              Changing your email isn't wired up yet — get in touch via Contact if you need it updated.
+              Changing your email isn't wired up yet. Get in touch via Contact if you need it updated.
             </p>
 
             <label className="ar-label">Mobile</label>
