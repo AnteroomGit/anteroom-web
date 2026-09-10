@@ -4,10 +4,9 @@ import { useState } from 'react';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 
-// Sign up free at formspree.io, create a form, and replace the ID below
-// with the one they give you (the part after "/f/" in your form's endpoint).
-// This is the same tool used for Dahrt's landing page, same idea here.
-const FORMSPREE_ID = 'YOUR_FORM_ID';
+// Get a free access key at web3forms.com. No account needed, just an
+// email to receive the key at. Paste it below to replace the placeholder.
+const WEB3FORMS_KEY = 'YOUR_ACCESS_KEY';
 
 export default function Contact() {
   const [sent, setSent] = useState(false);
@@ -21,12 +20,19 @@ export default function Contact() {
     setSending(true);
     setError(false);
     try {
-      const res = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
+      const res = await fetch('https://api.web3forms.com/submit', {
         method: 'POST',
-        headers: { Accept: 'application/json' },
-        body: JSON.stringify({ email, message }),
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: 'New AnteRoom contact form submission',
+          from_name: 'AnteRoom contact form',
+          email,
+          message,
+        }),
       });
-      if (res.ok) {
+      const data = await res.json();
+      if (res.ok && data.success) {
         setSent(true);
       } else {
         setError(true);

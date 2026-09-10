@@ -64,6 +64,21 @@ export default function ClientSignup() {
     setSubmitting(true);
     setSignupError(null);
 
+    // Actually verify the bot-check token server-side before creating any
+    // account, rather than trusting that the widget succeeding in the
+    // browser is enough on its own.
+    const verifyRes = await fetch('/api/verify-turnstile', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: botVerified }),
+    });
+    const verifyData = await verifyRes.json();
+    if (!verifyData.success) {
+      setSignupError('Bot check failed, please try again.');
+      setSubmitting(false);
+      return;
+    }
+
     // Create the account, passing the profile details as signup metadata.
     // A database trigger (set up in supabase-schema.sql) reads this
     // automatically and creates the matching row in `clients` itself.

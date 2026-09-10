@@ -16,10 +16,24 @@
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; height: 100%; }
 
+/* Karst everywhere, set once at the root rather than patched onto
+   individual elements one at a time -- that patchwork approach is
+   exactly why so much text was still falling back to the browser
+   default. Form elements (input, select, textarea, button) don't
+   inherit font-family by default in any browser, so they need an
+   explicit rule too, or this fix stays incomplete for exactly the
+   elements that caused the button font bug earlier. */
+.ar-root {
+  font-family: 'Karst', sans-serif;
+}
+.ar-root input, .ar-root select, .ar-root textarea, .ar-root button {
+  font-family: inherit;
+}
+
 .ar-root {
   --paper: #EFE9F4;
   --paper-raised: #FFFFFF;
-  --ink: #211530;
+  --ink: #362B4A;
   --ink-soft: #6B5F7A;
   --brand: #392061;
   --brand-dark: #2A1748;
@@ -48,36 +62,71 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-nav-link { font-size: 0.88rem; color: var(--ink-soft); text-decoration: none; }
 
 .ar-hero {
-  padding: 6rem 1.5rem 4.5rem; text-align: left;
+  padding: 4.5rem 1.5rem 3.5rem; text-align: left;
   border-bottom: 1px solid var(--line);
-  position: relative; overflow: hidden;
-  background:
-    linear-gradient(180deg, rgba(33,21,48,0.78) 0%, rgba(57,32,97,0.62) 100%),
-    url('/images/hero.jpg');
-  background-size: cover;
-  background-position: center;
+  position: relative;
+  background: #fff;
 }
-.ar-hero-inner { max-width: 720px; margin: 0 auto; }
+/* Corner-anchored dot pattern (rendered as SVG in page.jsx, not a flat
+   CSS tile) -- dots grow larger/darker toward the top-right corner and
+   fade to nothing moving away from it, so the density actually reads
+   as belonging to that corner instead of a uniform random-looking tile. */
+.ar-hero-dots {
+  position: absolute; top: 0; right: 0;
+  width: min(34vw, 460px); height: min(34vw, 460px);
+  pointer-events: none; z-index: 0;
+}
+.ar-hero-grid {
+  max-width: 1080px; margin: 0 auto; position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1.3fr 1fr; gap: 2.5rem; align-items: center;
+}
+.ar-hero-inner { max-width: 620px; }
+@media (max-width: 860px) {
+  .ar-hero-grid { grid-template-columns: 1fr; }
+  .ar-hero-mockup { display: none; }
+}
+
+/* Lighter shadow now that this sits on white rather than needing to pop
+   off a dark photo -- a heavy shadow reads as noise on a plain background. */
+.ar-hero-mockup {
+  background: var(--paper-raised); padding: 1.75rem 1.5rem 1.5rem;
+  clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 0 100%);
+  box-shadow: 0 12px 28px rgba(33,21,48,0.14);
+  border-top: 4px solid var(--brand);
+}
+.ar-mockup-question { font-family: 'Karst', sans-serif; font-weight: 800; font-size: 1rem; margin: 0 0 1rem; color: var(--ink); }
+.ar-mockup-option {
+  display: block; width: 100%; text-align: left; background: #fff; cursor: pointer;
+  font-family: 'Karst', sans-serif; font-weight: 300; box-sizing: border-box; appearance: none;
+  border: 1.5px solid var(--line); border-left: 3px solid var(--line); padding: 0.6rem 0.85rem;
+  font-size: 0.84rem; color: var(--ink-soft); margin-bottom: 0.5rem; border-radius: 0 8px 8px 0;
+  transition: border-left-color 0.15s ease;
+}
+.ar-mockup-option:hover { border-left-color: var(--brand); }
+.ar-mockup-option-selected { border-color: var(--brand); border-left-color: var(--brand); background: var(--brand-tint); color: var(--brand); font-weight: 800; }
 .ar-hero-headline {
-  font-family: 'Karst', sans-serif; font-weight: 800; color: #fff;
+  font-family: 'Karst', sans-serif; font-weight: 800; color: var(--ink);
   font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 0.98; letter-spacing: -0.02em;
   margin: 0 0 1.5rem;
 }
 .ar-hero-sub {
-  font-size: 1.05rem; color: rgba(255,255,255,0.82); max-width: 480px;
+  font-size: 1.05rem; color: var(--ink-soft); max-width: 480px;
   line-height: 1.55; margin: 0 0 2.25rem;
 }
+/* Purple now lives here -- the actual action -- rather than spread across
+   the whole hero as a background wash. Solid brand color, not a white
+   pill, matching how HotDoc's green CTA carries their color the same way. */
 .ar-hero-cta {
-  background: #fff; color: var(--brand); border: none; border-radius: 999px;
+  background: var(--brand); color: #fff; border: none; border-radius: 999px;
   padding: 1rem 1.9rem; font-family: 'Karst', sans-serif; font-weight: 800;
   font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.6rem;
-  transition: transform 0.15s ease;
+  transition: transform 0.15s ease, background 0.15s ease;
 }
-.ar-hero-cta:hover { transform: translateY(-2px); }
-.ar-hero-meta { font-size: 0.82rem; color: rgba(255,255,255,0.65); margin-top: 0.85rem; }
+.ar-hero-cta:hover { transform: translateY(-2px); background: var(--brand-dark); }
+.ar-hero-meta { font-size: 0.82rem; color: var(--ink-soft); margin-top: 0.85rem; }
 
 .ar-secondary-search summary {
-  color: rgba(255,255,255,0.85); font-size: 0.86rem; cursor: pointer;
+  color: var(--brand); font-size: 0.86rem; cursor: pointer;
   list-style: none; display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 2.25rem;
 }
 .ar-secondary-search summary::-webkit-details-marker { display: none; }
@@ -187,10 +236,38 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-quicklink {
   background: var(--paper-raised); border: 1px solid var(--line); border-radius: 8px;
   padding: 0.5rem 0.85rem; font-size: 0.85rem; color: var(--ink); cursor: pointer;
+  font-family: 'Karst', sans-serif; font-weight: 300;
 }
 .ar-quicklink:hover { border-color: var(--brand); }
 
+/* HotDoc's real "Top searches" pattern -- icon-plus-label, no border
+   needed at all, letting the icon and spacing do the work instead. */
+.ar-reason-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1.5rem; max-width: 640px; }
+.ar-reason-card {
+  background: none; border: none; cursor: pointer; display: flex; flex-direction: column;
+  align-items: center; gap: 0.6rem; padding: 0.5rem; font-family: 'Karst', sans-serif;
+  font-weight: 300; font-size: 0.85rem; color: var(--ink); text-align: center;
+}
+.ar-reason-icon {
+  width: 56px; height: 56px; border-radius: 999px; background: var(--brand-tint);
+  color: var(--brand); display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s ease;
+}
+.ar-reason-card:hover .ar-reason-icon { background: var(--brand); color: #fff; }
+
 .ar-footer { border-top: 1px solid var(--line); padding: 2rem 1.5rem; text-align: center; color: var(--ink-soft); font-size: 0.78rem; }
+
+/* A real conversion moment, not a quiet footer link -- HotDoc's own
+   "list your practice" pattern: bold contrast, one clear action. */
+.ar-practitioner-banner {
+  background: var(--ink); color: #fff; padding: 1.5rem 2rem; margin-top: 2.5rem;
+  display: flex; align-items: center; justify-content: center; gap: 1.25rem;
+  flex-wrap: wrap; text-align: center; font-family: 'Karst', sans-serif; font-weight: 300;
+}
+.ar-practitioner-banner-cta {
+  background: #fff; color: var(--ink); font-weight: 800; text-decoration: none;
+  padding: 0.6rem 1.4rem; border-radius: 8px; white-space: nowrap;
+}
 
 .ar-modal-overlay {
   position: fixed; inset: 0; background: rgba(33,21,48,0.55); z-index: 100;

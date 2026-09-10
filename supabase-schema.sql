@@ -1,6 +1,9 @@
 -- Run this in Supabase's SQL Editor (Project → SQL Editor → New query)
--- after creating your project. This creates the three real tables AnteRoom
--- needs, matching the fields the UI already collects.
+-- This is the complete, current schema -- run it once, top to bottom,
+-- in a fresh/empty project. Consolidates everything the app actually
+-- needs as of this version, including the specialties column the
+-- practitioner signup form sends that earlier versions of this file
+-- were missing.
 
 -- Supabase's built-in auth.users table handles email, password, and
 -- verification automatically — these tables link to it by user id
@@ -27,7 +30,8 @@ create table practitioners (
   suburb text,
   lat float8,
   lng float8,
-  tags text[]
+  tags text[],
+  specialties text[]  -- checkboxes selected on the practitioner signup form
 );
 
 create table appointments (
@@ -73,13 +77,14 @@ begin
       (select array(select jsonb_array_elements_text(new.raw_user_meta_data->'reasons')))
     );
   elsif new.raw_user_meta_data->>'account_type' = 'practitioner' then
-    insert into public.practitioners (id, name, firm, practitioner_type, registration_number)
+    insert into public.practitioners (id, name, firm, practitioner_type, registration_number, specialties)
     values (
       new.id,
       new.raw_user_meta_data->>'name',
       new.raw_user_meta_data->>'firm',
       new.raw_user_meta_data->>'practitioner_type',
-      new.raw_user_meta_data->>'registration_number'
+      new.raw_user_meta_data->>'registration_number',
+      (select array(select jsonb_array_elements_text(new.raw_user_meta_data->'specialties')))
     );
   end if;
   return new;

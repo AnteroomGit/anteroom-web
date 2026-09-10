@@ -2,11 +2,10 @@
 
 import { Turnstile } from '@marsidev/react-turnstile';
 
-// Real bot protection via Cloudflare Turnstile. Replaces the earlier
-// placeholder. Needs a real site key from dash.cloudflare.com (Turnstile
-// product, free tier) added as NEXT_PUBLIC_TURNSTILE_SITE_KEY.
-// Like the Supabase keys, this one is meant to be public. Add it in
-// Vercel as type "Config", not "Secret".
+// Bot protection via Cloudflare Turnstile. onChange now receives the
+// actual verification token (or null), not just a boolean, since the
+// real check happens server-side against that token, not by trusting
+// the browser's word that verification succeeded.
 export default function BotCheck({ checked, onChange }) {
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
@@ -22,9 +21,9 @@ export default function BotCheck({ checked, onChange }) {
     <div style={{ marginBottom: '1.1rem' }}>
       <Turnstile
         siteKey={siteKey}
-        onSuccess={() => onChange(true)}
-        onExpire={() => onChange(false)}
-        onError={() => onChange(false)}
+        onSuccess={(token) => onChange(token)}
+        onExpire={() => onChange(null)}
+        onError={() => onChange(null)}
       />
     </div>
   );

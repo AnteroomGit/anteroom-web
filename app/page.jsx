@@ -11,6 +11,12 @@ import {
   FileText,
   X,
   Check,
+  Mail,
+  AlertTriangle,
+  Wallet,
+  Banknote,
+  Archive,
+  TrendingDown,
 } from 'lucide-react';
 import Footer from './components/Footer';
 import Header from './components/Header';
@@ -27,7 +33,10 @@ const PractitionerMap = dynamic(() => import('./components/PractitionerMap'), { 
 /* ---------------------------------------------------------------
    Data
 --------------------------------------------------------------- */
-const TYPES = ['All', 'Liquidator', 'Small Business Restructuring Practitioner', 'Accountant', 'Lawyer'];
+// Only liquidators are being onboarded right now, so a filter row showing
+// four other categories with zero practitioners in them is confusing
+// clutter, not real choice. Expand this once other types actually exist.
+const TYPES = ['All', 'Liquidator'];
 
 const NOTICE_OPTIONS = ['Director Penalty Notice', 'Garnishee notice', 'Statutory demand', 'Not sure'];
 
@@ -37,7 +46,14 @@ const NOTICE_OPTIONS = ['Director Penalty Notice', 'Garnishee notice', 'Statutor
 const PRACTITIONERS = [];
 
 
-const QUICK_LINKS = ['Director Penalty Notice', 'Statutory demand', "Can't pay super", 'Garnishee notice', 'Voluntary deregistration', 'Small Business Restructuring'];
+const QUICK_LINKS = [
+  { label: 'Director Penalty Notice', category: 'ato', icon: Mail },
+  { label: 'Statutory demand', category: 'ato', icon: AlertTriangle },
+  { label: "Can't pay super", category: 'money', icon: Wallet },
+  { label: 'Garnishee notice', category: 'ato', icon: Banknote },
+  { label: 'Voluntary deregistration', category: 'close', icon: Archive },
+  { label: 'Worried about cash flow', category: 'money', icon: TrendingDown },
+];
 
 /* ---------------------------------------------------------------
    Triage question flow: short, sharp, one tap each.
@@ -338,28 +354,83 @@ function PractitionerCard({ p, onBook }) {
 }
 
 /* ---------------------------------------------------------------
+   Hero dot pattern -- grid of circles anchored to the top-right
+   corner. Radius and opacity both scale with distance from that
+   corner (eased, not linear) so it reads as texture belonging to
+   the corner rather than a tiled, uniform pattern.
+--------------------------------------------------------------- */
+function HeroDotPattern() {
+  const cols = 16;
+  const rows = 16;
+  const spacing = 22;
+  const width = cols * spacing;
+  const height = rows * spacing;
+  const maxDist = Math.sqrt(width * width + height * height);
+
+  const minRadius = 0.6;
+  const maxRadius = 3.2;
+  const maxOpacity = 0.55;
+  const ease = 1.6;
+
+  const circles = [];
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      const cx = col * spacing + spacing / 2;
+      const cy = row * spacing + spacing / 2;
+      const dx = width - cx; // distance from right edge
+      const dy = cy;         // distance from top edge
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const t = Math.max(0, 1 - dist / maxDist);
+      const tEased = Math.pow(t, ease);
+      const opacity = tEased * maxOpacity;
+      if (opacity < 0.012) continue; // skip essentially invisible dots
+      const radius = minRadius + tEased * (maxRadius - minRadius);
+      circles.push(
+        <circle
+          key={`${row}-${col}`}
+          cx={cx}
+          cy={cy}
+          r={radius.toFixed(2)}
+          fill="var(--brand)"
+          opacity={opacity.toFixed(3)}
+        />
+      );
+    }
+  }
+
+  return (
+    <svg
+      className="ar-hero-dots"
+      viewBox={`0 0 ${width} ${height}`}
+      preserveAspectRatio="xMaxYMin slice"
+      aria-hidden="true"
+    >
+      {circles}
+    </svg>
+  );
+}
+
+/* ---------------------------------------------------------------
    Screens
 --------------------------------------------------------------- */
-function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearch }) {
+function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearch, onQuickLink }) {
   return (
     <>
       <div className="ar-hero">
-        <div className="ar-hero-inner">
-          <h1 className="ar-hero-headline">Don&apos;t wait<br />for the knock.</h1>
-          <p className="ar-hero-sub">
-            A free, two-minute check that tells you plainly what your situation means, and connects
-            you with the right verified professional, already briefed, before you speak.
-          </p>
-          <button className="ar-hero-cta" onClick={onStart}>
-            Start the free check <Search size={16} />
-          </button>
-          <div className="ar-hero-meta">No account needed to answer. Two minutes, honestly.</div>
-          <div className="ar-hero-meta" style={{ marginTop: '0.35rem' }}>
-            Free to you, always. Funded by a flat membership fee paid by verified practitioners,
-            never a fee tied to your case. <a href="/how-we-work" style={{ color: '#fff', textDecoration: 'underline' }}>How that works</a>
-          </div>
+        <HeroDotPattern />
+        <div className="ar-hero-grid">
+          <div className="ar-hero-inner">
+            <h1 className="ar-hero-headline">Don&apos;t wait<br />for the knock.</h1>
+            <p className="ar-hero-sub">
+              A free, two-minute check that tells you plainly what your situation means, and connects
+              you with the right verified professional, already briefed, before you speak. Funded
+              by practitioners, <a href="/how-we-work" style={{ color: 'var(--brand)' }}>never by you</a>.
+            </p>
+            <button className="ar-hero-cta" onClick={onStart}>
+              Start the free check <Search size={16} />
+            </button>
 
-          <details className="ar-secondary-search">
+            <details className="ar-secondary-search">
             <summary>Already know who you're looking for? Search directly</summary>
             <div className="ar-searchbar">
               <div className="ar-search-field">
@@ -380,14 +451,36 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
                 <Search size={15} /> Search
               </button>
             </div>
-          </details>
+            </details>
+          </div>
+
+          <div className="ar-hero-mockup">
+            <p className="ar-mockup-question">What&apos;s going on?</p>
+            <button className="ar-mockup-option ar-mockup-option-selected" onClick={() => onQuickLink('ato')}>
+              I&apos;ve received something from the ATO
+            </button>
+            <button className="ar-mockup-option" onClick={() => onQuickLink('money')}>
+              I&apos;m worried about my money
+            </button>
+            <button className="ar-mockup-option" onClick={() => onQuickLink('close')}>
+              I want to close my business
+            </button>
+          </div>
         </div>
       </div>
 
       <div className="ar-section">
         <h2>Common reasons people come here</h2>
-        <div className="ar-quicklinks">
-          {QUICK_LINKS.map((q) => <span key={q} className="ar-quicklink">{q}</span>)}
+        <div className="ar-reason-grid">
+          {QUICK_LINKS.map((q) => {
+            const Icon = q.icon;
+            return (
+              <button key={q.label} className="ar-reason-card" onClick={() => onQuickLink(q.category)}>
+                <div className="ar-reason-icon"><Icon size={22} /></div>
+                <span>{q.label}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -404,6 +497,11 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
           <FileText size={22} style={{ color: 'var(--brand)' }} />
           <p style={{ fontSize: '0.88rem', marginTop: '0.5rem' }}>Share your documents ahead, so your first meeting isn&apos;t a cold start</p>
         </div>
+      </div>
+
+      <div className="ar-practitioner-banner">
+        <span>Registered liquidator?</span>
+        <a href="/signup/practitioner" className="ar-practitioner-banner-cta">List your practice</a>
       </div>
     </>
   );
@@ -486,10 +584,7 @@ function ContextScreen({ onAnswer, onBack, progress }) {
     <div className="ar-section ar-quiz-step" style={{ maxWidth: 480 }}>
       <button className="ar-btn-ghost" style={{ marginBottom: '1rem' }} onClick={onBack}>&larr; Back</button>
       <ProgressBar progress={progress} />
-      <h2 style={{ marginBottom: '0.3rem', fontFamily: 'Karst, sans-serif', fontWeight: 800 }}>A few more quick details</h2>
-      <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1.25rem' }}>
-        Three short ones, then you're done.
-      </p>
+      <h2 style={{ marginBottom: '1.25rem', fontFamily: 'Karst, sans-serif', fontWeight: 800 }}>A few more quick details</h2>
 
       <CompactChoice
         label="Do you personally owe the company money, or does the company owe you?"
@@ -943,6 +1038,7 @@ export default function Page() {
         <HomeScreen
           onStart={() => setScreen('reason-select')}
           onSearch={() => pickReason(reason)}
+          onQuickLink={(category) => pickReason(category)}
           reason={reason} setReason={setReason}
           location={location} setLocation={setLocation}
         />
