@@ -95,7 +95,11 @@ export default function PractitionerSignup() {
     });
     const verifyData = await verifyRes.json();
     if (!verifyData.success) {
-      setSignupError('Bot check failed, please try again.');
+      // Temporary: show Cloudflare's actual error-codes on screen while
+      // we're diagnosing this, instead of a generic message that hides
+      // what's actually wrong. Revert to the plain message once fixed.
+      const codes = verifyData.codes && verifyData.codes.length ? ` (${verifyData.codes.join(', ')})` : '';
+      setSignupError(`Bot check failed, please try again.${codes}`);
       setSubmitting(false);
       return;
     }

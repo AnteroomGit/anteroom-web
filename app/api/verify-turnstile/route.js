@@ -23,7 +23,15 @@ export async function POST(request) {
     if (data.success) {
       return Response.json({ success: true });
     }
-    return Response.json({ success: false, error: 'Verification failed' }, { status: 400 });
+    // Temporary: surface Cloudflare's actual error-codes instead of a generic
+    // message, so a failed check is diagnosable instead of a dead end.
+    // (invalid-input-secret = wrong/missing TURNSTILE_SECRET_KEY on this
+    // server; timeout-or-duplicate = token expired or already used once.)
+    console.error('Turnstile siteverify failed:', data['error-codes']);
+    return Response.json(
+      { success: false, error: 'Verification failed', codes: data['error-codes'] || [] },
+      { status: 400 }
+    );
   } catch (err) {
     console.error('verify-turnstile error:', err);
     return Response.json({ success: false, error: 'Something went wrong' }, { status: 500 });
