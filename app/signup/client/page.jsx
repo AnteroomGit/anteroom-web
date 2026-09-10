@@ -49,6 +49,11 @@ export default function ClientSignup() {
   const [submitting, setSubmitting] = useState(false);
   const [signupError, setSignupError] = useState(null);
   const [resent, setResent] = useState(false);
+  // Turnstile tokens are single-use and short-lived -- reusing the same
+  // one on a retry after any failed attempt gets rejected by Cloudflare
+  // as timeout-or-duplicate. Bumping this key forces the widget to fully
+  // remount and issue a fresh token whenever a submit attempt fails.
+  const [botKey, setBotKey] = useState(0);
 
   const pw = checkPassword(password);
   const pwValid = pw.length && pw.letterNumber && pw.noRepeat && pw.noSequence;
@@ -76,6 +81,8 @@ export default function ClientSignup() {
     if (!verifyData.success) {
       setSignupError('Bot check failed, please try again.');
       setSubmitting(false);
+      setBotVerified(false);
+      setBotKey((k) => k + 1); // force Turnstile to remount and issue a fresh token
       return;
     }
 
@@ -105,6 +112,8 @@ export default function ClientSignup() {
           : error.message
       );
       setSubmitting(false);
+      setBotVerified(false);
+      setBotKey((k) => k + 1); // the token was already spent in the verify call above either way
       return;
     }
 
@@ -181,7 +190,7 @@ export default function ClientSignup() {
                 </span>
               </label>
 
-              <BotCheck checked={botVerified} onChange={setBotVerified} />
+              <BotCheck key={botKey} checked={botVerified} onChange={setBotVerified} />
 
               {signupError && (
                 <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{signupError}</p>

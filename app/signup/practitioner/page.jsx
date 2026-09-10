@@ -72,6 +72,11 @@ export default function PractitionerSignup() {
   const [botVerified, setBotVerified] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [signupError, setSignupError] = useState(null);
+  // Turnstile tokens are single-use and short-lived -- reusing the same
+  // one on a retry after any failed attempt gets rejected by Cloudflare
+  // as timeout-or-duplicate. Bumping this key forces the widget to fully
+  // remount and issue a fresh token whenever a submit attempt fails.
+  const [botKey, setBotKey] = useState(0);
 
   const regInfo = REG_INFO[category];
   const pw = checkPassword(password);
@@ -101,6 +106,8 @@ export default function PractitionerSignup() {
       const codes = verifyData.codes && verifyData.codes.length ? ` (${verifyData.codes.join(', ')})` : '';
       setSignupError(`Bot check failed, please try again.${codes}`);
       setSubmitting(false);
+      setBotVerified(false);
+      setBotKey((k) => k + 1); // force Turnstile to remount and issue a fresh token
       return;
     }
 
@@ -126,6 +133,8 @@ export default function PractitionerSignup() {
           : error.message
       );
       setSubmitting(false);
+      setBotVerified(false);
+      setBotKey((k) => k + 1); // the token was already spent in the verify call above either way
       return;
     }
 
@@ -207,7 +216,7 @@ export default function PractitionerSignup() {
                 </span>
               </label>
 
-              <BotCheck checked={botVerified} onChange={setBotVerified} />
+              <BotCheck key={botKey} checked={botVerified} onChange={setBotVerified} />
 
               {signupError && (
                 <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{signupError}</p>
