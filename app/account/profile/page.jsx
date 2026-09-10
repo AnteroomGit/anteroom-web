@@ -45,7 +45,11 @@ export default function Profile() {
       setEmail(user.email);
 
       const [{ data: profile }, { data: appointments }, { data: session }] = await Promise.all([
-        supabase.from('clients').select('*').eq('id', user.id).single(),
+        // maybeSingle, not single -- a genuinely valid login with no
+        // matching clients row (like an account created before the
+        // signup trigger was fixed earlier tonight) should load a blank,
+        // fillable profile, not throw a 406 and break the page.
+        supabase.from('clients').select('*').eq('id', user.id).maybeSingle(),
         supabase.from('appointments').select('triage_summary, pathway, notice_type, notice_date, created_at')
           .eq('client_id', user.id).order('created_at', { ascending: false }).limit(1),
         // Falls back here when someone's completed the check but never
@@ -80,10 +84,13 @@ export default function Profile() {
     setError(null);
 
     const { data: { user } } = await supabase.auth.getUser();
+    // upsert, not update -- for an account with no clients row yet (see
+    // the maybeSingle comment above), a plain update() would silently
+    // match zero rows and do nothing. This creates the row on first
+    // save instead of requiring a support request to fix it manually.
     const { error: updateError } = await supabase
       .from('clients')
-      .update({ first_name: firstName, last_name: lastName, mobile, reasons })
-      .eq('id', user.id);
+      .upsert({ id: user.id, first_name: firstName, last_name: lastName, mobile, reasons }, { onConflict: 'id' });
 
     if (updateError) {
       setError(updateError.message);
