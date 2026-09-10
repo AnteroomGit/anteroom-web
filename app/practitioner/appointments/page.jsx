@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, ChevronUp, FileDown } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileDown, LineChart } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { supabase } from '../../../lib/supabase';
@@ -16,6 +16,8 @@ export default function PractitionerAppointments() {
   const [expanded, setExpanded] = useState(null);
   const [generatingId, setGeneratingId] = useState(null);
   const [genError, setGenError] = useState(null);
+  const [reportLoadingId, setReportLoadingId] = useState(null);
+  const [reportError, setReportError] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -69,6 +71,33 @@ export default function PractitionerAppointments() {
       setGenError(err.message);
     } finally {
       setGeneratingId(null);
+    }
+  }
+
+  async function handleGenerateFinancialReport(appointmentId) {
+    setReportLoadingId(appointmentId);
+    setReportError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/integrations/generate-report', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ appointmentId, accessToken: session?.access_token }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.error || 'Could not generate the financial report');
+
+      // Update this appointment in place so the report shows immediately
+      // without a full reload of the list.
+      setAppointments((prev) => prev.map((a) => (
+        a.id === appointmentId
+          ? { ...a, financial_report: { text: body.report, provider: body.provider }, financial_report_generated_at: new Date().toISOString() }
+          : a
+      )));
+    } catch (err) {
+      setReportError(err.message);
+    } finally {
+      setReportLoadingId(null);
     }
   }
 
@@ -132,15 +161,43 @@ export default function PractitionerAppointments() {
                     {a.notice_type && <p><strong>Notice:</strong> {a.notice_type}{a.notice_date ? ` (dated ${a.notice_date})` : ''}</p>}
                     {a.notes && <p><strong>Notes from client:</strong> {a.notes}</p>}
 
-                    <button
-                      className="ar-btn-primary"
-                      style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.75rem', marginBottom: '1rem' }}
-                      onClick={(e) => { e.stopPropagation(); handleGeneratePdf(a.id); }}
-                      disabled={generatingId === a.id}
-                    >
-                      <FileDown size={16} />
-                      {generatingId === a.id ? 'Generating summary...' : 'Download case summary (PDF)'}
-                    </button>
+                    <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', marginTop: '0.75rem', marginBottom: '1rem' }}>
+                      <button
+                        className="ar-btn-primary"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                        onClick={(e) => { e.stopPropagation(); handleGeneratePdf(a.id); }}
+                        disabled={generatingId === a.id}
+                      >
+                        <FileDown size={16} />
+                        {generatingId === a.id ? 'Generating summary...' : 'Download case summary (PDF)'}
+                      </button>
+
+                      <button
+                        className="ar-btn-ghost"
+                        style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', width: 'auto' }}
+                        onClick={(e) => { e.stopPropagation(); handleGenerateFinancialReport(a.id); }}
+                        disabled={reportLoadingId === a.id}
+                      >
+                        <LineChart size={16} />
+                        {reportLoadingId === a.id
+                          ? 'Reading their books...'
+                          : a.financial_report ? 'Refresh financial briefing' : 'Generate financial briefing'}
+                      </button>
+                    </div>
+
+                    {reportError && (
+                      <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{reportError}</p>
+                    )}
+
+                    {a.financial_report && (
+                      <div style={{ marginBottom: '1rem', padding: '0.9rem', background: 'var(--paper)', borderRadius: 10 }}>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginBottom: '0.5rem' }}>
+                          Financial briefing, from their connected {a.financial_report.provider === 'xero' ? 'Xero' : a.financial_report.provider === 'myob' ? 'MYOB' : 'Manager.io'} account.
+                          Background reading only, not a substitute for your own review of the full books.
+                        </div>
+                        <div style={{ fontSize: '0.88rem', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{a.financial_report.text}</div>
+                      </div>
+                    )}
 
                     <p style={{ fontWeight: 300, marginTop: '0.75rem', marginBottom: '0.4rem' }}>Full triage answers</p>
                     <pre style={{

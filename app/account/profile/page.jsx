@@ -8,6 +8,17 @@ import AccountNav from '../../components/AccountNav';
 import { REASONS } from '../../constants';
 import { supabase } from '../../../lib/supabase';
 
+// Friendlier labels than the raw pathway keys stored on the appointment
+// row (sbr, va, cvl, mvl, simple-close) -- keep in sync with PATHWAY_INFO
+// in app/page.jsx if a pathway is ever renamed there.
+const PATHWAY_LABELS = {
+  sbr: 'Small Business Restructuring',
+  va: 'Voluntary Administration',
+  cvl: 'Creditors Voluntary Liquidation',
+  mvl: 'Members Voluntary Liquidation',
+  'simple-close': 'Simple close',
+};
+
 export default function Profile() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -18,6 +29,7 @@ export default function Profile() {
   const [reasons, setReasons] = useState([]);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState(null);
+  const [latestAppointment, setLatestAppointment] = useState(null);
 
   useEffect(() => {
     async function loadProfile() {
@@ -32,17 +44,26 @@ export default function Profile() {
 
       setEmail(user.email);
 
-      const { data: profile } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      const [{ data: profile }, { data: appointments }, { data: session }] = await Promise.all([
+        supabase.from('clients').select('*').eq('id', user.id).single(),
+        supabase.from('appointments').select('triage_summary, pathway, notice_type, notice_date, created_at')
+          .eq('client_id', user.id).order('created_at', { ascending: false }).limit(1),
+        // Falls back here when someone's completed the check but never
+        // booked anyone -- previously this page had nothing to show in
+        // that case at all.
+        supabase.from('triage_sessions').select('answers, summary, pathway, updated_at').eq('client_id', user.id).maybeSingle(),
+      ]);
 
       if (profile) {
         setFirstName(profile.first_name || '');
         setLastName(profile.last_name || '');
         setMobile(profile.mobile || '');
         setReasons(profile.reasons || []);
+      }
+      if (appointments?.[0]) {
+        setLatestAppointment(appointments[0]);
+      } else if (session?.summary) {
+        setLatestAppointment({ triage_summary: session.summary, pathway: session.pathway });
       }
       setLoading(false);
     }
@@ -91,6 +112,40 @@ export default function Profile() {
         <AccountNav active="profile" />
         <div>
           <h2 style={{ marginTop: 0 }}>Profile</h2>
+
+          {/* What was previously missing entirely: this account had no
+              way to see the answers or result you'd actually come here
+              for. Pulled from your most recent appointment, since that's
+              the only point triage answers are durably saved. */}
+          {latestAppointment ? (
+            <div className="ar-result-banner" style={{ marginBottom: '1.75rem' }}>
+              <span className="ar-result-label" style={{ color: 'var(--brand)' }}>Your last result</span>
+              <p className="ar-result-title">{latestAppointment.triage_summary || 'Check completed'}</p>
+              {latestAppointment.pathway && (
+                <p className="ar-result-text">
+                  Suggested pathway: {PATHWAY_LABELS[latestAppointment.pathway] || latestAppointment.pathway}
+                </p>
+              )}
+              {latestAppointment.notice_type && (
+                <p className="ar-result-text">
+                  Notice: {latestAppointment.notice_type}{latestAppointment.notice_date ? ` (dated ${latestAppointment.notice_date})` : ''}
+                </p>
+              )}
+              <p style={{ fontSize: '0.82rem', marginTop: '0.6rem' }}>
+                <a href="/account/appointments" style={{ color: 'var(--brand)' }}>View your appointments</a>
+                {' · '}
+                <a href="/?start=1" style={{ color: 'var(--brand)' }}>Run the check again</a>
+              </p>
+            </div>
+          ) : (
+            <div className="ar-card" style={{ marginBottom: '1.75rem' }}>
+              <p style={{ margin: 0 }}>You haven't completed the check yet.</p>
+              <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '0.3rem' }}>
+                <a href="/?start=1" style={{ color: 'var(--brand)' }}>Answer the questions</a> to see what your situation means.
+              </p>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} style={{ maxWidth: 380 }}>
             <label className="ar-label">First name</label>
             <input className="ar-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={{ marginBottom: '1rem' }} />

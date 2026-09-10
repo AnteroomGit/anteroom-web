@@ -8,6 +8,7 @@ function AccountNav({ active }) {
   const items = [
     { id: 'profile', label: 'Profile', href: '/account/profile' },
     { id: 'appointments', label: 'Appointments', href: '/account/appointments' },
+    { id: 'integrations', label: 'Accounting software', href: '/account/integrations' },
     { id: 'security', label: 'Security', href: '/account/security' },
     { id: 'notifications', label: 'Notifications', href: '/account/notifications' },
   ];

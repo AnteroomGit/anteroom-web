@@ -7,29 +7,24 @@ import Header from '../../components/Header';
 import BotCheck from '../../components/BotCheck';
 import { REASONS } from '../../constants';
 import { supabase } from '../../../lib/supabase';
-
-function checkPassword(pw) {
-  return {
-    length: pw.length >= 8,
-    letterNumber: /[a-zA-Z]/.test(pw) && /[0-9]/.test(pw),
-    noRepeat: !/(.)\1\1/.test(pw),
-    noSequence: !hasSequentialChars(pw),
-  };
-}
-
-function hasSequentialChars(pw) {
-  for (let i = 0; i < pw.length - 2; i++) {
-    const a = pw.charCodeAt(i), b = pw.charCodeAt(i + 1), c = pw.charCodeAt(i + 2);
-    if (b === a + 1 && c === b + 1) return true;
-    if (b === a - 1 && c === b - 1) return true;
-  }
-  return false;
-}
+import { checkPassword, passwordValid } from '../../../lib/password';
 
 function Rule({ ok, children }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: ok ? 'var(--sage)' : 'var(--ink-soft)' }}>
       {ok ? <Check size={13} /> : <X size={13} style={{ opacity: 0.4 }} />} {children}
+    </div>
+  );
+}
+
+// Advisory only -- can't actually be checked client-side (no password
+// history to check against, no test for "hard to guess"), so these are
+// shown as plain tips rather than pass/fail rules with a checkmark that
+// would misleadingly imply they'd been verified.
+function Tip({ children }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
+      <span style={{ width: 13, height: 13, borderRadius: '50%', border: '1.5px solid var(--line)', flexShrink: 0 }} /> {children}
     </div>
   );
 }
@@ -56,7 +51,7 @@ export default function ClientSignup() {
   const [botKey, setBotKey] = useState(0);
 
   const pw = checkPassword(password);
-  const pwValid = pw.length && pw.letterNumber && pw.noRepeat && pw.noSequence;
+  const pwValid = passwordValid(password);
 
   function toggleReason(id) {
     setReasons((r) => (r.includes(id) ? r.filter((x) => x !== id) : [...r, id]));
@@ -154,6 +149,10 @@ export default function ClientSignup() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1.1rem' }}>
                 <Rule ok={pw.length}>8 or more characters</Rule>
                 <Rule ok={pw.letterNumber}>At least 1 letter and 1 number</Rule>
+                <Rule ok={pw.noRepeat}>Don't use the same character 3+ times in a row (e.g. AAA, 111)</Rule>
+                <Rule ok={pw.noSequence}>Don't use 3+ characters in order (e.g. ABC, 123)</Rule>
+                <Tip>Don't reuse a password you've used before</Tip>
+                <Tip>Pick something hard to guess</Tip>
                 <Rule ok={pw.noRepeat}>No character repeated 3+ times in a row</Rule>
                 <Rule ok={pw.noSequence}>No 3+ characters in sequence (e.g. abc, 123)</Rule>
               </div>

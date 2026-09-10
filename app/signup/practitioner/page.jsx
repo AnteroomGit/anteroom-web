@@ -6,6 +6,7 @@ import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import BotCheck from '../../components/BotCheck';
 import { supabase } from '../../../lib/supabase';
+import { checkPassword, passwordValid } from '../../../lib/password';
 
 // Liquidator and SBR Practitioner are collapsed into one category here,
 // since SBR Practitioners must themselves be registered liquidators
@@ -44,17 +45,20 @@ const SPECIALTIES = [
   'Members Voluntary Liquidation',
 ];
 
-function checkPassword(pw) {
-  return {
-    length: pw.length >= 8,
-    letterNumber: /[a-zA-Z]/.test(pw) && /[0-9]/.test(pw),
-  };
-}
-
 function Rule({ ok, children }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: ok ? 'var(--sage)' : 'var(--ink-soft)' }}>
       {ok ? <Check size={13} /> : <X size={13} style={{ opacity: 0.4 }} />} {children}
+    </div>
+  );
+}
+
+// Advisory only -- see lib/password.js for why these two can't be
+// checked client-side the way the four Rule items above can.
+function Tip({ children }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
+      <span style={{ width: 13, height: 13, borderRadius: '50%', border: '1.5px solid var(--line)', flexShrink: 0 }} /> {children}
     </div>
   );
 }
@@ -80,7 +84,7 @@ export default function PractitionerSignup() {
 
   const regInfo = REG_INFO[category];
   const pw = checkPassword(password);
-  const pwValid = pw.length && pw.letterNumber;
+  const pwValid = passwordValid(password);
 
   function toggleSpecialty(s) {
     setSpecialties((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
@@ -180,6 +184,10 @@ export default function PractitionerSignup() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1.1rem' }}>
                 <Rule ok={pw.length}>8 or more characters</Rule>
                 <Rule ok={pw.letterNumber}>At least 1 letter and 1 number</Rule>
+                <Rule ok={pw.noRepeat}>Don't use the same character 3+ times in a row (e.g. AAA, 111)</Rule>
+                <Rule ok={pw.noSequence}>Don't use 3+ characters in order (e.g. ABC, 123)</Rule>
+                <Tip>Don't reuse a password you've used before</Tip>
+                <Tip>Pick something hard to guess</Tip>
               </div>
 
               <label className="ar-label">Professional category</label>

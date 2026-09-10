@@ -5,18 +5,22 @@ import { Check, X } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import AccountNav from '../../components/AccountNav';
-
-function checkPassword(pw) {
-  return {
-    length: pw.length >= 8,
-    letterNumber: /[a-zA-Z]/.test(pw) && /[0-9]/.test(pw),
-  };
-}
+import { checkPassword, passwordValid } from '../../../lib/password';
 
 function Rule({ ok, children }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: ok ? 'var(--sage)' : 'var(--ink-soft)' }}>
       {ok ? <Check size={13} /> : <X size={13} style={{ opacity: 0.4 }} />} {children}
+    </div>
+  );
+}
+
+// Advisory only -- see lib/password.js for why these two can't be
+// checked client-side the way the four Rule items above can.
+function Tip({ children }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
+      <span style={{ width: 13, height: 13, borderRadius: '50%', border: '1.5px solid var(--line)', flexShrink: 0 }} /> {children}
     </div>
   );
 }
@@ -35,7 +39,7 @@ export default function Security() {
         <div>
           <h2 style={{ marginTop: 0 }}>Security</h2>
 
-          <form onSubmit={(e) => { e.preventDefault(); setSaved(true); }} style={{ maxWidth: 380, marginBottom: '2.5rem' }}>
+          <form onSubmit={(e) => { e.preventDefault(); if (passwordValid(next)) setSaved(true); }} style={{ maxWidth: 380, marginBottom: '2.5rem' }}>
             <label className="ar-label">Current password</label>
             <input type="password" className="ar-input" value={current} onChange={(e) => setCurrent(e.target.value)} style={{ marginBottom: '1rem' }} />
 
@@ -44,9 +48,13 @@ export default function Security() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1.25rem' }}>
               <Rule ok={pw.length}>8 or more characters</Rule>
               <Rule ok={pw.letterNumber}>At least 1 letter and 1 number</Rule>
+              <Rule ok={pw.noRepeat}>Don't use the same character 3+ times in a row (e.g. AAA, 111)</Rule>
+              <Rule ok={pw.noSequence}>Don't use 3+ characters in order (e.g. ABC, 123)</Rule>
+              <Tip>Don't reuse a password you've used before</Tip>
+              <Tip>Pick something hard to guess</Tip>
             </div>
 
-            <button type="submit" className="ar-btn-primary">Update password</button>
+            <button type="submit" className="ar-btn-primary" disabled={!passwordValid(next) || !current}>Update password</button>
             {saved && <span style={{ marginLeft: '0.75rem', fontSize: '0.84rem', color: 'var(--sage)' }}>Updated</span>}
           </form>
 

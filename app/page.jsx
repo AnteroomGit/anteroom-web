@@ -413,21 +413,35 @@ function HeroDotPattern() {
 /* ---------------------------------------------------------------
    Screens
 --------------------------------------------------------------- */
-function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearch, onQuickLink }) {
+function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearch, onQuickLink, firstName }) {
   return (
     <>
       <div className="ar-hero">
         <HeroDotPattern />
         <div className="ar-hero-grid">
           <div className="ar-hero-inner">
-            <h1 className="ar-hero-headline">Don&apos;t wait<br />for the knock.</h1>
-            <p className="ar-hero-sub">
-              A free, two-minute check that tells you plainly what your situation means, and connects
-              you with the right verified professional, already briefed, before you speak. Funded
-              by practitioners, <a href="/how-we-work" style={{ color: 'var(--brand)' }}>never by you</a>.
-            </p>
+            {firstName ? (
+              <>
+                <h1 className="ar-hero-headline">Welcome back,<br />{firstName}.</h1>
+                <p className="ar-hero-sub">
+                  Ready to see what your situation means? The same free, two-minute check as
+                  before, plainly explained, connecting you with the right verified
+                  professional. Funded by practitioners,{' '}
+                  <a href="/how-we-work" style={{ color: 'var(--brand)' }}>never by you</a>.
+                </p>
+              </>
+            ) : (
+              <>
+                <h1 className="ar-hero-headline">Don&apos;t wait<br />for the knock.</h1>
+                <p className="ar-hero-sub">
+                  A free, two-minute check that tells you plainly what your situation means, and connects
+                  you with the right verified professional, already briefed, before you speak. Funded
+                  by practitioners, <a href="/how-we-work" style={{ color: 'var(--brand)' }}>never by you</a>.
+                </p>
+              </>
+            )}
             <button className="ar-hero-cta" onClick={onStart}>
-              Start the free check <Search size={16} />
+              {firstName ? 'Answer the questions' : 'Start the free check'} <Search size={16} />
             </button>
 
             <details className="ar-secondary-search">
@@ -648,11 +662,19 @@ function DeadlineCalculator({ days }) {
   );
 }
 
-function ResultsScreen({ type, setType, onBook, result }) {
+function ResultsScreen({ type, setType, onBook, result, returning, onStartNew }) {
   const [view, setView] = useState('list');
   const filtered = type === 'All' ? PRACTITIONERS : PRACTITIONERS.filter((p) => p.type === type);
   return (
     <div className="ar-section">
+      {returning && (
+        <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', marginBottom: '1rem' }}>
+          These are your answers from last time.{' '}
+          <a href="#" onClick={(e) => { e.preventDefault(); onStartNew(); }} style={{ color: 'var(--brand)' }}>
+            Start a new check
+          </a> if your situation's changed.
+        </p>
+      )}
       {result?.notice && (
         <div className="ar-result-banner" style={{ borderLeftColor: 'var(--clay)' }}>
           <p className="ar-result-title">{result.notice.title}</p>
@@ -879,6 +901,12 @@ export default function Page() {
   const [answers, setAnswers] = useState({});
   const [triageStep, setTriageStep] = useState(null);
   const [restored, setRestored] = useState(false);
+  // Set only when the current 'results' screen is showing a returning,
+  // logged-in client's past answers (auto-loaded on landing), rather than
+  // a fresh result they just walked through -- changes the copy shown
+  // and offers a way to start over instead of resuming a booking.
+  const [returningResults, setReturningResults] = useState(false);
+  const [firstName, setFirstName] = useState('');
 
   function pickReason(r) {
     setAnswers((a) => ({ ...a, category: r }));
@@ -957,6 +985,7 @@ export default function Page() {
     setScreen('home');
     setAnswers({});
     setTriageStep(null);
+    setReturningResults(false);
   }
 
   // Booking requires a real account, since the whole point is linking the
@@ -975,31 +1004,105 @@ export default function Page() {
     setScreen('booking');
   }
 
-  // Runs once on load. Catches someone landing back on the homepage
-  // already authenticated (either just logged in, or just clicked a real
-  // email verification link) with answers still waiting to be resumed.
+  // Runs once on load. Three possible reasons someone lands here already
+  // authenticated, checked in priority order so they don't conflict:
+  // 1) they were mid-triage, hit "book", got sent to log in, and are now
+  //    back to resume that exact booking -- takes priority since it's an
+  //    action they were actively in the middle of;
+  // 2) they've got a real account with a past appointment on file --
+  //    show their last result directly (reusing the same ResultsScreen
+  //    a fresh completion would show) rather than the generic marketing
+  //    homepage, since they've already told us what's going on;
+  // 3) they're logged in but have never completed a triage or booking --
+  //    just personalise the homepage's greeting, same flow as anyone else.
   useEffect(() => {
     async function tryRestore() {
       const pending = loadPendingBooking();
-      if (!pending) return;
+      if (pending) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          const foundPractitioner = PRACTITIONERS.find((p) => p.id === pending.practitionerId);
+          if (foundPractitioner) {
+            setAnswers(pending.answers);
+            setPractitioner(foundPractitioner);
+            setScreen('booking');
+            setRestored(true);
+            clearPendingBooking();
+            return;
+          }
+          clearPendingBooking();
+        }
+        // Not authenticated yet: leave the pending booking in place and
+        // fall through to the plain anonymous homepage below.
+      }
 
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return; // not authenticated yet, nothing to restore
-
-      const foundPractitioner = PRACTITIONERS.find((p) => p.id === pending.practitionerId);
-      if (!foundPractitioner) {
-        clearPendingBooking();
+      // An explicit "start fresh" link (the profile page's "Answer the
+      // questions" / "Run the check again") skips straight past the
+      // marketing homepage and any auto-loaded past result -- clicking
+      // that link means "begin now," not "show me what I said last
+      // time," so it takes priority over the returning-results check
+      // below.
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('start') === '1') {
+        setScreen('reason-select');
         return;
       }
 
-      setAnswers(pending.answers);
-      setPractitioner(foundPractitioner);
-      setScreen('booking');
-      setRestored(true);
-      clearPendingBooking();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return; // anonymous visitor -- normal marketing homepage, nothing to restore
+
+      const [{ data: profile }, { data: session }, { data: appointments }] = await Promise.all([
+        supabase.from('clients').select('first_name').eq('id', user.id).maybeSingle(),
+        // The current, always-overwritten snapshot of what someone last
+        // answered, independent of whether they ever booked anyone.
+        supabase.from('triage_sessions').select('answers').eq('client_id', user.id).maybeSingle(),
+        // Falls back to a past booking's answers for anyone who booked
+        // before triage_sessions existed, so nobody loses their
+        // returning-result experience over this change.
+        supabase.from('appointments').select('triage_answers').eq('client_id', user.id)
+          .order('created_at', { ascending: false }).limit(1),
+      ]);
+
+      if (profile?.first_name) setFirstName(profile.first_name);
+
+      const lastAnswers = (session?.answers && Object.keys(session.answers).length > 0)
+        ? session.answers
+        : appointments?.[0]?.triage_answers;
+      if (lastAnswers && Object.keys(lastAnswers).length > 0) {
+        setAnswers(lastAnswers);
+        setReturningResults(true);
+        setScreen('results');
+      }
+      // else: logged in, no history yet -- stay on 'home', personalised
+      // via firstName above, same as the "answer the questions" case.
     }
     tryRestore();
   }, []);
+
+  // Saves a logged-in client's answers the moment they reach a result,
+  // regardless of whether they go on to book anyone -- this is the
+  // record referenced when generating a report later, not something
+  // gated behind booking a consultation first. Anonymous visitors are
+  // deliberately left alone here: their answers stay in the browser
+  // only, matching what the Privacy Policy already says.
+  useEffect(() => {
+    async function saveSession() {
+      if (screen !== 'results' || !result) return;
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      await supabase.from('triage_sessions').upsert(
+        {
+          client_id: user.id,
+          answers,
+          summary: getResultSummary(result),
+          pathway: result?.pathwayKey || null,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'client_id' }
+      );
+    }
+    saveSession();
+  }, [screen]);
 
   // The actual database write. Everything the client answered, plus what
   // they added in the portal step, saved as one real appointment row.
@@ -1032,7 +1135,7 @@ export default function Page() {
 
   return (
     <div className="ar-root">
-      <Header confirmBeforeHome={screen !== 'home'} onConfirmedHome={goHome} />
+      <Header confirmBeforeHome={screen !== 'home' && !returningResults} onConfirmedHome={goHome} />
 
       {screen === 'home' && (
         <HomeScreen
@@ -1041,6 +1144,7 @@ export default function Page() {
           onQuickLink={(category) => pickReason(category)}
           reason={reason} setReason={setReason}
           location={location} setLocation={setLocation}
+          firstName={firstName}
         />
       )}
       {screen === 'reason-select' && (
@@ -1053,7 +1157,10 @@ export default function Page() {
         <TriageScreen key={triageStep} step={triageStep} onAnswer={answerTriage} onBack={goHome} progress={triageProgress} />
       )}
       {screen === 'results' && (
-        <ResultsScreen type={type} setType={setType} result={result} onBook={handleBook} />
+        <ResultsScreen
+          type={type} setType={setType} result={result} onBook={handleBook}
+          returning={returningResults} onStartNew={goHome}
+        />
       )}
       {screen === 'booking' && (
         <BookingScreen practitioner={practitioner} restored={restored} onBack={() => setScreen('results')} onConfirm={(s) => { setSlot(s); setScreen('portal'); }} />
