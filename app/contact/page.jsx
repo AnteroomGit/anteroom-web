@@ -3,10 +3,7 @@
 import { useState } from 'react';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
-
-// Get a free access key at web3forms.com. No account needed, just an
-// email to receive the key at. Paste it below to replace the placeholder.
-const WEB3FORMS_KEY = 'YOUR_ACCESS_KEY';
+import { supabase } from '../../lib/supabase';
 
 export default function Contact() {
   const [sent, setSent] = useState(false);
@@ -20,23 +17,18 @@ export default function Contact() {
     setSending(true);
     setError(false);
     try {
-      const res = await fetch('https://api.web3forms.com/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({
-          access_key: WEB3FORMS_KEY,
-          subject: 'New AnteRoom contact form submission',
-          from_name: 'AnteRoom contact form',
-          email,
-          message,
-        }),
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setSent(true);
-      } else {
-        setError(true);
-      }
+      // Was previously pointed at Web3Forms with a literal placeholder
+      // access key, meaning this form has never actually sent anything
+      // to anyone -- every real submission has silently failed since
+      // this page was built. Storing it in Supabase instead needs no
+      // new signup, since this app already has that fully wired up.
+      // Trade-off worth knowing: this means checking Table Editor for
+      // new rows rather than getting an email the moment one arrives --
+      // switch to a real email-notification service like Web3Forms
+      // later if that becomes the more useful path.
+      const { error: insertError } = await supabase.from('contact_messages').insert({ email, message });
+      if (insertError) throw insertError;
+      setSent(true);
     } catch {
       setError(true);
     } finally {

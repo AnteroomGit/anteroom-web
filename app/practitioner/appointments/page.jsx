@@ -31,7 +31,9 @@ export default function PractitionerAppointments() {
         .from('appointments')
         .select('*, clients(first_name, last_name)')
         .eq('practitioner_id', user.id)
-        .order('created_at', { ascending: false });
+        // Soonest upcoming first, since this now reads as an actual
+        // calendar rather than a list of when each was booked.
+        .order('appointment_date', { ascending: true, nullsFirst: false });
 
       setAppointments(data || []);
       setLoading(false);
@@ -111,6 +113,30 @@ export default function PractitionerAppointments() {
     );
   }
 
+  // Groups appointments into date-headed sections, soonest first --
+  // reads like an actual calendar rather than a flat list. Legacy rows
+  // booked before appointment_date existed have no real date to place,
+  // so they get their own honestly-labelled group rather than being
+  // silently dropped or mis-sorted.
+  const groups = [];
+  const byDate = {};
+  appointments.forEach((a) => {
+    const key = a.appointment_date || 'undated';
+    if (!byDate[key]) byDate[key] = [];
+    byDate[key].push(a);
+  });
+  Object.keys(byDate).filter((k) => k !== 'undated').sort().forEach((key) => {
+    const d = new Date(key + 'T00:00:00');
+    groups.push({
+      key,
+      label: d.toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' }),
+      items: byDate[key],
+    });
+  });
+  if (byDate.undated) {
+    groups.push({ key: 'undated', label: 'No date on file (booked before dates were tracked)', items: byDate.undated });
+  }
+
   return (
     <div className="ar-root">
       <Header />
@@ -128,8 +154,14 @@ export default function PractitionerAppointments() {
           <p style={{ color: 'var(--clay)', fontSize: '0.86rem', marginBottom: '1rem' }}>{genError}</p>
         )}
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {appointments.map((a) => {
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {groups.map((group) => (
+            <div key={group.key}>
+              <p style={{ fontWeight: 700, fontFamily: 'Karst, sans-serif', fontSize: '0.92rem', color: 'var(--brand)', marginBottom: '0.6rem' }}>
+                {group.label}
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {group.items.map((a) => {
             const name = a.clients ? `${a.clients.first_name || ''} ${a.clients.last_name || ''}`.trim() : 'Client';
             const isOpen = expanded === a.id;
             return (
@@ -211,6 +243,9 @@ export default function PractitionerAppointments() {
               </div>
             );
           })}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
       <Footer />

@@ -40,11 +40,6 @@ const TYPES = ['All', 'Liquidator'];
 
 const NOTICE_OPTIONS = ['Director Penalty Notice', 'Garnishee notice', 'Statutory demand', 'Not sure'];
 
-// No practitioners have signed up yet. This is genuinely empty until
-// real, verified practitioners join. See the empty state in ResultsScreen
-// for what a user sees in the meantime.
-const PRACTITIONERS = [];
-
 
 const QUICK_LINKS = [
   { label: 'Director Penalty Notice', category: 'ato', icon: Mail },
@@ -662,9 +657,9 @@ function DeadlineCalculator({ days }) {
   );
 }
 
-function ResultsScreen({ type, setType, onBook, result, returning, onStartNew }) {
+function ResultsScreen({ type, setType, onBook, result, returning, onStartNew, practitioners }) {
   const [view, setView] = useState('list');
-  const filtered = type === 'All' ? PRACTITIONERS : PRACTITIONERS.filter((p) => p.type === type);
+  const filtered = type === 'All' ? practitioners : practitioners.filter((p) => p.type === type);
   return (
     <div className="ar-section">
       {returning && (
@@ -756,7 +751,9 @@ function ResultsScreen({ type, setType, onBook, result, returning, onStartNew })
 
 function BookingScreen({ practitioner, onConfirm, onBack, restored }) {
   const [slot, setSlot] = useState(null);
+  const [date, setDate] = useState('');
   const slots = ['9:00 AM', '11:30 AM', '2:00 PM', '4:15 PM'];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
   return (
     <div className="ar-section" style={{ maxWidth: 520 }}>
       <button className="ar-btn-ghost" style={{ marginBottom: '1rem' }} onClick={onBack}>&larr; Back to results</button>
@@ -776,13 +773,19 @@ function BookingScreen({ practitioner, onConfirm, onBack, restored }) {
           </div>
         </div>
       </div>
+      <p className="ar-label">Choose a date</p>
+      <input
+        type="date" className="ar-input" value={date} min={tomorrow}
+        onChange={(e) => setDate(e.target.value)}
+        style={{ marginBottom: '1.25rem', maxWidth: 200 }}
+      />
       <p className="ar-label">Choose a time</p>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.6rem', marginBottom: '1.25rem' }}>
         {slots.map((s) => (
           <div key={s} className={`ar-slot ${slot === s ? 'active' : ''}`} onClick={() => setSlot(s)}>{s}</div>
         ))}
       </div>
-      <button className="ar-btn-primary" disabled={!slot} style={{ opacity: slot ? 1 : 0.5 }} onClick={() => onConfirm(slot)}>
+      <button className="ar-btn-primary" disabled={!slot || !date} style={{ opacity: slot && date ? 1 : 0.5 }} onClick={() => onConfirm(slot, date)}>
         Continue
       </button>
     </div>
@@ -898,6 +901,7 @@ export default function Page() {
   const [type, setType] = useState('All');
   const [practitioner, setPractitioner] = useState(null);
   const [slot, setSlot] = useState(null);
+  const [appointmentDate, setAppointmentDate] = useState(null);
   const [answers, setAnswers] = useState({});
   const [triageStep, setTriageStep] = useState(null);
   const [restored, setRestored] = useState(false);
@@ -907,6 +911,11 @@ export default function Page() {
   // and offers a way to start over instead of resuming a booking.
   const [returningResults, setReturningResults] = useState(false);
   const [firstName, setFirstName] = useState('');
+  // Real, verified practitioners -- was a hardcoded empty array before
+  // tonight, a placeholder from when nobody had signed up yet. Now that
+  // real practitioners can actually get verified, this needs to be live
+  // data, not a constant nothing could ever be added to.
+  const [practitioners, setPractitioners] = useState([]);
 
   function pickReason(r) {
     setAnswers((a) => ({ ...a, category: r }));
@@ -1017,11 +1026,33 @@ export default function Page() {
   //    just personalise the homepage's greeting, same flow as anyone else.
   useEffect(() => {
     async function tryRestore() {
+      // Fetched first and used directly (not via the practitioners state
+      // variable, which wouldn't have updated yet on this same tick) so
+      // the pending-booking lookup just below has real data to search,
+      // and setPractitioners() still runs so the rest of the render tree
+      // (ResultsScreen, the booking screen) gets it too.
+      const { data: fetchedPractitioners } = await supabase
+        .from('practitioners')
+        .select('id, name, firm, practitioner_type, suburb, tags, bio')
+        .eq('verified', true);
+      const livePractitioners = (fetchedPractitioners || []).map((p) => ({
+        ...p,
+        // The signup form stores the full descriptive label (good for
+        // display, e.g. "Registered Liquidator / SBR Practitioner" as a
+        // credential), but the results page's filter chips use the
+        // short category name -- this maps one to the other rather than
+        // changing what gets stored or displayed.
+        type: /liquidator|restructuring/i.test(p.practitioner_type || '') ? 'Liquidator' : p.practitioner_type,
+        title: p.practitioner_type,
+        tags: p.tags || [],
+      }));
+      setPractitioners(livePractitioners);
+
       const pending = loadPendingBooking();
       if (pending) {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const foundPractitioner = PRACTITIONERS.find((p) => p.id === pending.practitionerId);
+          const foundPractitioner = livePractitioners.find((p) => p.id === pending.practitionerId);
           if (foundPractitioner) {
             setAnswers(pending.answers);
             setPractitioner(foundPractitioner);
@@ -1117,6 +1148,7 @@ export default function Page() {
       client_id: user.id,
       practitioner_id: practitioner.id,
       slot_time: slot,
+      appointment_date: appointmentDate,
       notice_type: portalData.noticeType || null,
       notice_date: portalData.noticeDate,
       notes: portalData.notes || null,
@@ -1159,11 +1191,11 @@ export default function Page() {
       {screen === 'results' && (
         <ResultsScreen
           type={type} setType={setType} result={result} onBook={handleBook}
-          returning={returningResults} onStartNew={goHome}
+          returning={returningResults} onStartNew={goHome} practitioners={practitioners}
         />
       )}
       {screen === 'booking' && (
-        <BookingScreen practitioner={practitioner} restored={restored} onBack={() => setScreen('results')} onConfirm={(s) => { setSlot(s); setScreen('portal'); }} />
+        <BookingScreen practitioner={practitioner} restored={restored} onBack={() => setScreen('results')} onConfirm={(s, d) => { setSlot(s); setAppointmentDate(d); setScreen('portal'); }} />
       )}
       {screen === 'portal' && (
         <PortalScreen practitioner={practitioner} onBack={() => setScreen('booking')} onDone={handleConfirmBooking} />

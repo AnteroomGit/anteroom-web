@@ -190,3 +190,29 @@ alter table triage_sessions enable row level security;
 create policy "Clients manage their own triage sessions"
   on triage_sessions for all
   using (auth.uid() = client_id);
+
+-- Bookings previously only ever stored a bare time-of-day ('9:00 AM'),
+-- never an actual calendar date -- meaning there was no way to know
+-- which day any consultation was actually for. Needed before a real
+-- calendar view of appointments means anything.
+alter table appointments add column if not exists appointment_date date;
+
+-- The contact form (previously pointed at a Web3Forms key that was
+-- still a literal placeholder, meaning it silently failed on every real
+-- submission) now stores messages here instead. Insert-only from the
+-- client side, on purpose -- no select policy for anon or authenticated
+-- roles, so a visitor can send a message but never read anyone else's.
+-- Jack reads these directly in Table Editor, which uses the dashboard's
+-- own elevated access rather than going through these policies at all.
+create table contact_messages (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz default now(),
+  email text not null,
+  message text not null
+);
+
+alter table contact_messages enable row level security;
+
+create policy "Anyone can submit a contact message"
+  on contact_messages for insert
+  with check (true);
