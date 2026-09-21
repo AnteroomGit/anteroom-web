@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronDown, ChevronUp, FileDown, LineChart } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
+import PractitionerAccountNav from '../../components/PractitionerAccountNav';
 import { supabase } from '../../../lib/supabase';
 
 const STATUSES = ['New', 'Consulted', 'Engaged: SBR', 'Engaged: VA', 'Engaged: Liquidation', 'Engaged: Other', 'No further action'];
@@ -107,7 +108,10 @@ export default function PractitionerAppointments() {
     return (
       <div className="ar-root">
         <Header />
-        <div className="ar-section"><p style={{ color: 'var(--ink-soft)' }}>Loading...</p></div>
+        <div className="ar-account-layout">
+          <PractitionerAccountNav active="appointments" />
+          <p style={{ color: 'var(--ink-soft)' }}>Loading...</p>
+        </div>
         <Footer />
       </div>
     );
@@ -140,7 +144,9 @@ export default function PractitionerAppointments() {
   return (
     <div className="ar-root">
       <Header />
-      <div className="ar-section" style={{ maxWidth: 720 }}>
+      <div className="ar-account-layout">
+        <PractitionerAccountNav active="appointments" />
+        <div style={{ maxWidth: 720 }}>
         <h2>Your appointments</h2>
         <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '-0.5rem', marginBottom: '1.25rem' }}>
           Keeping this updated means our monthly check-in is quick, not a guessing game.
@@ -246,6 +252,7 @@ export default function PractitionerAppointments() {
               </div>
             </div>
           ))}
+        </div>
         </div>
       </div>
       <Footer />

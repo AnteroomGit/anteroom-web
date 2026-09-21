@@ -7,6 +7,7 @@ function AccountNav({ active }) {
   const router = useRouter();
   const items = [
     { id: 'profile', label: 'Profile', href: '/account/profile' },
+    { id: 'answers', label: 'Your answers', href: '/account/answers' },
     { id: 'appointments', label: 'Appointments', href: '/account/appointments' },
     { id: 'integrations', label: 'Accounting software', href: '/account/integrations' },
     { id: 'security', label: 'Security', href: '/account/security' },

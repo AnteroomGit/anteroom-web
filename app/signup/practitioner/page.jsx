@@ -37,7 +37,7 @@ const REG_INFO = {
 // The actual services a practitioner offers, since most small-to-medium
 // liquidators genuinely do several of these, not just one. This drives
 // specialty matching, separate from the verification category above.
-const SPECIALTIES = [
+export const SPECIALTIES = [
   'Liquidation',
   'Voluntary Administration',
   'Small Business Restructuring',
@@ -67,6 +67,8 @@ export default function PractitionerSignup() {
   const [step, setStep] = useState('form');
   const [name, setName] = useState('');
   const [firm, setFirm] = useState('');
+  const [phone, setPhone] = useState('');
+  const [contactPreference, setContactPreference] = useState('either');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [category, setCategory] = useState('');
@@ -123,6 +125,8 @@ export default function PractitionerSignup() {
           account_type: 'practitioner',
           name,
           firm,
+          phone,
+          contact_preference: contactPreference,
           practitioner_type: category,
           registration_number: regNumber,
           specialties,
@@ -175,6 +179,23 @@ export default function PractitionerSignup() {
 
               <label className="ar-label">Firm</label>
               <input required className="ar-input" value={firm} onChange={(e) => setFirm(e.target.value)} style={{ marginBottom: '1rem' }} />
+
+              <label className="ar-label">Phone</label>
+              <input className="ar-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ marginBottom: '1rem' }} placeholder="Optional, but needed if you'd rather directors call" />
+
+              <label className="ar-label">If a director wants to reach out, you'd prefer...</label>
+              <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.25rem' }}>
+                {[
+                  { value: 'email', label: 'Email' },
+                  { value: 'call', label: 'A call' },
+                  { value: 'either', label: 'Either is fine' },
+                ].map((opt) => (
+                  <label key={opt.value} className="ar-checkbox-row" style={{ margin: 0, flex: 1, justifyContent: 'center', border: '1px solid var(--line)', borderRadius: 8, padding: '0.5rem', background: contactPreference === opt.value ? 'var(--brand-tint)' : 'transparent' }}>
+                    <input type="radio" name="contactPreference" value={opt.value} checked={contactPreference === opt.value} onChange={() => setContactPreference(opt.value)} />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
 
               <label className="ar-label">Email</label>
               <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />

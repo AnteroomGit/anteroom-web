@@ -77,14 +77,16 @@ begin
       (select array(select jsonb_array_elements_text(new.raw_user_meta_data->'reasons')))
     );
   elsif new.raw_user_meta_data->>'account_type' = 'practitioner' then
-    insert into public.practitioners (id, name, firm, practitioner_type, registration_number, specialties)
+    insert into public.practitioners (id, name, firm, practitioner_type, registration_number, specialties, phone, contact_preference)
     values (
       new.id,
       new.raw_user_meta_data->>'name',
       new.raw_user_meta_data->>'firm',
       new.raw_user_meta_data->>'practitioner_type',
       new.raw_user_meta_data->>'registration_number',
-      (select array(select jsonb_array_elements_text(new.raw_user_meta_data->'specialties')))
+      (select array(select jsonb_array_elements_text(new.raw_user_meta_data->'specialties'))),
+      new.raw_user_meta_data->>'phone',
+      coalesce(new.raw_user_meta_data->>'contact_preference', 'either')
     );
   end if;
   return new;
@@ -216,3 +218,17 @@ alter table contact_messages enable row level security;
 create policy "Anyone can submit a contact message"
   on contact_messages for insert
   with check (true);
+
+-- A real photo (pasted as a link the practitioner already hosts
+-- somewhere, not a file upload -- see the profile page comments for
+-- why) instead of the blank circle every real practitioner got before
+-- tonight, since the card's initials field never actually existed on
+-- live data.
+alter table practitioners add column if not exists avatar_url text;
+
+-- No phone field existed anywhere for practitioners before this (only
+-- clients had `mobile`) -- added alongside the preference itself, since
+-- a "call me" preference is meaningless with nothing to call.
+alter table practitioners add column if not exists phone text;
+alter table practitioners add column if not exists contact_preference text default 'either';
+-- 'email' | 'call' | 'either'

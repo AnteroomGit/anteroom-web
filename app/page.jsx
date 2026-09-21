@@ -320,11 +320,19 @@ function clearPendingBooking() {
 /* ---------------------------------------------------------------
    Small components
 --------------------------------------------------------------- */
-function PractitionerCard({ p, onBook }) {
+export function PractitionerCard({ p, onBook }) {
   return (
     <div className="ar-card">
       <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
-        <div className="ar-avatar">{p.initials}</div>
+        {p.avatar_url ? (
+          <img
+            src={p.avatar_url} alt={p.name}
+            style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+            onError={(e) => { e.target.style.display = 'none'; }}
+          />
+        ) : (
+          <div className="ar-avatar">{p.initials}</div>
+        )}
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             <span style={{ fontWeight: 300, fontSize: '0.98rem' }}>{p.name}</span>
@@ -332,6 +340,11 @@ function PractitionerCard({ p, onBook }) {
           </div>
           <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>{p.title}</div>
           <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>{p.firm}</div>
+          {p.contact_preference && p.contact_preference !== 'either' && (
+            <div style={{ fontSize: '0.78rem', color: 'var(--brand)', marginTop: '0.15rem' }}>
+              Prefers {p.contact_preference === 'call' ? 'a call' : 'email'} first
+            </div>
+          )}
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--ink-soft)' }}>
@@ -1033,7 +1046,7 @@ export default function Page() {
       // (ResultsScreen, the booking screen) gets it too.
       const { data: fetchedPractitioners } = await supabase
         .from('practitioners')
-        .select('id, name, firm, practitioner_type, suburb, tags, bio')
+        .select('id, name, firm, practitioner_type, suburb, tags, bio, avatar_url, phone, contact_preference')
         .eq('verified', true);
       const livePractitioners = (fetchedPractitioners || []).map((p) => ({
         ...p,
@@ -1045,6 +1058,11 @@ export default function Page() {
         type: /liquidator|restructuring/i.test(p.practitioner_type || '') ? 'Liquidator' : p.practitioner_type,
         title: p.practitioner_type,
         tags: p.tags || [],
+        // The card renders p.initials as the avatar -- this field never
+        // actually existed on real data, only on old hardcoded seed
+        // entries, so every real practitioner showed a blank circle
+        // until now. Derived from their real name instead.
+        initials: (p.name || '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?',
       }));
       setPractitioners(livePractitioners);
 
