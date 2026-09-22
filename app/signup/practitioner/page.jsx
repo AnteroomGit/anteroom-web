@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Check, X, Mail } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Check, X, Mail, Lock } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import BotCheck from '../../components/BotCheck';
@@ -13,26 +13,8 @@ import { checkPassword, passwordValid } from '../../../lib/password';
 // (Corporations Act s456B(1)) and verify against the exact same ASIC
 // register. Keeping them separate at this level was real duplication.
 // Liquidators only for now, matching actual outreach focus. Add
-// Accountant and Lawyer back (and to REG_INFO below) once that expands.
+// Accountant and Lawyer back once that expands.
 const CATEGORIES = ['Registered Liquidator / SBR Practitioner'];
-
-const REG_INFO = {
-  'Registered Liquidator / SBR Practitioner': {
-    label: 'ASIC Registered Liquidator number',
-    placeholder: 'e.g. 12345',
-    helper: 'We verify this against ASIC\u2019s public register of registered liquidators.',
-  },
-  'Accountant': {
-    label: 'CA ANZ or CPA Australia membership number',
-    placeholder: 'e.g. CA123456',
-    helper: 'We verify this against your professional body\u2019s member register.',
-  },
-  'Lawyer': {
-    label: 'Practising certificate number',
-    placeholder: 'e.g. 123456',
-    helper: 'We verify this against your state\u2019s Legal Services Board or equivalent register.',
-  },
-};
 
 // The actual services a practitioner offers, since most small-to-medium
 // liquidators genuinely do several of these, not just one. This drives
@@ -85,7 +67,40 @@ export default function PractitionerSignup() {
   // remount and issue a fresh token whenever a submit attempt fails.
   const [botKey, setBotKey] = useState(0);
 
-  const regInfo = REG_INFO[category];
+  // Signup is now closed by default -- the only way in is a link tied
+  // to a specific, already-phone-confirmed lead. No valid lead, no form,
+  // full stop. See /api/lead-lookup for why this can't be checked
+  // client-side against practitioner_leads directly.
+  const [leadState, setLeadState] = useState('loading'); // 'loading' | 'valid' | 'invalid' | 'claimed'
+  const [leadId, setLeadId] = useState(null);
+
+  useEffect(() => {
+    async function loadLead() {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('lead');
+      if (!id) {
+        setLeadState('invalid');
+        return;
+      }
+      try {
+        const res = await fetch(`/api/lead-lookup?leadId=${encodeURIComponent(id)}`);
+        const body = await res.json();
+        if (!body.valid) {
+          setLeadState(body.alreadyClaimed ? 'claimed' : 'invalid');
+          return;
+        }
+        setLeadId(body.lead.id);
+        setName(body.lead.name);
+        setFirm(body.lead.firm || '');
+        setRegNumber(body.lead.registrationNumber);
+        setLeadState('valid');
+      } catch {
+        setLeadState('invalid');
+      }
+    }
+    loadLead();
+  }, []);
+
   const pw = checkPassword(password);
   const pwValid = passwordValid(password);
 
@@ -95,7 +110,7 @@ export default function PractitionerSignup() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!pwValid || !agreed || !botVerified) return;
+    if (!pwValid || !agreed || !botVerified || !leadId) return;
 
     setSubmitting(true);
     setSignupError(null);
@@ -107,9 +122,6 @@ export default function PractitionerSignup() {
     });
     const verifyData = await verifyRes.json();
     if (!verifyData.success) {
-      // Temporary: show Cloudflare's actual error-codes on screen while
-      // we're diagnosing this, instead of a generic message that hides
-      // what's actually wrong. Revert to the plain message once fixed.
       const codes = verifyData.codes && verifyData.codes.length ? ` (${verifyData.codes.join(', ')})` : '';
       setSignupError(`Bot check failed, please try again.${codes}`);
       setSubmitting(false);
@@ -136,8 +148,16 @@ export default function PractitionerSignup() {
     });
 
     if (error) {
+      // A duplicate-registration-number failure surfaces here as a raw
+      // Postgres constraint error, from the unique constraint on
+      // practitioners.registration_number -- caught and given the
+      // plain-language message this whole flow is supposed to show,
+      // rather than a database error leaking through.
+      const isDuplicateRegNumber = /duplicate key|unique constraint/i.test(error.message) && /registration_number/i.test(error.message);
       setSignupError(
-        error.message.includes('already registered')
+        isDuplicateRegNumber
+          ? 'This registration number has already been used to create an account.'
+          : error.message.includes('already registered')
           ? 'An account with that email already exists. Try logging in instead.'
           : error.message
       );
@@ -147,17 +167,16 @@ export default function PractitionerSignup() {
       return;
     }
 
-    // Checks the entered registration number against ASIC's real
-    // register and auto-verifies on a confident match, instead of
-    // always waiting on manual review. Best-effort: if this fails for
-    // any reason, signup itself still succeeded and manual review
-    // remains the fallback, exactly as it worked before this existed.
+    // Identity was already confirmed by phone before this link was ever
+    // sent, so a successful signup against a still-unclaimed lead is
+    // verified immediately -- this call also marks the lead claimed so
+    // Jack can see which calls converted.
     if (data?.user?.id) {
       try {
         const res = await fetch('/api/verify-registration', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ practitionerId: data.user.id, registrationNumber: regNumber, name }),
+          body: JSON.stringify({ practitionerId: data.user.id, leadId }),
         });
         const verifyResult = await res.json();
         setAutoVerified(!!verifyResult.autoVerified);
@@ -174,6 +193,37 @@ export default function PractitionerSignup() {
     await supabase.auth.resend({ type: 'signup', email });
   }
 
+  if (leadState === 'loading') {
+    return (
+      <div className="ar-root">
+        <Header />
+        <div className="ar-form-page"><p style={{ color: 'var(--ink-soft)' }}>Loading...</p></div>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (leadState !== 'valid') {
+    return (
+      <div className="ar-root">
+        <Header />
+        <div className="ar-form-page">
+          <div className="ar-card" style={{ textAlign: 'center', padding: '2rem 1.5rem' }}>
+            <Lock size={28} style={{ color: 'var(--brand)', marginBottom: '0.75rem' }} />
+            <h2 style={{ marginTop: 0 }}>Invitation only, for now</h2>
+            <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)' }}>
+              {leadState === 'claimed'
+                ? 'This invitation link has already been used to create an account.'
+                : 'AnteRoom\u2019s practitioner network is currently by invitation only. If we\u2019ve spoken and you\u2019re expecting a link, check your email.'}
+              {' '}Otherwise, get in touch via <a href="/contact" style={{ color: 'var(--brand)' }}>Contact</a>.
+            </p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="ar-root">
       <Header />
@@ -182,7 +232,7 @@ export default function PractitionerSignup() {
           <>
             <h1 style={{ fontSize: '1.5rem', fontWeight: 300, marginBottom: '0.4rem' }}>List your practice</h1>
             <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
-              For registered liquidators, restructuring practitioners, accountants, and lawyers.
+              Set up your login below. Your name and registration are already confirmed from our call.
             </p>
 
             <div className="ar-card" style={{ marginBottom: '1.5rem' }}>
@@ -195,7 +245,10 @@ export default function PractitionerSignup() {
 
             <form onSubmit={handleSubmit}>
               <label className="ar-label">Full name</label>
-              <input required className="ar-input" value={name} onChange={(e) => setName(e.target.value)} style={{ marginBottom: '1rem' }} />
+              <input disabled className="ar-input" value={name} style={{ marginBottom: '0.35rem', opacity: 0.7 }} />
+              <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1rem' }}>
+                Confirmed on our call. <a href="/contact" style={{ color: 'var(--brand)' }}>Contact</a> if this needs correcting.
+              </p>
 
               <label className="ar-label">Firm</label>
               <input required className="ar-input" value={firm} onChange={(e) => setFirm(e.target.value)} style={{ marginBottom: '1rem' }} />
@@ -232,19 +285,15 @@ export default function PractitionerSignup() {
               </div>
 
               <label className="ar-label">Professional category</label>
-              <select required className="ar-select" value={category} onChange={(e) => { setCategory(e.target.value); setRegNumber(''); }} style={{ marginBottom: '1rem' }}>
+              <select required className="ar-select" value={category} onChange={(e) => setCategory(e.target.value)} style={{ marginBottom: '1rem' }}>
                 <option value="">Select one</option>
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
 
-              <label className="ar-label">{regInfo ? regInfo.label : 'Professional registration number'}</label>
-              <input
-                required className="ar-input" value={regNumber} onChange={(e) => setRegNumber(e.target.value)}
-                placeholder={regInfo ? regInfo.placeholder : ''} disabled={!category}
-                style={{ marginBottom: '1rem' }}
-              />
-              <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: '-0.7rem', marginBottom: '1.25rem' }}>
-                {regInfo ? regInfo.helper : 'Select a category above first.'}
+              <label className="ar-label">ASIC Registered Liquidator number</label>
+              <input disabled className="ar-input" value={regNumber} style={{ marginBottom: '0.35rem', opacity: 0.7 }} />
+              <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1.25rem' }}>
+                Confirmed against ASIC's register on our call.
               </p>
 
               <label className="ar-label">What do you actually do? Select all that apply.</label>
@@ -272,7 +321,7 @@ export default function PractitionerSignup() {
               )}
 
               <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!pwValid || !agreed || !botVerified || submitting}>
-                {submitting ? 'Creating account...' : 'Submit for verification'}
+                {submitting ? 'Creating account...' : 'Activate my account'}
               </button>
             </form>
 
@@ -290,8 +339,8 @@ export default function PractitionerSignup() {
               We've sent a real verification link to <strong>{email}</strong>. Click it, then log
               in.{' '}
               {autoVerified
-                ? 'Your registration number matched ASIC\'s register, so your profile is already verified and will go live once you\'ve confirmed your email.'
-                : 'We\'ll verify your registration details before your profile goes live.'}
+                ? 'Your profile is already verified and will go live once you\'ve confirmed your email.'
+                : 'There was an issue auto-verifying your account, so it\'s been left for manual review instead.'}
             </p>
             <a href="/login" className="ar-btn-primary" style={{ display: 'inline-block', textDecoration: 'none', marginBottom: '0.9rem' }}>
               Go to login

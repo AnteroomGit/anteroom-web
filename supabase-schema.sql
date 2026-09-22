@@ -257,6 +257,45 @@ create policy "Anyone can read the ASIC liquidator register"
   on asic_liquidators for select
   using (true);
 
+-- Jack's own outreach list, seeded from the same ASIC data -- NOT the
+-- verification check itself, and deliberately has no RLS policies
+-- granting anon or authenticated access at all, so it's invisible to
+-- everyone except the Supabase dashboard (which uses the postgres role,
+-- bypassing RLS) -- exactly where Jack already works through everything
+-- else tonight. contact_status is updated by hand as calls happen;
+-- claimed_by/claimed_at are filled in automatically by the signup
+-- verification route when someone who matches a lead actually signs up,
+-- purely so Jack can see which calls converted, not as a security check.
+create table practitioner_leads (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz default now(),
+  registration_number text not null,
+  name text not null,
+  firm text,
+  principal_place_of_practice text,
+  region text,
+  contact_status text default 'not_contacted', -- 'not_contacted' | 'contacted' | 'interested' | 'declined' | 'claimed'
+  notes text,
+  claimed_by uuid references practitioners(id),
+  claimed_at timestamptz
+);
+alter table practitioner_leads enable row level security;
+-- No policies added on purpose -- see comment above.
+
+insert into practitioner_leads (registration_number, name, firm, principal_place_of_practice, region)
+select registration_number, name, firm, principal_place_of_practice, region from asic_liquidators;
+
+-- The actual "already used" guarantee -- enforced by the database
+-- itself, not just checked in application code, so it holds even
+-- against a bug or a race condition elsewhere. NULLs don't conflict
+-- with each other under a standard unique constraint, so this is safe
+-- to add even if some existing rows have no registration number yet.
+-- If this fails, it means two existing rows already share the same
+-- real (non-null) registration number -- the error will name the
+-- conflicting value, which needs resolving by hand before this can
+-- apply, likely just old test data (see the message after this block).
+alter table practitioners add constraint practitioners_registration_number_unique unique (registration_number);
+
 -- Real gap worth closing while building this: the existing "Practitioners
 -- can view and edit their own record" policy (using auth.uid() = id, for
 -- all operations) technically lets a practitioner set verified = true on
