@@ -232,3 +232,40 @@ alter table practitioners add column if not exists avatar_url text;
 alter table practitioners add column if not exists phone text;
 alter table practitioners add column if not exists contact_preference text default 'either';
 -- 'email' | 'call' | 'either'
+
+-- ASIC's own official register of liquidators (Series 4A, updated to 31
+-- July 2026), imported for automated registration checks at signup.
+-- Public data -- ASIC publishes this specifically for anyone to check
+-- against -- so a public read policy is appropriate here, unlike every
+-- other table in this schema.
+create table asic_liquidators (
+  id uuid primary key default gen_random_uuid(),
+  registration_number text not null,
+  name text not null,
+  official_liquidator_no text,
+  restricted_to_restructuring boolean default false,
+  has_condition boolean default false,
+  principal_place_of_practice text,
+  firm text,
+  region text
+);
+create index if not exists asic_liquidators_reg_no_idx on asic_liquidators (registration_number);
+
+alter table asic_liquidators enable row level security;
+
+create policy "Anyone can read the ASIC liquidator register"
+  on asic_liquidators for select
+  using (true);
+
+-- Real gap worth closing while building this: the existing "Practitioners
+-- can view and edit their own record" policy (using auth.uid() = id, for
+-- all operations) technically lets a practitioner set verified = true on
+-- themselves directly via the Supabase client, from browser dev tools,
+-- with zero actual checking -- the profile page never exposed this as an
+-- editable field, but RLS never actually stopped the column itself from
+-- being writable. This revokes UPDATE on that one column specifically
+-- for logged-in users, leaving every other column (name, firm, bio, etc.)
+-- exactly as writable as before. Only a service-role context (the new
+-- verify-registration route below, or Jack directly in the dashboard)
+-- can set verified from here on.
+revoke update (verified) on public.practitioners from authenticated;

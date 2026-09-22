@@ -65,6 +65,7 @@ function Tip({ children }) {
 
 export default function PractitionerSignup() {
   const [step, setStep] = useState('form');
+  const [autoVerified, setAutoVerified] = useState(false);
   const [name, setName] = useState('');
   const [firm, setFirm] = useState('');
   const [phone, setPhone] = useState('');
@@ -117,7 +118,7 @@ export default function PractitionerSignup() {
       return;
     }
 
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -144,6 +145,25 @@ export default function PractitionerSignup() {
       setBotVerified(false);
       setBotKey((k) => k + 1); // the token was already spent in the verify call above either way
       return;
+    }
+
+    // Checks the entered registration number against ASIC's real
+    // register and auto-verifies on a confident match, instead of
+    // always waiting on manual review. Best-effort: if this fails for
+    // any reason, signup itself still succeeded and manual review
+    // remains the fallback, exactly as it worked before this existed.
+    if (data?.user?.id) {
+      try {
+        const res = await fetch('/api/verify-registration', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ practitionerId: data.user.id, registrationNumber: regNumber, name }),
+        });
+        const verifyResult = await res.json();
+        setAutoVerified(!!verifyResult.autoVerified);
+      } catch {
+        // Silent -- manual review still covers this either way.
+      }
     }
 
     setSubmitting(false);
@@ -268,7 +288,10 @@ export default function PractitionerSignup() {
             <h2 style={{ marginTop: 0 }}>Check your email</h2>
             <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
               We've sent a real verification link to <strong>{email}</strong>. Click it, then log
-              in. We'll verify your registration details before your profile goes live.
+              in.{' '}
+              {autoVerified
+                ? 'Your registration number matched ASIC\'s register, so your profile is already verified and will go live once you\'ve confirmed your email.'
+                : 'We\'ll verify your registration details before your profile goes live.'}
             </p>
             <a href="/login" className="ar-btn-primary" style={{ display: 'inline-block', textDecoration: 'none', marginBottom: '0.9rem' }}>
               Go to login

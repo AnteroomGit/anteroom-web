@@ -7,13 +7,10 @@ import Footer from '../../components/Footer';
 import AccountNav from '../../components/AccountNav';
 import { supabase } from '../../../lib/supabase';
 
-const APPOINTMENTS = [
-  { id: 1, name: 'Marcus Reid', firm: 'Reid & Associates', when: 'Thu 3 Sep, 9:00 AM', status: 'Upcoming' },
-  { id: 2, name: 'Claire Whitfield', firm: 'Whitfield Partners', when: 'Mon 17 Aug, 2:00 PM', status: 'Past' },
-];
-
 export default function Appointments() {
-  // Real check, separate from the placeholder list above: only show the
+  const [loading, setLoading] = useState(true);
+  const [appointments, setAppointments] = useState([]);
+  // Real check, separate from the appointment list itself: only show the
   // "connect your accounting software" prompt once someone actually has
   // a booked appointment and hasn't connected anything yet -- surfacing
   // it here rather than during triage or at signup is a deliberate
@@ -26,19 +23,26 @@ export default function Appointments() {
   const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
-    async function checkPrompt() {
+    async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const [{ count: appointmentCount }, { count: connectionCount }] = await Promise.all([
-        supabase.from('appointments').select('id', { count: 'exact', head: true }).eq('client_id', user.id),
+      const [{ data: appts }, { count: connectionCount }] = await Promise.all([
+        supabase.from('appointments')
+          .select('id, slot_time, appointment_date, status, practitioners(name, firm)')
+          .eq('client_id', user.id)
+          .order('appointment_date', { ascending: false, nullsFirst: false }),
         supabase.from('financial_connections').select('id', { count: 'exact', head: true }),
       ]);
 
-      setShowPrompt((appointmentCount || 0) > 0 && (connectionCount || 0) === 0);
+      setAppointments(appts || []);
+      setShowPrompt((appts?.length || 0) > 0 && (connectionCount || 0) === 0);
+      setLoading(false);
     }
-    checkPrompt();
+    load();
   }, []);
+
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <div className="ar-root">
@@ -64,17 +68,37 @@ export default function Appointments() {
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {APPOINTMENTS.map((a) => (
-              <div key={a.id} className="ar-card" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontWeight: 300 }}>{a.name}, {a.firm}</div>
-                  <div style={{ fontSize: '0.84rem', color: 'var(--ink-soft)' }}>{a.when}</div>
-                </div>
-                <span className="ar-tag" style={{ color: a.status === 'Upcoming' ? 'var(--brand)' : 'var(--ink-soft)' }}>{a.status}</span>
-              </div>
-            ))}
-          </div>
+          {loading ? (
+            <p style={{ color: 'var(--ink-soft)' }}>Loading...</p>
+          ) : appointments.length === 0 ? (
+            <div className="ar-card">
+              <p style={{ margin: 0 }}>No appointments yet.</p>
+              <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '0.3rem' }}>
+                <a href="/?start=1" style={{ color: 'var(--brand)' }}>Answer the questions</a> to get matched with a practitioner and book one.
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {appointments.map((a) => {
+                const isPast = a.appointment_date && a.appointment_date < today;
+                return (
+                  <div key={a.id} className="ar-card" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div>
+                      <div style={{ fontWeight: 300 }}>
+                        {a.practitioners?.name || 'Practitioner'}{a.practitioners?.firm ? `, ${a.practitioners.firm}` : ''}
+                      </div>
+                      <div style={{ fontSize: '0.84rem', color: 'var(--ink-soft)' }}>
+                        {a.appointment_date
+                          ? new Date(a.appointment_date + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
+                          : 'Date not on file'}{a.slot_time ? `, ${a.slot_time}` : ''}
+                      </div>
+                    </div>
+                    <span className="ar-tag" style={{ color: isPast ? 'var(--ink-soft)' : 'var(--brand)' }}>{isPast ? 'Past' : 'Upcoming'}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
       <Footer />
