@@ -10,7 +10,10 @@ export default function Header({ confirmBeforeHome, onConfirmedHome }) {
   const router = useRouter();
   const [showConfirm, setShowConfirm] = useState(false);
   // null while checking, false if logged out, otherwise
-  // { name, accountHref } for whichever account type they are.
+  // { name, accountHref, type } for whichever account type they are.
+  // type is explicit rather than inferred from the href, since that
+  // inference broke the moment the practitioner destination stopped
+  // being a fixed, single possible value.
   const [account, setAccount] = useState(null);
   const [checked, setChecked] = useState(false);
 
@@ -34,9 +37,9 @@ export default function Header({ confirmBeforeHome, onConfirmedHome }) {
       ]);
 
       if (client) {
-        setAccount({ name: client.first_name || 'Account', href: '/account/profile' });
+        setAccount({ name: client.first_name || 'Account', href: '/account/profile', type: 'client' });
       } else if (practitioner) {
-        setAccount({ name: practitioner.name || 'Account', href: '/practitioner/profile' });
+        setAccount({ name: practitioner.name || 'Account', href: '/practitioner/dashboard', type: 'practitioner' });
       } else {
         setAccount(false);
       }
@@ -74,6 +77,9 @@ export default function Header({ confirmBeforeHome, onConfirmedHome }) {
 
   return (
     <>
+      {account?.type === 'practitioner' && (
+        <div className="ar-practitioner-strip">PRACTITIONER</div>
+      )}
       <div className="ar-header">
         <Link href="/" onClick={handleLogoClick} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>
           <Image src="/images/logo.svg" alt="AnteRoom" width={30} height={30} priority />
@@ -86,7 +92,7 @@ export default function Header({ confirmBeforeHome, onConfirmedHome }) {
               is, a beat later, revealed to already be logged in. */}
           {!checked ? null : account ? (
             <>
-              {account.href === '/account/profile' && (
+              {account.type === 'client' && (
                 <Link className="ar-nav-link" href="/signup/practitioner">For practitioners</Link>
               )}
               <Link className="ar-nav-link" href={account.href}>{account.name}</Link>

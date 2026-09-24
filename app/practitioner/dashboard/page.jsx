@@ -1,0 +1,132 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { CalendarClock, ShieldCheck, ShieldAlert, ArrowRight } from 'lucide-react';
+import Header from '../../components/Header';
+import Footer from '../../components/Footer';
+import PractitionerAccountNav from '../../components/PractitionerAccountNav';
+import { supabase } from '../../../lib/supabase';
+
+export default function PractitionerDashboard() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState('');
+  const [verified, setVerified] = useState(false);
+  const [upcomingCount, setUpcomingCount] = useState(0);
+  const [needsBriefingCount, setNeedsBriefingCount] = useState(0);
+  const [nextAppointment, setNextAppointment] = useState(null);
+
+  useEffect(() => {
+    async function load() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        router.push('/login');
+        return;
+      }
+
+      const today = new Date().toISOString().slice(0, 10);
+
+      const [{ data: profile }, { data: upcoming }] = await Promise.all([
+        supabase.from('practitioners').select('name, verified').eq('id', user.id).maybeSingle(),
+        supabase.from('appointments')
+          .select('id, slot_time, appointment_date, financial_report, clients(first_name, last_name)')
+          .eq('practitioner_id', user.id)
+          .gte('appointment_date', today)
+          .order('appointment_date', { ascending: true }),
+      ]);
+
+      if (profile) {
+        setName(profile.name || '');
+        setVerified(!!profile.verified);
+      }
+
+      const list = upcoming || [];
+      setUpcomingCount(list.length);
+      setNeedsBriefingCount(list.filter((a) => !a.financial_report).length);
+      setNextAppointment(list[0] || null);
+      setLoading(false);
+    }
+    load();
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="ar-root">
+        <Header />
+        <div className="ar-account-layout">
+          <PractitionerAccountNav active="dashboard" />
+          <p style={{ color: 'var(--ink-soft)' }}>Loading...</p>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
+  return (
+    <div className="ar-root">
+      <Header />
+      <div className="ar-account-layout">
+        <PractitionerAccountNav active="dashboard" />
+        <div>
+          <h2 style={{ marginTop: 0, marginBottom: '0.2rem' }}>
+            {name ? `Welcome back, ${name.split(' ')[0]}` : 'Dashboard'}
+          </h2>
+          <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
+            The state of your practice on AnteRoom, at a glance.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.85rem', marginBottom: '1.5rem' }}>
+            <div className="ar-stat-card">
+              <div className="ar-stat-number">{upcomingCount}</div>
+              <div className="ar-stat-label">Upcoming appointments</div>
+            </div>
+            <div className="ar-stat-card">
+              <div className="ar-stat-number">{needsBriefingCount}</div>
+              <div className="ar-stat-label">Awaiting a financial briefing</div>
+            </div>
+            <div className="ar-stat-card">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                {verified
+                  ? <ShieldCheck size={22} style={{ color: 'var(--sage)' }} />
+                  : <ShieldAlert size={22} style={{ color: 'var(--clay)' }} />}
+                <span className="ar-stat-number" style={{ fontSize: '1.1rem' }}>
+                  {verified ? 'Verified' : 'Pending'}
+                </span>
+              </div>
+              <div className="ar-stat-label">Verification status</div>
+            </div>
+          </div>
+
+          <div className="ar-card" style={{ marginBottom: '1.25rem' }}>
+            <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.6rem' }}>
+              Next up
+            </p>
+            {nextAppointment ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <CalendarClock size={18} style={{ color: 'var(--brand)' }} />
+                <div>
+                  <div style={{ fontWeight: 300 }}>
+                    {nextAppointment.clients?.first_name || 'Client'} {nextAppointment.clients?.last_name || ''}
+                  </div>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>
+                    {nextAppointment.appointment_date
+                      ? new Date(nextAppointment.appointment_date + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
+                      : 'Date not on file'}{nextAppointment.slot_time ? `, ${nextAppointment.slot_time}` : ''}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--ink-soft)' }}>Nothing booked yet.</p>
+            )}
+          </div>
+
+          <a href="/practitioner/appointments" className="ar-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', width: 'auto', textDecoration: 'none' }}>
+            View full calendar <ArrowRight size={15} />
+          </a>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  );
+}

@@ -11,6 +11,7 @@ function PractitionerAccountNav({ active }) {
   // client-only concept). Profile, Appointments, and Security are the
   // real parity items.
   const items = [
+    { id: 'dashboard', label: 'Dashboard', href: '/practitioner/dashboard' },
     { id: 'profile', label: 'Profile', href: '/practitioner/profile' },
     { id: 'appointments', label: 'Appointments', href: '/practitioner/appointments' },
     { id: 'security', label: 'Security', href: '/practitioner/security' },
