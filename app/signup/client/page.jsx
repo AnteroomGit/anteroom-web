@@ -90,6 +90,13 @@ export default function ClientSignup() {
       email,
       password,
       options: {
+        // Without this, Supabase falls back to whatever "Site URL" is
+        // configured in the dashboard -- which was still pointing at
+        // the raw Vercel deployment URL, landing people on Vercel's own
+        // login wall instead of the actual site. Setting it explicitly
+        // here sends a confirmed user straight to the login page,
+        // regardless of what the dashboard's default happens to be.
+        emailRedirectTo: `${window.location.origin}/login`,
         data: {
           account_type: 'client',
           first_name: firstName,

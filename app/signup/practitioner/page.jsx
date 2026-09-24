@@ -134,6 +134,7 @@ export default function PractitionerSignup() {
       email,
       password,
       options: {
+        emailRedirectTo: `${window.location.origin}/login`,
         data: {
           account_type: 'practitioner',
           name,
