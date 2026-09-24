@@ -1,13 +1,33 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { supabase } from '../../lib/supabase';
 
 export default function Footer() {
+  // Hides the "List your practice" column entirely once someone is
+  // already logged in as a practitioner -- pitching signup to someone
+  // who's already signed up doesn't make sense, and reads as the site
+  // not knowing who it's talking to.
+  const [isPractitioner, setIsPractitioner] = useState(false);
+
+  useEffect(() => {
+    async function check() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const { data } = await supabase.from('practitioners').select('id').eq('id', user.id).maybeSingle();
+      setIsPractitioner(!!data);
+    }
+    check();
+  }, []);
+
   return (
     <div className="ar-footer-main">
       <div className="ar-footer-grid">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
-            <Image src="/images/logo.svg" alt="AnteRoom" width={26} height={33} />
+            <Image src="/images/logo.svg" alt="AnteRoom" width={30} height={30} />
             <span className="ar-wordmark" style={{ fontSize: '1.15rem' }}>AnteRoom</span>
           </div>
           <p className="ar-tagline">The room before the appointment that matters.</p>
@@ -28,10 +48,12 @@ export default function Footer() {
           <Link href="/terms">Terms of Service</Link>
           <Link href="/how-we-work">How We Work</Link>
         </div>
-        <div>
-          <h4>For practitioners</h4>
-          <Link href="/signup/practitioner">List your practice</Link>
-        </div>
+        {!isPractitioner && (
+          <div>
+            <h4>For practitioners</h4>
+            <Link href="/signup/practitioner">List your practice</Link>
+          </div>
+        )}
       </div>
       <div className="ar-footer-bottom">
         <span>&copy; {new Date().getFullYear()} AnteRoom &middot; ABN 77 829 967 292</span>

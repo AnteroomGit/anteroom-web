@@ -19,6 +19,8 @@ export default function PractitionerAppointments() {
   const [genError, setGenError] = useState(null);
   const [reportLoadingId, setReportLoadingId] = useState(null);
   const [reportError, setReportError] = useState(null);
+  const [notes, setNotes] = useState({}); // { [appointmentId]: noteText }
+  const [savingNoteId, setSavingNoteId] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -37,10 +39,28 @@ export default function PractitionerAppointments() {
         .order('appointment_date', { ascending: true, nullsFirst: false });
 
       setAppointments(data || []);
+
+      // Own table, own RLS -- see the schema comment on appointment_notes
+      // for why this isn't just a column on appointments itself.
+      const { data: noteRows } = await supabase.from('appointment_notes').select('appointment_id, note');
+      const noteMap = {};
+      (noteRows || []).forEach((n) => { noteMap[n.appointment_id] = n.note || ''; });
+      setNotes(noteMap);
+
       setLoading(false);
     }
     load();
   }, [router]);
+
+  async function handleSaveNote(appointmentId) {
+    setSavingNoteId(appointmentId);
+    const { data: { user } } = await supabase.auth.getUser();
+    await supabase.from('appointment_notes').upsert(
+      { appointment_id: appointmentId, practitioner_id: user.id, note: notes[appointmentId] || '', updated_at: new Date().toISOString() },
+      { onConflict: 'appointment_id' }
+    );
+    setSavingNoteId(null);
+  }
 
   async function updateStatus(id, status) {
     setAppointments((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
@@ -236,6 +256,28 @@ export default function PractitionerAppointments() {
                         <div style={{ fontSize: '0.88rem', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{a.financial_report.text}</div>
                       </div>
                     )}
+
+                    <div style={{ marginBottom: '1rem' }}>
+                      <p style={{ fontWeight: 300, marginBottom: '0.3rem' }}>Your private notes</p>
+                      <p style={{ fontSize: '0.76rem', color: 'var(--ink-soft)', marginBottom: '0.4rem' }}>
+                        Only you can see this. Never shown to the client.
+                      </p>
+                      <textarea
+                        className="ar-textarea" rows={3}
+                        value={notes[a.id] || ''}
+                        onChange={(e) => setNotes((prev) => ({ ...prev, [a.id]: e.target.value }))}
+                        onClick={(e) => e.stopPropagation()}
+                        placeholder="Your own read on this case, for next time..."
+                        style={{ marginBottom: '0.5rem' }}
+                      />
+                      <button
+                        className="ar-btn-ghost" style={{ width: 'auto' }}
+                        onClick={(e) => { e.stopPropagation(); handleSaveNote(a.id); }}
+                        disabled={savingNoteId === a.id}
+                      >
+                        {savingNoteId === a.id ? 'Saving...' : 'Save note'}
+                      </button>
+                    </div>
 
                     <p style={{ fontWeight: 300, marginTop: '0.75rem', marginBottom: '0.4rem' }}>Full triage answers</p>
                     <pre style={{

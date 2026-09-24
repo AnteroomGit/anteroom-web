@@ -1026,16 +1026,21 @@ export default function Page() {
     setScreen('booking');
   }
 
-  // Runs once on load. Three possible reasons someone lands here already
+  // Runs once on load. Four possible reasons someone lands here already
   // authenticated, checked in priority order so they don't conflict:
   // 1) they were mid-triage, hit "book", got sent to log in, and are now
   //    back to resume that exact booking -- takes priority since it's an
   //    action they were actively in the middle of;
-  // 2) they've got a real account with a past appointment on file --
-  //    show their last result directly (reusing the same ResultsScreen
-  //    a fresh completion would show) rather than the generic marketing
-  //    homepage, since they've already told us what's going on;
-  // 3) they're logged in but have never completed a triage or booking --
+  // 2) they're a practitioner -- this whole page is a client-triage
+  //    flow they have no reason to see at all, so they're redirected to
+  //    their own dashboard immediately, before anything client-specific
+  //    below even runs;
+  // 3) they've got a real client account with a past appointment on
+  //    file -- show their last result directly (reusing the same
+  //    ResultsScreen a fresh completion would show) rather than the
+  //    generic marketing homepage, since they've already told us what's
+  //    going on;
+  // 4) they're logged in but have never completed a triage or booking --
   //    just personalise the homepage's greeting, same flow as anyone else.
   useEffect(() => {
     async function tryRestore() {
@@ -1099,6 +1104,16 @@ export default function Page() {
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return; // anonymous visitor -- normal marketing homepage, nothing to restore
+
+      // A logged-in practitioner has no reason to see this page at all --
+      // they're the ones receiving triage answers, not answering them.
+      // Sent straight to their own dashboard, before any of the
+      // client-specific lookups below even run.
+      const { data: practitionerRow } = await supabase.from('practitioners').select('id').eq('id', user.id).maybeSingle();
+      if (practitionerRow) {
+        router.push('/practitioner/dashboard');
+        return;
+      }
 
       const [{ data: profile }, { data: session }, { data: appointments }] = await Promise.all([
         supabase.from('clients').select('first_name').eq('id', user.id).maybeSingle(),

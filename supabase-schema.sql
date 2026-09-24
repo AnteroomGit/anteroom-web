@@ -335,3 +335,24 @@ alter table appointments add constraint appointments_practitioner_id_fkey
 alter table practitioner_leads drop constraint practitioner_leads_claimed_by_fkey;
 alter table practitioner_leads add constraint practitioner_leads_claimed_by_fkey
   foreign key (claimed_by) references practitioners(id) on delete set null;
+
+-- A practitioner's own private observations on a case, separate from
+-- anything the client submitted. Deliberately its own table rather than
+-- a column on appointments: RLS is row-level, not column-level, so a
+-- column here would need every client-facing query to remember never to
+-- select it, an easy thing to get wrong once, versus a separate table
+-- whose own policy makes it structurally impossible for a client to
+-- ever read, regardless of what any future query asks for. One row per
+-- appointment (unique), a note to revise, not a growing log.
+create table appointment_notes (
+  id uuid primary key default gen_random_uuid(),
+  appointment_id uuid references appointments(id) on delete cascade unique,
+  practitioner_id uuid references practitioners(id) on delete cascade,
+  note text,
+  updated_at timestamptz default now()
+);
+alter table appointment_notes enable row level security;
+
+create policy "Practitioners manage their own case notes"
+  on appointment_notes for all
+  using (auth.uid() = practitioner_id);
