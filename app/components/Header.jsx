@@ -77,13 +77,12 @@ export default function Header({ confirmBeforeHome, onConfirmedHome }) {
 
   return (
     <>
-      {account?.type === 'practitioner' && (
-        <div className="ar-practitioner-strip">PRACTITIONER</div>
-      )}
+      {account?.type === 'practitioner' && <div className="ar-practitioner-rail" aria-hidden="true" />}
       <div className="ar-header">
         <Link href="/" onClick={handleLogoClick} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>
           <Image src="/images/logo.svg" alt="AnteRoom" width={30} height={30} priority />
           <span className="ar-wordmark" style={{ fontSize: '1.05rem' }}>AnteRoom</span>
+          {account?.type === 'practitioner' && <span className="ar-practitioner-badge">Practitioner</span>}
         </Link>
         <div style={{ display: 'flex', gap: '1.25rem', alignItems: 'center' }}>
           {/* Avoid a flash of the logged-out nav before the auth check

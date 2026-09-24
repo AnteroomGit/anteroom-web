@@ -117,7 +117,7 @@ export default function PractitionerProfile() {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', alignItems: 'start' }}>
             <div className="ar-card">
-              <p className="ar-tag" style={{ color: verified ? 'var(--sage)' : 'var(--ink-soft)', marginBottom: '0.5rem', display: 'inline-block' }}>
+              <p className="ar-tag" style={{ color: verified ? 'var(--sage)' : 'var(--amber)', marginBottom: '0.5rem', display: 'inline-block' }}>
                 {verified ? 'Verified' : 'Awaiting verification'}
               </p>
               <div style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', marginBottom: '1.25rem', lineHeight: 1.6 }}>

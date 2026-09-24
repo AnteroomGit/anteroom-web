@@ -82,21 +82,21 @@ export default function PractitionerDashboard() {
             The state of your practice on AnteRoom, at a glance.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.85rem', marginBottom: '1.5rem' }}>
-            <div className="ar-stat-card">
+          <div className="ar-status-bar">
+            <div className="ar-status-bar-item">
               <div className="ar-stat-number">{upcomingCount}</div>
               <div className="ar-stat-label">Upcoming appointments</div>
             </div>
-            <div className="ar-stat-card">
+            <div className="ar-status-bar-item">
               <div className="ar-stat-number">{needsBriefingCount}</div>
               <div className="ar-stat-label">Awaiting a financial briefing</div>
             </div>
-            <div className="ar-stat-card">
+            <div className="ar-status-bar-item">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 {verified
                   ? <ShieldCheck size={22} style={{ color: 'var(--sage)' }} />
-                  : <ShieldAlert size={22} style={{ color: 'var(--clay)' }} />}
-                <span className="ar-stat-number" style={{ fontSize: '1.1rem' }}>
+                  : <ShieldAlert size={22} style={{ color: 'var(--amber)' }} />}
+                <span className="ar-stat-number" style={{ fontSize: '1.1rem', color: verified ? 'var(--brand)' : 'var(--amber)' }}>
                   {verified ? 'Verified' : 'Pending'}
                 </span>
               </div>

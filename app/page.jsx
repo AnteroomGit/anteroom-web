@@ -680,7 +680,7 @@ function ResultsScreen({ type, setType, onBook, result, returning, onStartNew, p
   const [view, setView] = useState('list');
   const filtered = type === 'All' ? practitioners : practitioners.filter((p) => p.type === type);
   return (
-    <div className="ar-section">
+    <div className="ar-section ar-results-reveal">
       {returning && (
         <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', marginBottom: '1rem' }}>
           These are your answers from last time.{' '}
