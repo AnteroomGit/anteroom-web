@@ -931,6 +931,15 @@ export default function Page() {
   const [returningResults, setReturningResults] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [isPractitioner, setIsPractitioner] = useState(false);
+  // Blocks rendering the actual homepage until the mount-time account
+  // check below has resolved -- without this, HomeScreen (hero, quiz
+  // panel, the practitioner banner) rendered immediately on every load,
+  // then got swapped or redirected away a beat later once the async
+  // check finished, which is exactly the visible "flash of the wrong
+  // page" a practitioner was seeing. Anonymous visitors pay a brief,
+  // deliberate loading moment for this too, worth it to avoid ever
+  // flashing client-only content at a logged-in practitioner.
+  const [checkingAccount, setCheckingAccount] = useState(true);
   // Real, verified practitioners -- was a hardcoded empty array before
   // tonight, a placeholder from when nobody had signed up yet. Now that
   // real practitioners can actually get verified, this needs to be live
@@ -1089,6 +1098,7 @@ export default function Page() {
             setScreen('booking');
             setRestored(true);
             clearPendingBooking();
+            setCheckingAccount(false);
             return;
           }
           clearPendingBooking();
@@ -1106,11 +1116,12 @@ export default function Page() {
       const params = new URLSearchParams(window.location.search);
       if (params.get('start') === '1') {
         setScreen('reason-select');
+        setCheckingAccount(false);
         return;
       }
 
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return; // anonymous visitor -- normal marketing homepage, nothing to restore
+      if (!user) { setCheckingAccount(false); return; } // anonymous visitor -- normal marketing homepage, nothing to restore
 
       // A logged-in practitioner has no reason to see this page at all --
       // they're the ones receiving triage answers, not answering them.
@@ -1120,6 +1131,10 @@ export default function Page() {
       if (practitionerRow) {
         setIsPractitioner(true);
         router.push('/practitioner/dashboard');
+        // Deliberately not lifting checkingAccount here -- staying in
+        // the gated/loading state for the moment it takes router.push
+        // to actually navigate away is exactly what avoids the flash
+        // of homepage content this whole gate exists to prevent.
         return;
       }
 
@@ -1147,6 +1162,7 @@ export default function Page() {
       }
       // else: logged in, no history yet -- stay on 'home', personalised
       // via firstName above, same as the "answer the questions" case.
+      setCheckingAccount(false);
     }
     tryRestore();
   }, []);
@@ -1210,7 +1226,15 @@ export default function Page() {
     <div className="ar-root">
       <Header confirmBeforeHome={screen !== 'home' && !returningResults} onConfirmedHome={goHome} />
 
-      {screen === 'home' && (
+      {screen === 'home' && checkingAccount && (
+        // Blank on purpose, not a spinner -- this only ever shows for a
+        // beat while the practitioner/pending-booking checks above are
+        // still running, and a flash of "Loading..." would be its own
+        // small jarring moment for the common anonymous-visitor case,
+        // where this resolves almost instantly anyway.
+        <div style={{ minHeight: '60vh' }} />
+      )}
+      {screen === 'home' && !checkingAccount && (
         <HomeScreen
           onStart={() => setScreen('reason-select')}
           onSearch={() => pickReason(reason)}

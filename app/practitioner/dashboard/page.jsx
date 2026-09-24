@@ -2,20 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CalendarClock, ShieldCheck, ShieldAlert, ArrowRight } from 'lucide-react';
+import { CalendarClock, ShieldCheck, ShieldAlert, ArrowRight, CheckCircle2, Circle } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import PractitionerAccountNav from '../../components/PractitionerAccountNav';
 import { supabase } from '../../../lib/supabase';
 
 export default function PractitionerDashboard() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();  const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
   const [verified, setVerified] = useState(false);
   const [upcomingCount, setUpcomingCount] = useState(0);
   const [needsBriefingCount, setNeedsBriefingCount] = useState(0);
   const [nextAppointment, setNextAppointment] = useState(null);
+  const [profileChecklist, setProfileChecklist] = useState(null);
 
   useEffect(() => {
     async function load() {
@@ -28,7 +28,7 @@ export default function PractitionerDashboard() {
       const today = new Date().toISOString().slice(0, 10);
 
       const [{ data: profile }, { data: upcoming }] = await Promise.all([
-        supabase.from('practitioners').select('name, verified').eq('id', user.id).maybeSingle(),
+        supabase.from('practitioners').select('name, verified, bio, suburb, tags, avatar_url').eq('id', user.id).maybeSingle(),
         supabase.from('appointments')
           .select('id, slot_time, appointment_date, financial_report, clients(first_name, last_name)')
           .eq('practitioner_id', user.id)
@@ -39,6 +39,12 @@ export default function PractitionerDashboard() {
       if (profile) {
         setName(profile.name || '');
         setVerified(!!profile.verified);
+        setProfileChecklist({
+          bio: !!profile.bio,
+          address: !!profile.suburb,
+          specialties: (profile.tags || []).length > 0,
+          photo: !!profile.avatar_url,
+        });
       }
 
       const list = upcoming || [];
@@ -97,6 +103,30 @@ export default function PractitionerDashboard() {
               <div className="ar-stat-label">Verification status</div>
             </div>
           </div>
+
+          {upcomingCount === 0 && profileChecklist && Object.values(profileChecklist).some((v) => !v) && (
+            <div className="ar-card" style={{ marginBottom: '1.25rem', borderColor: 'var(--brand)' }}>
+              <p style={{ fontWeight: 300, margin: '0 0 0.2rem' }}>Get your profile ready</p>
+              <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', marginBottom: '0.75rem' }}>
+                A fuller profile is more likely to get picked when a director's comparing options.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {[
+                  { key: 'photo', label: 'Add a real photo', href: '/practitioner/profile' },
+                  { key: 'bio', label: 'Write a short bio', href: '/practitioner/profile' },
+                  { key: 'address', label: 'Set your firm address', href: '/practitioner/profile' },
+                  { key: 'specialties', label: 'Select your specialties', href: '/practitioner/profile' },
+                ].map((item) => (
+                  <a key={item.key} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: profileChecklist[item.key] ? 'var(--ink-soft)' : 'var(--ink)', fontSize: '0.88rem' }}>
+                    {profileChecklist[item.key]
+                      ? <CheckCircle2 size={16} style={{ color: 'var(--sage)', flexShrink: 0 }} />
+                      : <Circle size={16} style={{ color: 'var(--line)', flexShrink: 0 }} />}
+                    <span style={{ textDecoration: profileChecklist[item.key] ? 'line-through' : 'none' }}>{item.label}</span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="ar-card" style={{ marginBottom: '1.25rem' }}>
             <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.6rem' }}>
