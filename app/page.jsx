@@ -421,7 +421,7 @@ function HeroDotPattern() {
 /* ---------------------------------------------------------------
    Screens
 --------------------------------------------------------------- */
-function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearch, onQuickLink, firstName }) {
+function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearch, onQuickLink, firstName, isPractitioner }) {
   return (
     <>
       <div className="ar-hero">
@@ -522,8 +522,14 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
       </div>
 
       <div className="ar-practitioner-banner">
-        <span>Registered liquidator?</span>
-        <a href="/signup/practitioner" className="ar-practitioner-banner-cta">List your practice</a>
+        {isPractitioner ? (
+          <span>You're already listed &mdash; head to your <a href="/practitioner/dashboard" className="ar-practitioner-banner-cta">dashboard</a>.</span>
+        ) : (
+          <>
+            <span>Registered liquidator?</span>
+            <a href="/signup/practitioner" className="ar-practitioner-banner-cta">List your practice</a>
+          </>
+        )}
       </div>
     </>
   );
@@ -924,6 +930,7 @@ export default function Page() {
   // and offers a way to start over instead of resuming a booking.
   const [returningResults, setReturningResults] = useState(false);
   const [firstName, setFirstName] = useState('');
+  const [isPractitioner, setIsPractitioner] = useState(false);
   // Real, verified practitioners -- was a hardcoded empty array before
   // tonight, a placeholder from when nobody had signed up yet. Now that
   // real practitioners can actually get verified, this needs to be live
@@ -1111,6 +1118,7 @@ export default function Page() {
       // client-specific lookups below even run.
       const { data: practitionerRow } = await supabase.from('practitioners').select('id').eq('id', user.id).maybeSingle();
       if (practitionerRow) {
+        setIsPractitioner(true);
         router.push('/practitioner/dashboard');
         return;
       }
@@ -1210,6 +1218,7 @@ export default function Page() {
           reason={reason} setReason={setReason}
           location={location} setLocation={setLocation}
           firstName={firstName}
+          isPractitioner={isPractitioner}
         />
       )}
       {screen === 'reason-select' && (
