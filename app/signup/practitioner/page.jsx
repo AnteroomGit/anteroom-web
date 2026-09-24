@@ -48,6 +48,8 @@ function Tip({ children }) {
 export default function PractitionerSignup() {
   const [step, setStep] = useState('form');
   const [autoVerified, setAutoVerified] = useState(false);
+  const [resent, setResent] = useState(false);
+  const [resendError, setResendError] = useState(null);
   const [name, setName] = useState('');
   const [firm, setFirm] = useState('');
   const [phone, setPhone] = useState('');
@@ -191,7 +193,10 @@ export default function PractitionerSignup() {
   }
 
   async function handleResend() {
-    await supabase.auth.resend({ type: 'signup', email });
+    setResendError(null);
+    const { error } = await supabase.auth.resend({ type: 'signup', email });
+    if (error) setResendError(error.message);
+    else setResent(true);
   }
 
   if (leadState === 'loading') {
@@ -347,7 +352,14 @@ export default function PractitionerSignup() {
               Go to login
             </a>
             <div>
-              <button className="ar-btn-ghost" onClick={handleResend}>Didn't get it? Resend</button>
+              <button className="ar-btn-ghost" onClick={handleResend} disabled={resent}>
+                {resent ? 'Email resent' : "Didn't get it? Resend"}
+              </button>
+              {resendError && (
+                <p style={{ color: 'var(--clay)', fontSize: '0.82rem', marginTop: '0.6rem' }}>
+                  Couldn't resend: {resendError}
+                </p>
+              )}
             </div>
           </div>
         )}

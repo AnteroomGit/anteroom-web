@@ -44,6 +44,7 @@ export default function ClientSignup() {
   const [submitting, setSubmitting] = useState(false);
   const [signupError, setSignupError] = useState(null);
   const [resent, setResent] = useState(false);
+  const [resendError, setResendError] = useState(null);
   // Turnstile tokens are single-use and short-lived -- reusing the same
   // one on a retry after any failed attempt gets rejected by Cloudflare
   // as timeout-or-duplicate. Bumping this key forces the widget to fully
@@ -124,8 +125,13 @@ export default function ClientSignup() {
   }
 
   async function handleResend() {
-    await supabase.auth.resend({ type: 'signup', email });
-    setResent(true);
+    setResendError(null);
+    const { error } = await supabase.auth.resend({ type: 'signup', email });
+    if (error) {
+      setResendError(error.message);
+    } else {
+      setResent(true);
+    }
   }
 
   return (
@@ -228,6 +234,11 @@ export default function ClientSignup() {
               <button className="ar-btn-ghost" onClick={handleResend} disabled={resent}>
                 {resent ? 'Email resent' : "Didn't get it? Resend"}
               </button>
+              {resendError && (
+                <p style={{ color: 'var(--clay)', fontSize: '0.82rem', marginTop: '0.6rem' }}>
+                  Couldn't resend: {resendError}
+                </p>
+              )}
             </div>
           </div>
         )}

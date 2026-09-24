@@ -37,8 +37,8 @@ create table practitioners (
 create table appointments (
   id uuid primary key default gen_random_uuid(),
   created_at timestamp with time zone default now(),
-  client_id uuid references clients(id),
-  practitioner_id uuid references practitioners(id),
+  client_id uuid references clients(id) on delete cascade,
+  practitioner_id uuid references practitioners(id) on delete set null,
   slot_time text,
   notice_type text,
   notice_date date,
@@ -276,7 +276,7 @@ create table practitioner_leads (
   region text,
   contact_status text default 'not_contacted', -- 'not_contacted' | 'contacted' | 'interested' | 'declined' | 'claimed'
   notes text,
-  claimed_by uuid references practitioners(id),
+  claimed_by uuid references practitioners(id) on delete set null,
   claimed_at timestamptz
 );
 alter table practitioner_leads enable row level security;
@@ -308,3 +308,30 @@ alter table practitioners add constraint practitioners_registration_number_uniqu
 -- verify-registration route below, or Jack directly in the dashboard)
 -- can set verified from here on.
 revoke update (verified) on public.practitioners from authenticated;
+
+-- The original appointments table (from the very start of this project)
+-- never had cascade delete on its client reference, unlike every table
+-- added since. Without this, deleting a client who's ever booked an
+-- appointment fails outright with a foreign key error -- a real
+-- blocker for the account-deletion feature below. Postgres auto-names
+-- an unnamed foreign key as <table>_<column>_fkey, which is what's
+-- being dropped and recreated here.
+alter table appointments drop constraint appointments_client_id_fkey;
+alter table appointments add constraint appointments_client_id_fkey
+  foreign key (client_id) references clients(id) on delete cascade;
+
+-- Two more foreign keys referencing practitioners with no delete
+-- behavior specified, found while building account deletion. Both get
+-- SET NULL rather than CASCADE, deliberately different from the client-
+-- side cascade above: an appointment or a claimed lead is at least
+-- partly someone else's record (the client's appointment history, or
+-- Jack's own outreach tracking), so a practitioner deleting their own
+-- account shouldn't delete data that isn't only theirs -- it should
+-- just clear the link to an account that no longer exists.
+alter table appointments drop constraint appointments_practitioner_id_fkey;
+alter table appointments add constraint appointments_practitioner_id_fkey
+  foreign key (practitioner_id) references practitioners(id) on delete set null;
+
+alter table practitioner_leads drop constraint practitioner_leads_claimed_by_fkey;
+alter table practitioner_leads add constraint practitioner_leads_claimed_by_fkey
+  foreign key (claimed_by) references practitioners(id) on delete set null;
