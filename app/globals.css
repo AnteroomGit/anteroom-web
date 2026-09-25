@@ -86,8 +86,15 @@ html, body { margin: 0; padding: 0; height: 100%; }
      tiny tag and a full result banner should not read as the same
      kind of object. */
   --radius-sm: 8px;   /* tags, chips, small buttons, inputs */
-  --radius-md: 12px;  /* standard cards -- the default */
+  --radius-md: 10px;  /* standard cards -- tightened from 12px after direct comparison against HotDoc's sharper, more square cards */
   --radius-lg: 20px;  /* the few genuine centerpieces: hero, modal, a revealed result */
+
+  /* One real elevation level, used everywhere a card should feel lifted
+     off the page rather than just outlined -- previously only used on
+     .ar-auth-card, which is exactly the gap: most cards had a flat
+     border and nothing else, reading as boring boxes rather than real
+     surfaces. */
+  --shadow-card: 0 1px 2px rgba(54, 43, 74, 0.04), 0 8px 24px rgba(54, 43, 74, 0.06);
 
   background: var(--paper);
   color: var(--ink);
@@ -167,7 +174,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-status-bar {
   display: flex; background: #fff; border: 1px solid var(--line);
   border-radius: var(--radius-md); margin-bottom: var(--space-6);
-  overflow: hidden;
+  overflow: hidden; box-shadow: var(--shadow-card);
 }
 .ar-status-bar-item {
   flex: 1; padding: var(--space-4) var(--space-5);
@@ -192,6 +199,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
   display: flex; align-items: center; gap: var(--space-3);
   background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius-md);
   padding: var(--space-5); text-decoration: none; color: var(--ink);
+  box-shadow: var(--shadow-card);
   transition: border-color 150ms ease, transform 150ms ease;
 }
 .ar-quick-action:hover { border-color: var(--brand); transform: translateY(-1px); }
@@ -370,6 +378,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-card {
   background: var(--paper-raised); border: 1px solid var(--line); border-radius: var(--radius-md);
   padding: var(--space-5); display: flex; flex-direction: column; gap: var(--space-2);
+  box-shadow: var(--shadow-card);
 }
 .ar-avatar {
   width: 46px; height: 46px; border-radius: 999px; background: var(--brand-tint);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CalendarClock, ShieldCheck, ShieldAlert, ArrowRight, CheckCircle2, Circle, User, Calendar, Lock, MessageCircle } from 'lucide-react';
+import { CalendarClock, ShieldCheck, ShieldAlert, ArrowRight, CheckCircle2, Circle, User, Calendar, Lock, MessageCircle, Camera, PenLine, MapPin, Tag } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import PractitionerAccountNav from '../../components/PractitionerAccountNav';
@@ -135,29 +135,47 @@ export default function PractitionerDashboard() {
             </a>
           </div>
 
-          {upcomingCount === 0 && profileChecklist && Object.values(profileChecklist).some((v) => !v) && (
-            <div className="ar-card" style={{ marginBottom: '1.25rem', borderColor: 'var(--brand)' }}>
-              <p style={{ fontWeight: 300, margin: '0 0 0.2rem' }}>Get your profile ready</p>
-              <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', marginBottom: '0.75rem' }}>
-                A fuller profile is more likely to get picked when a director's comparing options.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {[
-                  { key: 'photo', label: 'Add a real photo', href: '/practitioner/profile' },
-                  { key: 'bio', label: 'Write a short bio', href: '/practitioner/profile' },
-                  { key: 'address', label: 'Set your firm address', href: '/practitioner/profile' },
-                  { key: 'specialties', label: 'Select your specialties', href: '/practitioner/profile' },
-                ].map((item) => (
-                  <a key={item.key} href={item.href} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: profileChecklist[item.key] ? 'var(--ink-soft)' : 'var(--ink)', fontSize: '0.88rem' }}>
-                    {profileChecklist[item.key]
-                      ? <CheckCircle2 size={16} style={{ color: 'var(--sage)', flexShrink: 0 }} />
-                      : <Circle size={16} style={{ color: 'var(--line)', flexShrink: 0 }} />}
-                    <span style={{ textDecoration: profileChecklist[item.key] ? 'line-through' : 'none' }}>{item.label}</span>
-                  </a>
-                ))}
+          {upcomingCount === 0 && profileChecklist && Object.values(profileChecklist).some((v) => !v) && (() => {
+            const items = [
+              { key: 'photo', label: 'Add a real photo', sub: 'Profiles with a photo get chosen more often', icon: Camera },
+              { key: 'bio', label: 'Write a short bio', sub: 'A few lines on how you work', icon: PenLine },
+              { key: 'address', label: 'Set your firm address', sub: 'Shown so directors know where you are', icon: MapPin },
+              { key: 'specialties', label: 'Select your specialties', sub: 'What you actually take on', icon: Tag },
+            ];
+            const doneCount = items.filter((item) => profileChecklist[item.key]).length;
+            return (
+              <div className="ar-card" style={{ marginBottom: '1.25rem', padding: 0, gap: 0 }}>
+                <div style={{ padding: 'var(--space-5) var(--space-5) var(--space-4)' }}>
+                  <p style={{ fontWeight: 600, margin: '0 0 0.2rem' }}>Get your profile ready</p>
+                  <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', marginBottom: '0.75rem' }}>
+                    A fuller profile is more likely to get picked when a director's comparing options.
+                  </p>
+                  <div style={{ height: 6, background: 'var(--line)', borderRadius: 999, overflow: 'hidden' }}>
+                    <div style={{ height: '100%', width: `${(doneCount / items.length) * 100}%`, background: 'var(--brand)', transition: 'width 200ms ease' }} />
+                  </div>
+                  <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', margin: '0.4rem 0 0' }}>{doneCount} of {items.length} completed</p>
+                </div>
+                {items.map((item) => {
+                  const Icon = item.icon;
+                  const done = profileChecklist[item.key];
+                  return (
+                    <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem var(--space-5)', borderTop: '1px solid var(--line)' }}>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: done ? 'var(--sage-tint)' : 'var(--brand-tint)', color: done ? 'var(--sage)' : 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <Icon size={16} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, fontSize: '0.9rem', textDecoration: done ? 'line-through' : 'none', color: done ? 'var(--ink-soft)' : 'var(--ink)' }}>{item.label}</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--ink-soft)' }}>{item.sub}</div>
+                      </div>
+                      {done
+                        ? <CheckCircle2 size={20} style={{ color: 'var(--sage)', flexShrink: 0 }} />
+                        : <a href="/practitioner/profile" className="ar-btn-ghost" style={{ width: 'auto', padding: '0.4rem 0.9rem', fontSize: '0.82rem', textDecoration: 'none' }}>Add</a>}
+                    </div>
+                  );
+                })}
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           <div className="ar-card" style={{ marginBottom: '1.25rem' }}>
             <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', fontWeight: 600, margin: '0 0 0.6rem' }}>
