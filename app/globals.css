@@ -98,19 +98,19 @@ html, body { margin: 0; padding: 0; height: 100%; }
 
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-body), sans-serif;
+  font-family: var(--font-body, -apple-system), sans-serif;
   font-weight: 400;
   min-height: 100%;
   width: 100%;
 }
-.ar-wordmark { font-family: var(--font-karst), sans-serif; font-weight: 800; }
+.ar-wordmark { font-family: var(--font-karst, Georgia), sans-serif; font-weight: 800; }
 
 /* A real default for every h3 in the app, most of which (FAQ questions,
    privacy-policy subsections) were rendering on bare browser defaults
    with zero custom typography at all -- the same gap the h2 fix caught
    last pass, one level down. Scoped globally rather than per-file since
    these are scattered across content sections, not individual buttons. */
-.ar-root h3 { font-size: 1.05rem; font-weight: 800; font-family: var(--font-karst), sans-serif; line-height: 1.3; }
+.ar-root h3 { font-size: 1.05rem; font-weight: 800; font-family: var(--font-karst, Georgia), sans-serif; line-height: 1.3; }
 
 /* No base link color existed at all -- any anchor tag without an
    explicit inline override was falling through to the browser's
@@ -186,7 +186,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
   .ar-status-bar-item { border-right: none; border-bottom: 1px solid var(--line); }
   .ar-status-bar-item:last-child { border-bottom: none; }
 }
-.ar-stat-number { font-family: var(--font-karst), sans-serif; font-weight: 800; font-size: 2rem; color: var(--brand); line-height: 1.1; }
+.ar-stat-number { font-family: var(--font-karst, Georgia), sans-serif; font-weight: 800; font-size: 2rem; color: var(--brand); line-height: 1.1; }
 .ar-stat-label { font-size: 0.875rem; color: var(--ink-soft); margin-top: 0.2rem; }
 
 /* Real navigation, not decoration -- each tile goes somewhere genuine
@@ -243,7 +243,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
   box-shadow: 0 12px 28px rgba(33,21,48,0.14);
   border-top: 4px solid var(--brand);
 }
-.ar-mockup-question { font-family: var(--font-karst), sans-serif; font-weight: 800; font-size: 1rem; margin: 0 0 1rem; color: var(--ink); }
+.ar-mockup-question { font-family: var(--font-karst, Georgia), sans-serif; font-weight: 800; font-size: 1rem; margin: 0 0 1rem; color: var(--ink); }
 .ar-mockup-option {
   display: block; width: 100%; text-align: left; background: #fff; cursor: pointer;
   box-sizing: border-box; appearance: none;
@@ -254,7 +254,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-mockup-option:hover { border-left-color: var(--brand); }
 .ar-mockup-option-selected { border-color: var(--brand); border-left-color: var(--brand); background: var(--brand-tint); color: var(--brand); font-weight: 800; }
 .ar-hero-headline {
-  font-family: var(--font-karst), sans-serif; font-weight: 800; color: var(--ink);
+  font-family: var(--font-karst, Georgia), sans-serif; font-weight: 800; color: var(--ink);
   font-size: clamp(2.6rem, 7vw, 4.6rem); line-height: 0.98; letter-spacing: -0.02em;
   margin: 0 0 1.5rem;
 }
@@ -267,7 +267,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
    pill, matching how HotDoc's green CTA carries their color the same way. */
 .ar-hero-cta {
   background: var(--brand); color: #fff; border: none; border-radius: 999px;
-  padding: 1rem 1.9rem; font-family: var(--font-karst), sans-serif; font-weight: 800;
+  padding: 1rem 1.9rem; font-family: var(--font-karst, Georgia), sans-serif; font-weight: 800;
   font-size: 1rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.6rem;
   transition: transform 0.15s ease, background 0.15s ease;
 }
@@ -371,8 +371,8 @@ html, body { margin: 0; padding: 0; height: 100%; }
   background: var(--paper-raised); border-left: none; border-radius: var(--radius-md);
   padding: var(--space-5) var(--space-6); box-shadow: 0 8px 24px rgba(0,0,0,0.18);
 }
-.ar-result-label { font-size: 0.8rem; font-weight: 800; font-family: var(--font-karst), sans-serif; margin-bottom: 0.4rem; display: block; }
-.ar-result-title { font-weight: 800; font-family: var(--font-karst), sans-serif; margin: 0 0 0.4rem; font-size: 1.1rem; }
+.ar-result-label { font-size: 0.8rem; font-weight: 800; font-family: var(--font-karst, Georgia), sans-serif; margin-bottom: 0.4rem; display: block; }
+.ar-result-title { font-weight: 800; font-family: var(--font-karst, Georgia), sans-serif; margin: 0 0 0.4rem; font-size: 1.1rem; }
 .ar-result-text { font-size: 0.9rem; color: var(--ink-soft); margin: 0; line-height: 1.55; }
 
 .ar-card {
@@ -383,7 +383,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-avatar {
   width: 46px; height: 46px; border-radius: 999px; background: var(--brand-tint);
   color: var(--brand); display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-karst), sans-serif; font-weight: 800; font-size: 1.1rem; flex-shrink: 0;
+  font-family: var(--font-karst, Georgia), sans-serif; font-weight: 800; font-size: 1.1rem; flex-shrink: 0;
 }
 .ar-tag {
   background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
@@ -391,7 +391,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 }
 .ar-btn-primary {
   background: var(--brand); color: #fff; border: none; border-radius: var(--radius-md);
-  padding: 0.65rem; font-family: var(--font-karst), sans-serif; font-weight: 800; font-size: 0.9rem; cursor: pointer;
+  padding: 0.65rem; font-family: var(--font-karst, Georgia), sans-serif; font-weight: 800; font-size: 0.9rem; cursor: pointer;
   transition: background-color 150ms ease, transform 150ms ease;
 }
 .ar-btn-primary:hover { background: var(--brand-dark); }
@@ -401,7 +401,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 
 .ar-btn-ghost {
   background: transparent; border: 1.5px solid var(--line); color: var(--ink); border-radius: var(--radius-md);
-  padding: 0.6rem; font-family: var(--font-karst), sans-serif; font-weight: 800; font-size: 0.9rem; cursor: pointer;
+  padding: 0.6rem; font-family: var(--font-karst, Georgia), sans-serif; font-weight: 800; font-size: 0.9rem; cursor: pointer;
   transition: border-color 150ms ease, background-color 150ms ease;
 }
 .ar-btn-ghost:hover { border-color: var(--ink-soft); background: var(--paper); }
@@ -512,7 +512,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
   background: var(--paper-raised); border-radius: 14px; padding: 1.5rem;
   max-width: 360px; width: 100%; box-shadow: 0 12px 32px rgba(33,21,48,0.2);
 }
-.ar-modal-title { font-family: var(--font-karst), sans-serif; font-weight: 800; font-size: 1.05rem; margin: 0 0 0.4rem; }
+.ar-modal-title { font-family: var(--font-karst, Georgia), sans-serif; font-weight: 800; font-size: 1.05rem; margin: 0 0 0.4rem; }
 .ar-modal-text { font-size: 0.88rem; color: var(--ink-soft); margin: 0; line-height: 1.5; }
 
 .ar-page-transition { animation: ar-page-fade 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
@@ -530,7 +530,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
   max-width: 1080px; margin: 0 auto; display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; padding-bottom: 2.5rem;
 }
-.ar-footer-grid h4 { font-size: 0.86rem; color: var(--ink); margin: 0 0 0.7rem; font-weight: 800; font-family: var(--font-karst), sans-serif; }
+.ar-footer-grid h4 { font-size: 0.86rem; color: var(--ink); margin: 0 0 0.7rem; font-weight: 800; font-family: var(--font-karst, Georgia), sans-serif; }
 .ar-footer-grid a { display: block; font-size: 0.88rem; color: var(--ink); text-decoration: none; margin-bottom: 0.5rem; }
 .ar-footer-grid a:hover { color: var(--brand); }
 .ar-footer-bottom {

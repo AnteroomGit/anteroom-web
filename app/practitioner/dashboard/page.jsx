@@ -200,7 +200,7 @@ export default function PractitionerDashboard() {
             )}
           </div>
 
-          <a href="/practitioner/appointments" className="ar-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', width: 'auto', textDecoration: 'none' }}>
+          <a href="/practitioner/appointments" className="ar-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', width: 'auto', padding: '0.75rem 1.5rem', textDecoration: 'none', color: '#fff' }}>
             View full calendar <ArrowRight size={15} />
           </a>
         </div>
