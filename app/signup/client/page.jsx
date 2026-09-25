@@ -5,6 +5,7 @@ import { Check, X, Mail } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import BotCheck from '../../components/BotCheck';
+import { GoogleIcon, AppleIcon } from '../../components/OAuthIcons';
 import { REASONS } from '../../constants';
 import { supabase } from '../../../lib/supabase';
 import { checkPassword, passwordValid } from '../../../lib/password';
@@ -124,6 +125,19 @@ export default function ClientSignup() {
     setStep('verifying');
   }
 
+  async function handleOAuth(provider) {
+    setSignupError(null);
+    // account_type flows through to raw_user_meta_data exactly like the
+    // email/password path above, so the same trigger correctly creates
+    // a clients row either way -- Google or Apple never need to know
+    // anything about AnteRoom's own account-type distinction.
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/account/profile`, data: { account_type: 'client' } },
+    });
+    if (oauthError) setSignupError(oauthError.message);
+  }
+
   async function handleResend() {
     setResendError(null);
     const { error } = await supabase.auth.resend({ type: 'signup', email });
@@ -145,7 +159,17 @@ export default function ClientSignup() {
               Keep track of your consultations by creating an account.
             </p>
 
-            <form onSubmit={handleSubmit}>
+            <div className="ar-auth-card">
+              <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('google')} style={{ marginBottom: '0.6rem' }}>
+                <GoogleIcon /> Continue with Google
+              </button>
+              <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('apple')}>
+                <AppleIcon /> Continue with Apple
+              </button>
+
+              <div className="ar-oauth-divider">or</div>
+
+              <form onSubmit={handleSubmit}>
               <label className="ar-label">Email</label>
               <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
 
@@ -211,7 +235,8 @@ export default function ClientSignup() {
               <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!pwValid || !agreed || !botVerified || submitting}>
                 {submitting ? 'Creating account...' : 'Create account'}
               </button>
-            </form>
+              </form>
+            </div>
 
             <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '1.25rem' }}>
               Already have an account? <a href="/login" style={{ color: 'var(--brand)' }}>Log in</a>

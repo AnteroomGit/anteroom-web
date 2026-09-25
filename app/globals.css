@@ -474,6 +474,32 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-prose p.muted { color: var(--ink-soft); font-size: 0.84rem; }
 
 .ar-form-page { max-width: 460px; margin: 0 auto; padding: 2.5rem 1.5rem; }
+
+/* The actual "elevate the box" fix -- a real card with a genuine border
+   and shadow, so the form reads as a distinct object sitting on the
+   page rather than fields floating directly on the background. This is
+   the specific structural device Stripe and Zocdoc both use; their
+   colour and imagery are a separate matter, this part translates
+   cleanly on its own. */
+.ar-auth-card {
+  background: var(--paper-raised); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: var(--space-7) var(--space-6);
+  box-shadow: 0 1px 2px rgba(54, 43, 74, 0.04), 0 8px 24px rgba(54, 43, 74, 0.06);
+}
+.ar-oauth-btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius-sm);
+  padding: 0.65rem 1rem; font-family: 'Karst', sans-serif; font-weight: 300; font-size: 0.9rem;
+  color: var(--ink); cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease;
+}
+.ar-oauth-btn:hover { border-color: var(--ink-soft); background: var(--paper); }
+.ar-oauth-divider {
+  display: flex; align-items: center; gap: 0.75rem; margin: var(--space-5) 0;
+  font-size: 0.78rem; color: var(--ink-soft);
+}
+.ar-oauth-divider::before, .ar-oauth-divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--line);
+}
 .ar-checkbox-row {
   display: flex; gap: 0.6rem; align-items: flex-start; font-size: 0.84rem;
   color: var(--ink-soft); margin: 1.1rem 0 1.4rem; cursor: pointer;

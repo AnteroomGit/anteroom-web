@@ -4,7 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import { GoogleIcon, AppleIcon } from '../components/OAuthIcons';
 import { supabase } from '../../lib/supabase';
+
+// Small inline icons rather than an image request -- no network access
+// needed, and these are standard enough marks that a plain SVG reads
+// correctly at this size without needing the official brand asset.
 
 export default function Login() {
   const router = useRouter();
@@ -45,27 +50,47 @@ export default function Login() {
     router.push(hasPending ? '/' : '/account/profile');
   }
 
+  async function handleOAuth(provider) {
+    setError(null);
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: { redirectTo: `${window.location.origin}/account/profile` },
+    });
+    if (oauthError) setError(oauthError.message);
+  }
+
   return (
     <div className="ar-root">
       <Header />
       <div className="ar-form-page">
         <h1 style={{ fontSize: '1.5rem', fontWeight: 300, marginBottom: '1.5rem' }}>Log in</h1>
 
-        <form onSubmit={handleSubmit}>
-          <label className="ar-label">Email</label>
-          <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
-
-          <label className="ar-label">Password</label>
-          <input required type="password" className="ar-input" value={password} onChange={(e) => setPassword(e.target.value)} style={{ marginBottom: '1.25rem' }} />
-
-          {error && <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{error}</p>}
-
-          <button type="submit" className="ar-btn-primary" style={{ width: '100%', marginBottom: '0.9rem' }} disabled={loading}>
-            {loading ? 'Logging in...' : 'Log in'}
+        <div className="ar-auth-card">
+          <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('google')} style={{ marginBottom: '0.6rem' }}>
+            <GoogleIcon /> Continue with Google
           </button>
-        </form>
+          <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('apple')}>
+            <AppleIcon /> Continue with Apple
+          </button>
 
-        <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center' }}>
+          <div className="ar-oauth-divider">or</div>
+
+          <form onSubmit={handleSubmit}>
+            <label className="ar-label">Email</label>
+            <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
+
+            <label className="ar-label">Password</label>
+            <input required type="password" className="ar-input" value={password} onChange={(e) => setPassword(e.target.value)} style={{ marginBottom: '1.25rem' }} />
+
+            {error && <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{error}</p>}
+
+            <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={loading}>
+              {loading ? 'Logging in...' : 'Log in'}
+            </button>
+          </form>
+        </div>
+
+        <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '1.5rem' }}>
           Don't have an account? <a href="/signup/client" style={{ color: 'var(--brand)' }}>Sign up</a>
         </p>
         <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '0.5rem' }}>

@@ -249,7 +249,7 @@ export default function PractitionerSignup() {
               </p>
             </div>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="ar-auth-card">
               <label className="ar-label">Full name</label>
               <input disabled className="ar-input" value={name} style={{ marginBottom: '0.35rem', opacity: 0.7 }} />
               <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1rem' }}>
