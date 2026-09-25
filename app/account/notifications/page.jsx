@@ -28,7 +28,7 @@ export default function Notifications() {
       <div className="ar-account-layout">
         <AccountNav active="notifications" />
         <div>
-          <h2 style={{ marginTop: 0 }}>Notifications</h2>
+          <h2 className="ar-h2" style={{ marginTop: 0 }}>Notifications</h2>
           <div style={{ maxWidth: 460 }}>
             <Toggle label="Email reminders" sub="Appointment confirmations and reminders" value={emailReminders} onChange={setEmailReminders} />
             <Toggle label="SMS reminders" sub="Text reminders ahead of a consultation" value={smsReminders} onChange={setSmsReminders} />

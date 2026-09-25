@@ -50,7 +50,7 @@ export default function Appointments() {
       <div className="ar-account-layout">
         <AccountNav active="appointments" />
         <div>
-          <h2 style={{ marginTop: 0 }}>Appointments</h2>
+          <h2 className="ar-h2" style={{ marginTop: 0 }}>Appointments</h2>
 
           {showPrompt && (
             <div className="ar-card" style={{ marginBottom: '1rem', borderColor: 'var(--brand)' }}>

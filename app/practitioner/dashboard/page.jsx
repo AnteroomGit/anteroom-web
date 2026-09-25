@@ -75,7 +75,7 @@ export default function PractitionerDashboard() {
       <div className="ar-account-layout">
         <PractitionerAccountNav active="dashboard" />
         <div>
-          <h2 style={{ marginTop: 0, marginBottom: '0.2rem' }}>
+          <h2 className="ar-h2" style={{ marginTop: 0, marginBottom: '0.2rem' }}>
             {name ? `Welcome back, ${name.split(' ')[0]}` : 'Dashboard'}
           </h2>
           <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>

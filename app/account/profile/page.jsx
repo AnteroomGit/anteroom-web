@@ -118,7 +118,7 @@ export default function Profile() {
       <div className="ar-account-layout">
         <AccountNav active="profile" />
         <div>
-          <h2 style={{ marginTop: 0 }}>Profile</h2>
+          <h2 className="ar-h2" style={{ marginTop: 0 }}>Profile</h2>
 
           {/* What was previously missing entirely: this account had no
               way to see the answers or result you'd actually come here

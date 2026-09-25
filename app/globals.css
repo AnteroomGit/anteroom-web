@@ -379,6 +379,45 @@ html, body { margin: 0; padding: 0; height: 100%; }
 }
 .ar-reason-card:hover .ar-reason-icon { background: var(--brand); color: #fff; }
 
+/* Deliberately NOT the same centered-icon-over-caption rhythm as
+   .ar-reason-card directly above it -- two sections back to back doing
+   the identical compositional beat is exactly the "assembled from a
+   library" tell the research names. Left-aligned, a vertical rule
+   standing in for the icon-circle, and a max-width that keeps it
+   reading as a row of facts rather than a repeated grid of cards. */
+.ar-trust-row {
+  display: flex; flex-wrap: wrap; gap: var(--space-7);
+  max-width: 1080px; margin: 0 auto; padding: 0 var(--space-5) var(--space-9);
+}
+.ar-trust-item {
+  display: flex; align-items: flex-start; gap: var(--space-3);
+  max-width: 260px; border-left: 2px solid var(--brand); padding-left: var(--space-4);
+}
+.ar-trust-item svg { color: var(--brand); flex-shrink: 0; margin-top: 0.1rem; }
+.ar-trust-item p { font-size: 0.88rem; color: var(--ink); margin: 0; text-align: left; line-height: 1.5; }
+
+/* Full-bleed, a contrasting surface, and a two-column split -- a
+   genuinely different compositional beat from every card-grid section
+   around it, not another container at the same width doing the same
+   rhythm. This is the actual fix for "every section is the same width
+   and density," not a restyle of the same structure. */
+.ar-homepage-result-preview {
+  background: var(--brand); padding: var(--space-9) var(--space-5);
+}
+.ar-result-preview-inner {
+  max-width: 1080px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-8); align-items: center;
+}
+.ar-result-preview-label {
+  font-size: 0.8rem; color: var(--brand-tint); margin: 0 0 var(--space-3);
+}
+.ar-homepage-result-preview h2 {
+  color: #fff; font-size: 1.6rem; font-weight: 800; line-height: 1.25; margin: 0;
+}
+@media (max-width: 800px) {
+  .ar-result-preview-inner { grid-template-columns: 1fr; }
+}
+
 .ar-footer { border-top: 1px solid var(--line); padding: 2rem 1.5rem; text-align: center; color: var(--ink-soft); font-size: 0.78rem; }
 
 /* A real conversion moment, not a quiet footer link -- HotDoc's own

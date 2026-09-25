@@ -62,7 +62,7 @@ export default function Answers() {
       <div className="ar-account-layout">
         <AccountNav active="answers" />
         <div>
-          <h2 style={{ marginTop: 0 }}>Your answers</h2>
+          <h2 className="ar-h2" style={{ marginTop: 0 }}>Your answers</h2>
           <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '-0.5rem', marginBottom: '1.25rem' }}>
             Exactly what you told us, question by question.
           </p>

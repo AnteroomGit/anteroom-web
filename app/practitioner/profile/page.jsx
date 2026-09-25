@@ -110,7 +110,7 @@ export default function PractitionerProfile() {
       <div className="ar-account-layout">
         <PractitionerAccountNav active="profile" />
         <div>
-          <h2 style={{ marginTop: 0 }}>Your profile</h2>
+          <h2 className="ar-h2" style={{ marginTop: 0 }}>Your profile</h2>
           <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '-0.5rem', marginBottom: '1.25rem' }}>
             This is what directors see when your profile appears in search results.
           </p>

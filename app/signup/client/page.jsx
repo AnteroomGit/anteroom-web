@@ -222,7 +222,7 @@ export default function ClientSignup() {
         {step === 'verifying' && (
           <div className="ar-card" style={{ textAlign: 'center', padding: '2rem 1.5rem' }}>
             <Mail size={28} style={{ color: 'var(--brand)', marginBottom: '0.75rem' }} />
-            <h2 style={{ marginTop: 0 }}>Check your email</h2>
+            <h2 className="ar-h2" style={{ marginTop: 0 }}>Check your email</h2>
             <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
               We've sent a real verification link to <strong>{email}</strong>. Click it, then come
               back and log in. Your account is active from that point on.

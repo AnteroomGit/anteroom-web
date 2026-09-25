@@ -66,7 +66,7 @@ export default function Security() {
       <div className="ar-account-layout">
         <AccountNav active="security" />
         <div>
-          <h2 style={{ marginTop: 0 }}>Security</h2>
+          <h2 className="ar-h2" style={{ marginTop: 0 }}>Security</h2>
 
           <form onSubmit={(e) => { e.preventDefault(); if (passwordValid(next)) setSaved(true); }} style={{ maxWidth: 380, marginBottom: '2.5rem' }}>
             <label className="ar-label">Current password</label>

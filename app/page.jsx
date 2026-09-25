@@ -506,18 +506,34 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
         </div>
       </div>
 
-      <div className="ar-section" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.5rem', textAlign: 'center' }}>
-        <div>
-          <ShieldCheck size={22} style={{ color: 'var(--brand)' }} />
-          <p style={{ fontSize: '0.88rem', marginTop: '0.5rem' }}>Every practitioner is registered and verified</p>
+      <div className="ar-trust-row">
+        <div className="ar-trust-item">
+          <ShieldCheck size={20} />
+          <p>Every practitioner is registered and verified</p>
         </div>
-        <div>
-          <Clock size={22} style={{ color: 'var(--brand)' }} />
-          <p style={{ fontSize: '0.88rem', marginTop: '0.5rem' }}>Book a consultation online, no phone call needed</p>
+        <div className="ar-trust-item">
+          <Clock size={20} />
+          <p>Book a consultation online, no phone call needed</p>
         </div>
-        <div>
-          <FileText size={22} style={{ color: 'var(--brand)' }} />
-          <p style={{ fontSize: '0.88rem', marginTop: '0.5rem' }}>Share your documents ahead, so your first meeting isn&apos;t a cold start</p>
+        <div className="ar-trust-item">
+          <FileText size={20} />
+          <p>Share your documents ahead, so your first meeting isn&apos;t a cold start</p>
+        </div>
+      </div>
+
+      <div className="ar-homepage-result-preview">
+        <div className="ar-result-preview-inner">
+          <p className="ar-result-preview-label">What you actually get</p>
+          <h2>Two minutes of questions. A real answer, not a form to fill in and forget.</h2>
+          <div className="ar-result-banner" style={{ maxWidth: 460 }}>
+            <span className="ar-result-label" style={{ color: 'var(--brand)' }}>Example result</span>
+            <p className="ar-result-title">Small Business Restructuring may be a strong option</p>
+            <p className="ar-result-text">
+              Your lodgements are up to date and total debts are under $1 million, so the SBR
+              pathway is likely available. Here&apos;s a verified practitioner who can walk you
+              through it.
+            </p>
+          </div>
         </div>
       </div>
 
