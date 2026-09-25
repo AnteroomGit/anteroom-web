@@ -154,7 +154,7 @@ export default function ClientSignup() {
       <div className="ar-form-page">
         {step === 'form' && (
           <>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 300, marginBottom: '0.3rem' }}>Create your account</h1>
+            <h1 className="ar-h1" style={{ marginBottom: '0.3rem' }}>Create your account</h1>
             <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
               Keep track of your consultations by creating an account.
             </p>

@@ -63,7 +63,7 @@ export default function Login() {
     <div className="ar-root">
       <Header />
       <div className="ar-form-page">
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 300, marginBottom: '1.5rem' }}>Log in</h1>
+        <h1 className="ar-h1" style={{ marginBottom: '1.5rem' }}>Log in</h1>
 
         <div className="ar-auth-card">
           <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('google')} style={{ marginBottom: '0.6rem' }}>

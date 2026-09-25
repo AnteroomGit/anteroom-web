@@ -6,7 +6,7 @@ export default function NotFound() {
     <div className="ar-root">
       <Header />
       <div className="ar-404">
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 300 }}>Page not found</h1>
+        <h1 className="ar-h1">Page not found</h1>
         <p style={{ fontSize: '0.9rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
           That page doesn&apos;t exist. It may have moved.
         </p>

@@ -236,7 +236,7 @@ export default function PractitionerSignup() {
       <div className="ar-form-page">
         {step === 'form' && (
           <>
-            <h1 style={{ fontSize: '1.5rem', fontWeight: 300, marginBottom: '0.4rem' }}>List your practice</h1>
+            <h1 className="ar-h1" style={{ marginBottom: '0.4rem' }}>List your practice</h1>
             <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
               Set up your login below. Your name and registration are already confirmed from our call.
             </p>

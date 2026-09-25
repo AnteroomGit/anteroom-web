@@ -40,7 +40,7 @@ export default function Contact() {
     <div className="ar-root">
       <Header />
       <div className="ar-form-page">
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 300, marginBottom: '0.4rem' }}>Get in touch</h1>
+        <h1 className="ar-h1" style={{ marginBottom: '0.4rem' }}>Get in touch</h1>
         <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
           Director, practitioner, or press: send a short message and we'll get back to you.
         </p>
