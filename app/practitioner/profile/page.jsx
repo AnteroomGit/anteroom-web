@@ -192,7 +192,7 @@ export default function PractitionerProfile() {
             </div>
 
             <div style={{ position: 'sticky', top: '1.5rem' }}>
-              <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', fontWeight: 600, marginBottom: '0.5rem' }}>
                 Live preview
               </p>
               <PractitionerCard p={previewPractitioner} onBook={() => {}} />

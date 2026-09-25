@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { CalendarClock, ShieldCheck, ShieldAlert, ArrowRight, CheckCircle2, Circle } from 'lucide-react';
+import { CalendarClock, ShieldCheck, ShieldAlert, ArrowRight, CheckCircle2, Circle, User, Calendar, Lock, MessageCircle } from 'lucide-react';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import PractitionerAccountNav from '../../components/PractitionerAccountNav';
@@ -104,6 +104,37 @@ export default function PractitionerDashboard() {
             </div>
           </div>
 
+          <div className="ar-quick-actions" style={{ marginBottom: '1.25rem' }}>
+            <a href="/practitioner/profile" className="ar-quick-action">
+              <div className="ar-quick-action-icon"><User size={20} /></div>
+              <div>
+                <div className="ar-quick-action-label">Edit profile</div>
+                <div className="ar-quick-action-sub">Bio, photo, specialties</div>
+              </div>
+            </a>
+            <a href="/practitioner/appointments" className="ar-quick-action">
+              <div className="ar-quick-action-icon"><Calendar size={20} /></div>
+              <div>
+                <div className="ar-quick-action-label">Appointments</div>
+                <div className="ar-quick-action-sub">Full calendar</div>
+              </div>
+            </a>
+            <a href="/practitioner/security" className="ar-quick-action">
+              <div className="ar-quick-action-icon"><Lock size={20} /></div>
+              <div>
+                <div className="ar-quick-action-label">Security</div>
+                <div className="ar-quick-action-sub">Password, account</div>
+              </div>
+            </a>
+            <a href="/contact" className="ar-quick-action">
+              <div className="ar-quick-action-icon"><MessageCircle size={20} /></div>
+              <div>
+                <div className="ar-quick-action-label">Get help</div>
+                <div className="ar-quick-action-sub">Contact AnteRoom</div>
+              </div>
+            </a>
+          </div>
+
           {upcomingCount === 0 && profileChecklist && Object.values(profileChecklist).some((v) => !v) && (
             <div className="ar-card" style={{ marginBottom: '1.25rem', borderColor: 'var(--brand)' }}>
               <p style={{ fontWeight: 300, margin: '0 0 0.2rem' }}>Get your profile ready</p>
@@ -129,7 +160,7 @@ export default function PractitionerDashboard() {
           )}
 
           <div className="ar-card" style={{ marginBottom: '1.25rem' }}>
-            <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', textTransform: 'uppercase', letterSpacing: '0.04em', margin: '0 0 0.6rem' }}>
+            <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', fontWeight: 600, margin: '0 0 0.6rem' }}>
               Next up
             </p>
             {nextAppointment ? (
