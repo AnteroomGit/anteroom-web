@@ -17,6 +17,9 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showReset, setShowReset] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -50,6 +53,18 @@ export default function Login() {
     router.push(hasPending ? '/' : '/account/profile');
   }
 
+  async function handleReset(e) {
+    e.preventDefault();
+    setResetLoading(true);
+    setError(null);
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    setResetLoading(false);
+    if (resetError) setError(resetError.message);
+    else setResetSent(true);
+  }
+
   async function handleOAuth(provider) {
     setError(null);
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
@@ -75,19 +90,44 @@ export default function Login() {
 
           <div className="ar-oauth-divider">or</div>
 
-          <form onSubmit={handleSubmit}>
-            <label className="ar-label">Email</label>
-            <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
+          {showReset ? (
+            resetSent ? (
+              <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)' }}>
+                If an account exists for <strong>{email}</strong>, a reset link is on its way.
+              </p>
+            ) : (
+              <form onSubmit={handleReset}>
+                <label className="ar-label">Email</label>
+                <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
+                {error && <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{error}</p>}
+                <button type="submit" className="ar-btn-primary" style={{ width: '100%', marginBottom: '0.75rem' }} disabled={resetLoading}>
+                  {resetLoading ? 'Sending...' : 'Send reset link'}
+                </button>
+                <button type="button" className="ar-btn-ghost" style={{ width: '100%' }} onClick={() => { setShowReset(false); setError(null); }}>
+                  Back to log in
+                </button>
+              </form>
+            )
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <label className="ar-label">Email</label>
+              <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
 
-            <label className="ar-label">Password</label>
-            <input required type="password" className="ar-input" value={password} onChange={(e) => setPassword(e.target.value)} style={{ marginBottom: '1.25rem' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                <label className="ar-label">Password</label>
+                <button type="button" onClick={() => { setShowReset(true); setError(null); }} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: '0.8rem', cursor: 'pointer', padding: 0 }}>
+                  Forgot password?
+                </button>
+              </div>
+              <input required type="password" className="ar-input" value={password} onChange={(e) => setPassword(e.target.value)} style={{ marginBottom: '1.25rem' }} />
 
-            {error && <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{error}</p>}
+              {error && <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{error}</p>}
 
-            <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={loading}>
-              {loading ? 'Logging in...' : 'Log in'}
-            </button>
-          </form>
+              <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={loading}>
+                {loading ? 'Logging in...' : 'Log in'}
+              </button>
+            </form>
+          )}
         </div>
 
         <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '1.5rem' }}>

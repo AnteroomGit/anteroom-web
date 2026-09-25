@@ -353,9 +353,11 @@ export function PractitionerCard({ p, onBook }) {
       <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
         {p.tags.map((t) => <span key={t} className="ar-tag">{t}</span>)}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--brand)' }}>
-        <Clock size={13} /> Next available: {p.next}
-      </div>
+      {p.next && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--brand)' }}>
+          <Clock size={13} /> Next available: {p.next}
+        </div>
+      )}
       <button className="ar-btn-primary" onClick={() => onBook(p)}>Book consultation</button>
     </div>
   );
@@ -525,7 +527,7 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
         <div className="ar-result-preview-inner">
           <p className="ar-result-preview-label">What you actually get</p>
           <h2>Two minutes of questions. A real answer, not a form to fill in and forget.</h2>
-          <div className="ar-result-banner" style={{ maxWidth: 460 }}>
+          <div className="ar-result-banner ar-result-banner-on-dark" style={{ maxWidth: 460 }}>
             <span className="ar-result-label" style={{ color: 'var(--brand)' }}>Example result</span>
             <p className="ar-result-title">Small Business Restructuring may be a strong option</p>
             <p className="ar-result-text">
@@ -539,7 +541,7 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
 
       <div className="ar-practitioner-banner">
         {isPractitioner ? (
-          <span>You're already listed &mdash; head to your <a href="/practitioner/dashboard" className="ar-practitioner-banner-cta">dashboard</a>.</span>
+          <span>You're already listed. Head to your <a href="/practitioner/dashboard" className="ar-practitioner-banner-cta">dashboard</a>.</span>
         ) : (
           <>
             <span>Registered liquidator?</span>
@@ -1083,7 +1085,7 @@ export default function Page() {
       // (ResultsScreen, the booking screen) gets it too.
       const { data: fetchedPractitioners } = await supabase
         .from('practitioners')
-        .select('id, name, firm, practitioner_type, suburb, tags, bio, avatar_url, phone, contact_preference')
+        .select('id, name, firm, practitioner_type, suburb, tags, bio, avatar_url, phone, contact_preference, verified')
         .eq('verified', true);
       const livePractitioners = (fetchedPractitioners || []).map((p) => ({
         ...p,

@@ -146,10 +146,13 @@ export default function Profile() {
             </div>
           ) : (
             <div className="ar-card" style={{ marginBottom: '1.75rem' }}>
-              <p style={{ margin: 0 }}>You haven't completed the check yet.</p>
-              <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '0.3rem' }}>
-                <a href="/?start=1" style={{ color: 'var(--brand)' }}>Answer the questions</a> to see what your situation means.
+              <p style={{ margin: '0 0 0.9rem' }}>
+                You haven't completed the check yet. Two minutes of questions gets you a clear
+                answer on what your situation actually means.
               </p>
+              <a href="/?start=1" className="ar-btn-primary" style={{ display: 'inline-block', width: 'auto', textDecoration: 'none' }}>
+                Answer the questions
+              </a>
             </div>
           )}
 
@@ -163,7 +166,7 @@ export default function Profile() {
             <label className="ar-label">Email</label>
             <input className="ar-input" value={email} disabled style={{ marginBottom: '0.4rem', opacity: 0.7, cursor: 'not-allowed' }} />
             <p style={{ fontSize: '0.76rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1rem' }}>
-              Changing your email isn't wired up yet. Get in touch via Contact if you need it updated.
+              Your email is fixed on your account. Contact us if it needs to change.
             </p>
 
             <label className="ar-label">Mobile</label>

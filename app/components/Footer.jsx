@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
+import { BUILD_STAMP } from '../../lib/build';
 
 export default function Footer() {
   // Hides the "List your practice" column entirely once someone is
@@ -56,8 +57,8 @@ export default function Footer() {
         )}
       </div>
       <div className="ar-footer-bottom">
-        <span>&copy; {new Date().getFullYear()} AnteRoom &middot; ABN 77 829 967 292</span>
-        <span>General information only &mdash; not legal or financial advice.</span>
+        <span>&copy; {new Date().getFullYear()} AnteRoom &middot; ABN 77 829 967 292 &middot; {BUILD_STAMP}</span>
+        <span>General information only, not legal or financial advice.</span>
       </div>
     </div>
   );

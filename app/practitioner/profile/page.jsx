@@ -115,7 +115,7 @@ export default function PractitionerProfile() {
             This is what directors see when your profile appears in search results.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '560px 1fr', gap: '2rem', alignItems: 'start' }}>
             <div className="ar-card">
               <p className="ar-tag" style={{ color: verified ? 'var(--sage)' : 'var(--amber)', marginBottom: '0.5rem', display: 'inline-block' }}>
                 {verified ? 'Verified' : 'Awaiting verification'}
