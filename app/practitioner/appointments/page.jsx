@@ -210,7 +210,7 @@ export default function PractitionerAppointments() {
                     >
                       {STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
-                    {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    {isOpen ? <ChevronUp size={19} /> : <ChevronDown size={19} />}
                   </div>
                 </div>
 
@@ -226,7 +226,7 @@ export default function PractitionerAppointments() {
                         onClick={(e) => { e.stopPropagation(); handleGeneratePdf(a.id); }}
                         disabled={generatingId === a.id}
                       >
-                        <FileDown size={16} />
+                        <FileDown size={19} />
                         {generatingId === a.id ? 'Generating summary...' : 'Download case summary (PDF)'}
                       </button>
 
@@ -236,7 +236,7 @@ export default function PractitionerAppointments() {
                         onClick={(e) => { e.stopPropagation(); handleGenerateFinancialReport(a.id); }}
                         disabled={reportLoadingId === a.id}
                       >
-                        <LineChart size={16} />
+                        <LineChart size={19} />
                         {reportLoadingId === a.id
                           ? 'Reading their books...'
                           : a.financial_report ? 'Refresh financial briefing' : 'Generate financial briefing'}

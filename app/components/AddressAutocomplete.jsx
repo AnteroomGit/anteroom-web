@@ -107,7 +107,7 @@ export default function AddressAutocomplete({ value, onChange, placeholder }) {
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--brand-tint)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              <MapPin size={14} style={{ marginTop: '0.15rem', flexShrink: 0, color: 'var(--brand)' }} />
+              <MapPin size={17} style={{ marginTop: '0.15rem', flexShrink: 0, color: 'var(--brand)' }} />
               <span>{r.display_name}</span>
             </div>
           ))}

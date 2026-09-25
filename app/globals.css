@@ -1,4 +1,12 @@
 * { box-sizing: border-box; }
+/* 120% of the browser default (16px -> ~19.2px) rather than a fixed
+   px value -- since nearly everything in this file is sized in rem,
+   this scales all of it proportionally from one place, text and
+   rem-based spacing together, rather than hunting down every
+   individual font-size declaration across dozens of files. Using a
+   percentage instead of a fixed px value also respects a user's own
+   browser font-size/zoom preference rather than overriding it. */
+html { font-size: 120%; }
 html, body { margin: 0; padding: 0; height: 100%; }
 
 /* A real quality floor that's invisible in a screenshot but completely

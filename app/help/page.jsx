@@ -22,7 +22,7 @@ export default function Help() {
         <h1>Help</h1>
         {FAQS.map((f, i) => (
           <div key={i} className="ar-faq-item" onClick={() => setOpen(open === i ? null : i)}>
-            <h3>{f.q} {open === i ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</h3>
+            <h3>{f.q} {open === i ? <ChevronUp size={19} /> : <ChevronDown size={19} />}</h3>
             {open === i && <p>{f.a}</p>}
           </div>
         ))}

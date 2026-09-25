@@ -140,7 +140,7 @@ export default function Integrations() {
                         {p.name}
                         {conn && (
                           <span className="ar-tag" style={{ color: 'var(--sage)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                            <Check size={11} /> Connected
+                            <Check size={13} /> Connected
                           </span>
                         )}
                       </div>
@@ -156,7 +156,7 @@ export default function Integrations() {
                         onClick={() => handleDisconnect(p.id)}
                         disabled={disconnecting === p.id}
                       >
-                        <Unlink size={14} /> {disconnecting === p.id ? 'Disconnecting...' : 'Disconnect'}
+                        <Unlink size={17} /> {disconnecting === p.id ? 'Disconnecting...' : 'Disconnect'}
                       </button>
                     ) : p.id === 'manager' ? null : (
                       <a
@@ -164,7 +164,7 @@ export default function Integrations() {
                         className="ar-btn-primary"
                         style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', width: 'auto', textDecoration: 'none' }}
                       >
-                        <Link2 size={14} /> Connect
+                        <Link2 size={17} /> Connect
                       </a>
                     )}
                   </div>

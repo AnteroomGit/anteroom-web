@@ -13,7 +13,7 @@ import { checkPassword, passwordValid } from '../../../lib/password';
 function Rule({ ok, children }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: ok ? 'var(--sage)' : 'var(--ink-soft)' }}>
-      {ok ? <Check size={13} /> : <X size={13} style={{ opacity: 0.4 }} />} {children}
+      {ok ? <Check size={16} /> : <X size={16} style={{ opacity: 0.4 }} />} {children}
     </div>
   );
 }
@@ -246,7 +246,7 @@ export default function ClientSignup() {
 
         {step === 'verifying' && (
           <div className="ar-card" style={{ textAlign: 'center', padding: '2rem 1.5rem' }}>
-            <Mail size={28} style={{ color: 'var(--brand)', marginBottom: '0.75rem' }} />
+            <Mail size={34} style={{ color: 'var(--brand)', marginBottom: '0.75rem' }} />
             <h2 className="ar-h2" style={{ marginTop: 0 }}>Check your email</h2>
             <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
               We've sent a real verification link to <strong>{email}</strong>. Click it, then come

@@ -336,7 +336,7 @@ export function PractitionerCard({ p, onBook }) {
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
             <span style={{ fontWeight: 300, fontSize: '0.98rem' }}>{p.name}</span>
-            {p.verified && <ShieldCheck size={14} style={{ color: 'var(--sage)' }} />}
+            {p.verified && <ShieldCheck size={17} style={{ color: 'var(--sage)' }} />}
           </div>
           <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>{p.title}</div>
           <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>{p.firm}</div>
@@ -348,14 +348,14 @@ export function PractitionerCard({ p, onBook }) {
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--ink-soft)' }}>
-        <MapPin size={13} /> {p.suburb}
+        <MapPin size={16} /> {p.suburb}
       </div>
       <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
         {p.tags.map((t) => <span key={t} className="ar-tag">{t}</span>)}
       </div>
       {p.next && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--brand)' }}>
-          <Clock size={13} /> Next available: {p.next}
+          <Clock size={16} /> Next available: {p.next}
         </div>
       )}
       <button className="ar-btn-primary" onClick={() => onBook(p)}>Book consultation</button>
@@ -451,14 +451,14 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
               </>
             )}
             <button className="ar-hero-cta" onClick={onStart}>
-              {firstName ? 'Answer the questions' : 'Start the free check'} <Search size={16} />
+              {firstName ? 'Answer the questions' : 'Start the free check'} <Search size={19} />
             </button>
 
             <details className="ar-secondary-search">
             <summary>Already know who you're looking for? Search directly</summary>
             <div className="ar-searchbar">
               <div className="ar-search-field">
-                <Search size={16} style={{ color: 'var(--ink-soft)' }} />
+                <Search size={19} style={{ color: 'var(--ink-soft)' }} />
                 <Dropdown
                   value={reason}
                   onChange={setReason}
@@ -468,11 +468,11 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
               </div>
               <div className="ar-search-divider" />
               <div className="ar-search-field">
-                <MapPin size={16} style={{ color: 'var(--ink-soft)' }} />
+                <MapPin size={19} style={{ color: 'var(--ink-soft)' }} />
                 <input placeholder="Suburb or postcode" value={location} onChange={(e) => setLocation(e.target.value)} />
               </div>
               <button className="ar-search-btn" onClick={onSearch}>
-                <Search size={15} /> Search
+                <Search size={18} /> Search
               </button>
             </div>
             </details>
@@ -500,7 +500,7 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
             const Icon = q.icon;
             return (
               <button key={q.label} className="ar-reason-card" onClick={() => onQuickLink(q.category)}>
-                <div className="ar-reason-icon"><Icon size={22} /></div>
+                <div className="ar-reason-icon"><Icon size={26} /></div>
                 <span>{q.label}</span>
               </button>
             );
@@ -510,15 +510,15 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
 
       <div className="ar-trust-row">
         <div className="ar-trust-item">
-          <ShieldCheck size={20} />
+          <ShieldCheck size={24} />
           <p>Every practitioner is registered and verified</p>
         </div>
         <div className="ar-trust-item">
-          <Clock size={20} />
+          <Clock size={24} />
           <p>Book a consultation online, no phone call needed</p>
         </div>
         <div className="ar-trust-item">
-          <FileText size={20} />
+          <FileText size={24} />
           <p>Share your documents ahead, so your first meeting isn&apos;t a cold start</p>
         </div>
       </div>
@@ -879,7 +879,7 @@ function PortalScreen({ practitioner, onDone, onBack }) {
 
       <label className="ar-label">Financial statements or ATO documents</label>
       <div className="ar-dropzone" onClick={() => fileInput.current.click()}>
-        <Upload size={20} style={{ color: 'var(--ink-soft)' }} />
+        <Upload size={24} style={{ color: 'var(--ink-soft)' }} />
         <p style={{ fontSize: '0.86rem', margin: '0.5rem 0 0' }}>Click to add files (PDF, JPG, PNG)</p>
         <input ref={fileInput} type="file" multiple accept=".pdf,.jpg,.jpeg,.png" style={{ display: 'none' }} onChange={handleFiles} />
       </div>
@@ -887,9 +887,9 @@ function PortalScreen({ practitioner, onDone, onBack }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginTop: '0.6rem' }}>
           {files.map((f, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.84rem' }}>
-              <FileText size={14} style={{ color: 'var(--ink-soft)' }} />
+              <FileText size={17} style={{ color: 'var(--ink-soft)' }} />
               {f}
-              <X size={14} style={{ cursor: 'pointer', marginLeft: 'auto', color: 'var(--ink-soft)' }} onClick={() => setFiles(files.filter((_, idx) => idx !== i))} />
+              <X size={17} style={{ cursor: 'pointer', marginLeft: 'auto', color: 'var(--ink-soft)' }} onClick={() => setFiles(files.filter((_, idx) => idx !== i))} />
             </div>
           ))}
         </div>
@@ -916,7 +916,7 @@ function ConfirmedScreen({ practitioner, slot, onHome }) {
   return (
     <div className="ar-section" style={{ maxWidth: 480, textAlign: 'center' }}>
       <div style={{ width: 48, height: 48, borderRadius: 999, background: 'var(--sage-tint)', color: 'var(--sage)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
-        <Check size={24} />
+        <Check size={29} />
       </div>
       <h2>Booking confirmed</h2>
       <p style={{ fontSize: '0.9rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>

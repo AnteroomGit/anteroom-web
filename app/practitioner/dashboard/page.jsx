@@ -94,8 +94,8 @@ export default function PractitionerDashboard() {
             <div className="ar-status-bar-item">
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 {verified
-                  ? <ShieldCheck size={22} style={{ color: 'var(--sage)' }} />
-                  : <ShieldAlert size={22} style={{ color: 'var(--amber)' }} />}
+                  ? <ShieldCheck size={26} style={{ color: 'var(--sage)' }} />
+                  : <ShieldAlert size={26} style={{ color: 'var(--amber)' }} />}
                 <span className="ar-stat-number" style={{ fontSize: '1.1rem', color: verified ? 'var(--brand)' : 'var(--amber)' }}>
                   {verified ? 'Verified' : 'Pending'}
                 </span>
@@ -106,28 +106,28 @@ export default function PractitionerDashboard() {
 
           <div className="ar-quick-actions" style={{ marginBottom: '1.25rem' }}>
             <a href="/practitioner/profile" className="ar-quick-action">
-              <div className="ar-quick-action-icon"><User size={20} /></div>
+              <div className="ar-quick-action-icon"><User size={24} /></div>
               <div>
                 <div className="ar-quick-action-label">Edit profile</div>
                 <div className="ar-quick-action-sub">Bio, photo, specialties</div>
               </div>
             </a>
             <a href="/practitioner/appointments" className="ar-quick-action">
-              <div className="ar-quick-action-icon"><Calendar size={20} /></div>
+              <div className="ar-quick-action-icon"><Calendar size={24} /></div>
               <div>
                 <div className="ar-quick-action-label">Appointments</div>
                 <div className="ar-quick-action-sub">Full calendar</div>
               </div>
             </a>
             <a href="/practitioner/security" className="ar-quick-action">
-              <div className="ar-quick-action-icon"><Lock size={20} /></div>
+              <div className="ar-quick-action-icon"><Lock size={24} /></div>
               <div>
                 <div className="ar-quick-action-label">Security</div>
                 <div className="ar-quick-action-sub">Password, account</div>
               </div>
             </a>
             <a href="/contact" className="ar-quick-action">
-              <div className="ar-quick-action-icon"><MessageCircle size={20} /></div>
+              <div className="ar-quick-action-icon"><MessageCircle size={24} /></div>
               <div>
                 <div className="ar-quick-action-label">Get help</div>
                 <div className="ar-quick-action-sub">Contact AnteRoom</div>
@@ -161,14 +161,14 @@ export default function PractitionerDashboard() {
                   return (
                     <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem var(--space-5)', borderTop: '1px solid var(--line)' }}>
                       <div style={{ width: 36, height: 36, borderRadius: '50%', background: done ? 'var(--sage-tint)' : 'var(--brand-tint)', color: done ? 'var(--sage)' : 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <Icon size={16} />
+                        <Icon size={19} />
                       </div>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 600, fontSize: '0.9rem', textDecoration: done ? 'line-through' : 'none', color: done ? 'var(--ink-soft)' : 'var(--ink)' }}>{item.label}</div>
                         <div style={{ fontSize: '0.8rem', color: 'var(--ink-soft)' }}>{item.sub}</div>
                       </div>
                       {done
-                        ? <CheckCircle2 size={20} style={{ color: 'var(--sage)', flexShrink: 0 }} />
+                        ? <CheckCircle2 size={24} style={{ color: 'var(--sage)', flexShrink: 0 }} />
                         : <a href="/practitioner/profile" className="ar-btn-ghost" style={{ width: 'auto', padding: '0.4rem 0.9rem', fontSize: '0.82rem', textDecoration: 'none' }}>Add</a>}
                     </div>
                   );
@@ -183,7 +183,7 @@ export default function PractitionerDashboard() {
             </p>
             {nextAppointment ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <CalendarClock size={18} style={{ color: 'var(--brand)' }} />
+                <CalendarClock size={22} style={{ color: 'var(--brand)' }} />
                 <div>
                   <div style={{ fontWeight: 300 }}>
                     {nextAppointment.clients?.first_name || 'Client'} {nextAppointment.clients?.last_name || ''}
@@ -201,7 +201,7 @@ export default function PractitionerDashboard() {
           </div>
 
           <a href="/practitioner/appointments" className="ar-btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', width: 'auto', padding: '0.75rem 1.5rem', textDecoration: 'none', color: '#fff' }}>
-            View full calendar <ArrowRight size={15} />
+            View full calendar <ArrowRight size={18} />
           </a>
         </div>
       </div>

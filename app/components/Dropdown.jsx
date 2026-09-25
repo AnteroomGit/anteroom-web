@@ -29,7 +29,7 @@ export default function Dropdown({ value, onChange, options, placeholder }) {
         }}
       >
         <span>{selected ? selected.label : placeholder}</span>
-        <ChevronDown size={15} style={{ color: 'var(--ink-soft)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease', flexShrink: 0 }} />
+        <ChevronDown size={18} style={{ color: 'var(--ink-soft)', transform: open ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease', flexShrink: 0 }} />
       </button>
 
       {open && (

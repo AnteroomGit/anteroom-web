@@ -12,7 +12,7 @@ import { checkPassword, passwordValid } from '../../../lib/password';
 function Rule({ ok, children }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: ok ? 'var(--sage)' : 'var(--ink-soft)' }}>
-      {ok ? <Check size={13} /> : <X size={13} style={{ opacity: 0.4 }} />} {children}
+      {ok ? <Check size={16} /> : <X size={16} style={{ opacity: 0.4 }} />} {children}
     </div>
   );
 }

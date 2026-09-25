@@ -62,7 +62,7 @@ export default function Appointments() {
                   </div>
                 </div>
                 <a href="/account/integrations" className="ar-btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', width: 'auto', whiteSpace: 'nowrap', textDecoration: 'none' }}>
-                  <Link2 size={14} /> Connect accounting
+                  <Link2 size={17} /> Connect accounting
                 </a>
               </div>
             </div>
