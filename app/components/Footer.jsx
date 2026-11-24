@@ -19,7 +19,7 @@ export default function Footer() {
       <div className="ar-footer-grid">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
-            <Image src="/images/logo.svg" alt="AnteRoom" width={30} height={30} />
+            <Image src="/images/logo-mark.svg" alt="AnteRoom" width={30} height={30} />
             <span className="ar-wordmark" style={{ fontSize: 'var(--text-lg)' }}>Ante<span className="ar-wordmark-light">Room</span></span>
           </div>
           <p className="ar-tagline">Free triage for company directors facing ATO debt.</p>

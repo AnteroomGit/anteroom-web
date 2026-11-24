@@ -58,7 +58,7 @@ export default function Header({ confirmBeforeHome, onConfirmedHome }) {
       {account?.type === 'practitioner' && <div className="ar-practitioner-rail" aria-hidden="true" />}
       <div className="ar-header">
         <Link href="/" onClick={handleLogoClick} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>
-          <Image src="/images/logo.svg" alt="AnteRoom" width={30} height={30} priority />
+          <Image src="/images/logo-mark.svg" alt="AnteRoom" width={30} height={30} priority />
           <span className="ar-wordmark" style={{ fontSize: 'var(--text-md)' }}>Ante<span className="ar-wordmark-light">Room</span></span>
           {account?.type === 'practitioner' && <span className="ar-practitioner-badge">Practitioner</span>}
         </Link>

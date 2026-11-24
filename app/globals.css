@@ -28,6 +28,9 @@ html, body { margin: 0; padding: 0; height: 100%; }
   --line: #CDD5D3;
   --line-strong: #8A9693;
   --focus: #0E4A4D;
+  /* Page width. Everything (header, sections, footer) lines up to the same edges. */
+  --page-max: 1760px;
+  --page-pad: clamp(1.25rem, 3.5vw, 3.5rem);
 
   /* Spacing (at 19.2px per rem: 5px, 10px, 14px, 19px, 29px, 38px, 58px, 77px, 115px, 154px) */
   --space-1: 0.25rem;
@@ -123,7 +126,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 --------------------------------------------------------------- */
 .ar-header {
   display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
-  padding: 0.8rem max(var(--space-5), calc((100% - 1080px) / 2)); border-bottom: 1px solid var(--line);
+  padding: 0.8rem max(var(--page-pad), calc((100% - var(--page-max)) / 2)); border-bottom: 1px solid var(--line);
   background: var(--paper-raised);
 }
 .ar-nav { display: flex; gap: var(--space-5); align-items: center; min-width: 0; }
@@ -170,7 +173,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 /* ---------------------------------------------------------------
    Layout: bands, and rows with a heading on the left
 --------------------------------------------------------------- */
-.ar-wrap { max-width: calc(1080px + 2 * var(--space-5)); margin: 0 auto; padding: 0 var(--space-5); width: 100%; }
+.ar-wrap { max-width: calc(var(--page-max) + 2 * var(--page-pad)); margin: 0 auto; padding: 0 var(--page-pad); width: 100%; }
 .ar-band { padding: var(--space-7) 0; border-bottom: 1px solid var(--line); }
 .ar-band-white { background: var(--paper-raised); }
 .ar-band-paper { background: var(--paper); }
@@ -213,15 +216,17 @@ html, body { margin: 0; padding: 0; height: 100%; }
 --------------------------------------------------------------- */
 .ar-hero {
   background: var(--paper-raised); border-bottom: 1px solid var(--line);
-  padding: var(--space-8) var(--space-5) var(--space-7); text-align: left; position: relative;
+  padding: var(--space-8) var(--page-pad) var(--space-7); text-align: left; position: relative;
 }
 .ar-hero-grid {
-  max-width: 1080px; margin: 0 auto;
+  max-width: var(--page-max); margin: 0 auto;
   display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: var(--space-7); align-items: start;
 }
-.ar-hero-inner { max-width: 620px; }
+.ar-hero-inner { max-width: 700px; }
+.ar-hero-grid > :last-child { justify-self: end; width: 100%; max-width: 580px; }
 @media (max-width: 860px) {
   .ar-hero { padding-top: var(--space-7); }
+  .ar-hero-grid > :last-child { justify-self: stretch; max-width: none; }
   .ar-hero-grid { grid-template-columns: 1fr; gap: var(--space-6); }
 }
 .ar-hero-headline {
@@ -293,7 +298,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 
 .ar-homepage-result-preview { background: var(--brand-dark); color: #fff; padding: var(--space-7) 0; }
 .ar-result-preview-inner {
-  max-width: calc(1080px + 2 * var(--space-5)); margin: 0 auto; padding: 0 var(--space-5);
+  max-width: calc(var(--page-max) + 2 * var(--page-pad)); margin: 0 auto; padding: 0 var(--page-pad);
   display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-7); align-items: center;
 }
 .ar-homepage-result-preview h2 { color: #fff; font-size: var(--text-xl); line-height: 1.2; margin: 0 0 var(--space-3); }
@@ -322,7 +327,7 @@ html.ar-session-pending .ar-practitioner-banner { visibility: hidden; }
 /* ---------------------------------------------------------------
    Quiz and results
 --------------------------------------------------------------- */
-.ar-section { max-width: calc(1080px + 2 * var(--space-5)); margin: 0 auto; padding: var(--space-7) var(--space-5); }
+.ar-section { max-width: calc(var(--page-max) + 2 * var(--page-pad)); margin: 0 auto; padding: var(--space-7) var(--page-pad); }
 @media (max-width: 640px) {
   .ar-section { padding: var(--space-6) var(--space-4); }
 }
@@ -476,16 +481,16 @@ html.ar-session-pending .ar-practitioner-banner { visibility: hidden; }
 /* ---------------------------------------------------------------
    Footer
 --------------------------------------------------------------- */
-.ar-footer-main { border-top: 1px solid var(--line); background: var(--paper-raised); padding: var(--space-7) var(--space-5) 0; }
+.ar-footer-main { border-top: 1px solid var(--line); background: var(--paper-raised); padding: var(--space-7) var(--page-pad) 0; }
 .ar-footer-grid {
-  max-width: 1080px; margin: 0 auto; display: grid;
+  max-width: var(--page-max); margin: 0 auto; display: grid;
   grid-template-columns: 1.3fr 1.6fr 1fr 1fr 1.1fr; gap: var(--space-6); padding-bottom: var(--space-6);
 }
 .ar-footer-grid h4 { font-size: var(--text-sm); color: var(--ink); margin: 0 0 0.7rem; }
 .ar-footer-grid a { display: block; font-size: var(--text-sm); color: var(--ink); text-decoration: none; margin-bottom: 0.5rem; }
 .ar-footer-grid a:hover { color: var(--brand); text-decoration: underline; }
 .ar-footer-bottom {
-  max-width: 1080px; margin: 0 auto; padding: 1.25rem 0; border-top: 1px solid var(--line);
+  max-width: var(--page-max); margin: 0 auto; padding: 1.25rem 0; border-top: 1px solid var(--line);
   font-size: var(--text-xs); color: var(--ink-soft); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
 }
 .ar-tagline { font-size: var(--text-sm); color: var(--ink-soft); margin: 0.3rem 0 0; max-width: 17rem; }
@@ -546,10 +551,11 @@ html.ar-session-pending .ar-practitioner-banner { visibility: hidden; }
    Account and practitioner areas
 --------------------------------------------------------------- */
 .ar-account-layout {
-  max-width: calc(1080px + 2 * var(--space-5)); margin: 0 auto; padding: var(--space-7) var(--space-5);
+  max-width: calc(var(--page-max) + 2 * var(--page-pad)); margin: 0 auto; padding: var(--space-7) var(--page-pad);
   display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: var(--space-6); width: 100%;
 }
 .ar-account-layout h2 { font-size: var(--text-lg); }
+.ar-account-layout > :last-child { max-width: 1000px; }
 
 /* Practitioner profile: the form beside a live preview of the card directors see. */
 .ar-profile-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--space-5); align-items: start; }
@@ -621,8 +627,8 @@ html.ar-session-pending .ar-practitioner-banner { visibility: hidden; }
   background: var(--brand); color: #fff; border-radius: var(--radius-sm); padding: 0.65rem;
   text-align: center; font-weight: 600; font-size: var(--text-base); opacity: 0.55;
 }
-.ar-cta-band { background: var(--brand-dark); color: #fff; padding: var(--space-6) var(--space-5); }
-.ar-cta-band-inner { max-width: 1080px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); flex-wrap: wrap; }
+.ar-cta-band { background: var(--brand-dark); color: #fff; padding: var(--space-6) var(--page-pad); }
+.ar-cta-band-inner { max-width: var(--page-max); margin: 0 auto; display: flex; align-items: center; justify-content: space-between; gap: var(--space-5); flex-wrap: wrap; }
 .ar-cta-band h2 { color: #fff; font-size: var(--text-lg); margin: 0; }
 .ar-root a.ar-cta-band-button {
   background: #fff; color: var(--brand-dark); font-weight: 700; text-decoration: none;
@@ -638,8 +644,8 @@ html.ar-session-pending .ar-practitioner-banner { visibility: hidden; }
    Guides
 --------------------------------------------------------------- */
 .ar-guide-layout {
-  max-width: calc(1080px + 2 * var(--space-5)); margin: 0 auto; padding: var(--space-6) var(--space-5) var(--space-8);
-  display: grid; grid-template-columns: minmax(0, 1fr) 17rem; gap: var(--space-7); align-items: start; width: 100%;
+  max-width: calc(var(--page-max) + 2 * var(--page-pad)); margin: 0 auto; padding: var(--space-6) var(--page-pad) var(--space-8);
+  display: grid; grid-template-columns: minmax(0, 44rem) 17rem; justify-content: space-between; gap: var(--space-7); align-items: start; width: 100%;
 }
 .ar-guide { max-width: 40rem; }
 .ar-guide-crumb { font-size: var(--text-sm); margin: 0 0 var(--space-3); }

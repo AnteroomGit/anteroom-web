@@ -20,9 +20,12 @@ stock photos and no icons used as decoration. Structure comes from rules
 
 ## Layout
 
-- One content column, 1080px wide plus side padding. The header, every
-  section, the guide pages, the account pages and the footer all use the
-  same edges so nothing looks inset.
+- One wide content column: up to 1760px, with side padding that grows with
+  the screen (`--page-max` and `--page-pad`). The logo sits at the left
+  edge and the menu at the right edge. The header, every section, the guide
+  pages, the account pages and the footer all use the same edges so nothing
+  looks inset. Text blocks keep their own narrow widths so lines stay easy
+  to read.
 - `.ar-band` and `.ar-row` make a two-column band: a heading on the left,
   the detail on the right. `.ar-facts` and `.ar-steps` are ruled lists, not
   card grids. Use these before reaching for `.ar-card`.
