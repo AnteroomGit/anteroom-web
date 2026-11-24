@@ -2,18 +2,33 @@ import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
 import { renderToBuffer } from '@react-pdf/renderer';
 import CaseSummaryPDF from '../../components/CaseSummaryPDF';
+import { rateLimit, clientIp, tooMany } from '../../../lib/rateLimit';
 
 // Server-side only. Never exposed to the browser, unlike the Supabase
 // publishable key. This must be added in Vercel as type "Secret", the
 // opposite of how the Supabase keys were added.
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
+// Models get retired. Set ANTHROPIC_MODEL in Vercel to switch without a
+// code change; the value below is what was running before.
+const MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-6';
+
 export async function POST(request) {
+  // Each summary is a paid call to Anthropic, so a logged-in person looping
+  // this route would run up the bill. These limits are best effort (see
+  // lib/rateLimit.js) but stop the easy cases: one visitor, and one
+  // appointment asked for again and again.
+  const limited = rateLimit(`generate-summary:ip:${clientIp(request)}`, { limit: 10, windowMs: 60 * 60 * 1000 });
+  if (!limited.ok) return tooMany(limited.retryAfter);
+
   try {
     const { appointmentId, accessToken } = await request.json();
     if (!appointmentId || !accessToken) {
       return Response.json({ error: 'Missing appointmentId or accessToken' }, { status: 400 });
     }
+
+    const perAppointment = rateLimit(`generate-summary:appointment:${appointmentId}`, { limit: 5, windowMs: 60 * 60 * 1000 });
+    if (!perAppointment.ok) return tooMany(perAppointment.retryAfter);
 
     // Authenticate as the actual requesting user (not a service role), so
     // the database's own security rules decide whether they're allowed to
@@ -44,7 +59,7 @@ export async function POST(request) {
     // stay factual, since this is meant to be background information for
     // a professional, not advice or a diagnosis in its own right.
     const aiResponse = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
+      model: MODEL,
       max_tokens: 500,
       system: `You are preparing a short, factual case summary for a registered insolvency, restructuring, accounting or legal professional, based on a company director's self-reported answers to a free triage questionnaire on AnteRoom.
 
@@ -80,7 +95,9 @@ Strict rules: do not add any new diagnosis, opinion, or recommendation beyond wh
       },
     });
   } catch (err) {
-    console.error('generate-summary error:', err);
+    // The model name is logged because a retired or misspelt model is the
+    // most likely reason this suddenly starts failing for everyone.
+    console.error(`generate-summary error (model ${MODEL}):`, err);
     return Response.json({ error: 'Something went wrong generating the summary' }, { status: 500 });
   }
 }

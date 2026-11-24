@@ -1,7 +1,12 @@
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import { pageMeta } from '../../lib/meta';
 
-export const metadata = { title: 'Terms of Service | AnteRoom' };
+export const metadata = pageMeta({
+  title: 'Terms of Service',
+  description: 'The terms for using AnteRoom: what the free triage is and is not, what practitioners agree to, acceptable use, liability and governing law.',
+  path: '/terms',
+});
 
 export default function Terms() {
   return (

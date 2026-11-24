@@ -1,7 +1,12 @@
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import { pageMeta } from '../../lib/meta';
 
-export const metadata = { title: 'Privacy Policy | AnteRoom' };
+export const metadata = pageMeta({
+  title: 'Privacy Policy',
+  description: 'What personal information AnteRoom collects, why, who it is shared with, how long it is kept, and how to ask for access, correction or deletion.',
+  path: '/privacy',
+});
 
 export default function Privacy() {
   return (
@@ -9,7 +14,7 @@ export default function Privacy() {
       <Header />
       <div className="ar-prose">
         <h1>Privacy Policy</h1>
-        <p className="muted">Last updated: 10 September 2026</p>
+        <p className="muted">Last updated: 15 October 2026</p>
 
         <p>
           This policy explains what personal information AnteRoom collects, why, how it's used
@@ -108,9 +113,9 @@ export default function Privacy() {
 
         <h3>Automatically, from using the site</h3>
         <p>
-          Like most websites, we use cookies and similar technologies for essential site
-          functionality (such as keeping you logged in) and, where you've consented via our
-          cookie banner, to understand how the site is used. See the Cookies section below.
+          Like most websites, we use cookies and similar browser storage for essential site
+          functionality (such as keeping you logged in). We don't currently use advertising
+          cookies or analytics tools on the site. See the Cookies section below.
         </p>
 
         <h2>4. How your information is used and disclosed</h2>
@@ -218,10 +223,12 @@ export default function Privacy() {
 
         <h2>10. Cookies</h2>
         <p>
-          We use essential cookies needed for the site to function, such as keeping you logged
-          in. Where our cookie banner asks for your consent, we may also use cookies to
-          understand how the site is used, so we can improve it. You can control or clear
-          cookies through your browser settings, though this may affect how the site works.
+          We use essential cookies and similar browser storage needed for the site to function,
+          such as keeping you logged in and holding your triage answers in your browser until
+          you choose to submit them. We don't currently use cookies to track you or to measure
+          how the site is used. If that changes, we'll update this policy first. You can
+          control or clear cookies and site data through your browser settings, though this may
+          affect how the site works.
         </p>
 
         <h2>11. Your rights: access, correction, and deletion</h2>

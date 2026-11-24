@@ -1,7 +1,10 @@
 import localFont from 'next/font/local';
 import { Public_Sans } from 'next/font/google';
 import './globals.css';
-import CookieBanner from './components/CookieBanner';
+import { HOME_TITLE, SITE_NAME, SITE_URL, SITE_DESCRIPTION } from '../lib/site';
+import { SHARE_IMAGE } from '../lib/meta';
+import { BUILD_STAMP } from '../lib/build';
+import { PRE_PAINT_SCRIPT } from '../lib/sessionHint';
 
 // Karst stays for headlines, buttons and key numbers only -- see
 // DESIGN.md. Loaded via next/font/local so both weights are preloaded
@@ -32,18 +35,48 @@ const publicSans = Public_Sans({
   display: 'swap',
 });
 
+// Every other page is "<page title> | AnteRoom" through the template below,
+// so a page only needs to supply its own short title. Pages that set their
+// own social preview (all the public ones, through lib/meta.js) replace the
+// openGraph and twitter blocks here wholesale, because Next merges metadata
+// one level deep. These are the fallback for anything that does not.
 export const metadata = {
-  title: 'AnteRoom | Find insolvency and restructuring professionals',
-  description:
-    'Search, compare, and book registered liquidators, restructuring practitioners, accountants, and lawyers near you.',
+  metadataBase: new URL(SITE_URL),
+  title: { default: HOME_TITLE, template: `%s | ${SITE_NAME}` },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  openGraph: {
+    type: 'website',
+    siteName: SITE_NAME,
+    locale: 'en_AU',
+    title: HOME_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [SHARE_IMAGE],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: HOME_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [SHARE_IMAGE.url],
+  },
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en-AU" className={`${karst.variable} ${publicSans.variable}`}>
+    // data-build lets anyone check which release is live from the page
+    // itself (right-click, inspect), and /version shows the same stamp.
+    // suppressHydrationWarning is needed because the script below may add a
+    // class to <html> before React has looked at it.
+    <html
+      lang="en-AU"
+      className={`${karst.variable} ${publicSans.variable}`}
+      data-build={BUILD_STAMP}
+      suppressHydrationWarning
+    >
       <body>
+        {/* Runs before the first paint. See lib/sessionHint.js. */}
+        <script dangerouslySetInnerHTML={{ __html: PRE_PAINT_SCRIPT }} />
         {children}
-        <CookieBanner />
       </body>
     </html>
   );

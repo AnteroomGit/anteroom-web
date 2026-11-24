@@ -1,27 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { supabase } from '../../lib/supabase';
-import { BUILD_STAMP } from '../../lib/build';
+import { useAccount } from '../../lib/account';
 
 export default function Footer() {
   // Hides the "List your practice" column entirely once someone is
   // already logged in as a practitioner -- pitching signup to someone
   // who's already signed up doesn't make sense, and reads as the site
-  // not knowing who it's talking to.
-  const [isPractitioner, setIsPractitioner] = useState(false);
-
-  useEffect(() => {
-    async function check() {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data } = await supabase.from('practitioners').select('id').eq('id', user.id).maybeSingle();
-      setIsPractitioner(!!data);
-    }
-    check();
-  }, []);
+  // not knowing who it's talking to. Shares one lookup with the header.
+  const account = useAccount();
+  const isPractitioner = account?.type === 'practitioner';
 
   return (
     <div className="ar-footer-main">
@@ -52,12 +41,14 @@ export default function Footer() {
         {!isPractitioner && (
           <div>
             <h4>For practitioners</h4>
-            <Link href="/signup/practitioner">List your practice</Link>
+            <Link href="/for-practitioners">List your practice</Link>
           </div>
         )}
       </div>
       <div className="ar-footer-bottom">
-        <span>&copy; {new Date().getFullYear()} AnteRoom &middot; ABN 77 829 967 292 &middot; {BUILD_STAMP}</span>
+        {/* The build number used to be printed here. It lives on /version
+            now, and in a data-build attribute on the <html> element. */}
+        <span>&copy; {new Date().getFullYear()} AnteRoom &middot; ABN 77 829 967 292</span>
         <span>General information only, not legal or financial advice.</span>
       </div>
     </div>

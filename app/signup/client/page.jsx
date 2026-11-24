@@ -1,45 +1,29 @@
 'use client';
 
 import { useState } from 'react';
-import { Check, X, Mail } from 'lucide-react';
+import { Mail } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import BotCheck from '../../components/BotCheck';
+import PasswordField from '../../components/PasswordField';
+import PasswordRules from '../../components/PasswordRules';
 import { GoogleIcon, AppleIcon } from '../../components/OAuthIcons';
 import { REASONS } from '../../constants';
 import { supabase } from '../../../lib/supabase';
-import { checkPassword, passwordValid } from '../../../lib/password';
+import { passwordValid } from '../../../lib/password';
 
-function Rule({ ok, children }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: ok ? 'var(--sage)' : 'var(--ink-soft)' }}>
-      {ok ? <Check size={16} /> : <X size={16} style={{ opacity: 0.4 }} />} {children}
-    </div>
-  );
-}
-
-// Advisory only -- can't actually be checked client-side (no password
-// history to check against, no test for "hard to guess"), so these are
-// shown as plain tips rather than pass/fail rules with a checkmark that
-// would misleadingly imply they'd been verified.
-function Tip({ children }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
-      <span style={{ width: 13, height: 13, borderRadius: '50%', border: '1.5px solid var(--line)', flexShrink: 0 }} /> {children}
-    </div>
-  );
-}
+// Apple sign-in is not set up yet, so its button stays hidden until it is.
+// Set NEXT_PUBLIC_ENABLE_APPLE_SIGNIN=true in Vercel once Apple works.
+const APPLE_ENABLED = process.env.NEXT_PUBLIC_ENABLE_APPLE_SIGNIN === 'true';
 
 export default function ClientSignup() {
   const [step, setStep] = useState('form');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPw, setShowPw] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [mobile, setMobile] = useState('');
   const [reasons, setReasons] = useState([]);
-  const [keepSignedIn, setKeepSignedIn] = useState(true);
   const [agreed, setAgreed] = useState(false);
   const [botVerified, setBotVerified] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -52,7 +36,6 @@ export default function ClientSignup() {
   // remount and issue a fresh token whenever a submit attempt fails.
   const [botKey, setBotKey] = useState(0);
 
-  const pw = checkPassword(password);
   const pwValid = passwordValid(password);
 
   function toggleReason(id) {
@@ -127,13 +110,14 @@ export default function ClientSignup() {
 
   async function handleOAuth(provider) {
     setSignupError(null);
-    // account_type flows through to raw_user_meta_data exactly like the
-    // email/password path above, so the same trigger correctly creates
-    // a clients row either way -- Google or Apple never need to know
-    // anything about AnteRoom's own account-type distinction.
+    // signInWithOAuth has no way to pass custom account details through to
+    // the sign-up trigger (an earlier version tried, and the option was
+    // silently ignored). Google and Apple accounts get their client row
+    // from the database trigger, which recognises them by provider, and
+    // from ensureClientRow as a backstop when the profile page loads.
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: `${window.location.origin}/account/profile`, data: { account_type: 'client' } },
+      options: { redirectTo: `${window.location.origin}/account/profile` },
     });
     if (oauthError) setSignupError(oauthError.message);
   }
@@ -160,48 +144,38 @@ export default function ClientSignup() {
             </p>
 
             <div className="ar-auth-card">
-              <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('google')} style={{ marginBottom: '0.6rem' }}>
+              <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('google')} style={{ marginBottom: APPLE_ENABLED ? '0.6rem' : 0 }}>
                 <GoogleIcon /> Continue with Google
               </button>
-              <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('apple')}>
-                <AppleIcon /> Continue with Apple
-              </button>
+              {APPLE_ENABLED && (
+                <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('apple')}>
+                  <AppleIcon /> Continue with Apple
+                </button>
+              )}
 
               <div className="ar-oauth-divider">or</div>
 
               <form onSubmit={handleSubmit}>
-              <label className="ar-label">Email</label>
-              <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
+              <label className="ar-label" htmlFor="signup-email">Email</label>
+              <input id="signup-email" required type="email" autoComplete="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
 
-              <label className="ar-label">Password</label>
-              <div style={{ position: 'relative', marginBottom: '0.5rem' }}>
-                <input
-                  required type={showPw ? 'text' : 'password'} className="ar-input"
-                  value={password} onChange={(e) => setPassword(e.target.value)}
-                />
-                <span onClick={() => setShowPw(!showPw)} style={{ position: 'absolute', right: 12, top: 10, cursor: 'pointer', fontSize: '0.76rem', color: 'var(--ink-soft)' }}>
-                  {showPw ? 'Hide' : 'Show'}
-                </span>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1.1rem' }}>
-                <Rule ok={pw.length}>8 or more characters</Rule>
-                <Rule ok={pw.letterNumber}>At least 1 letter and 1 number</Rule>
-                <Rule ok={pw.noRepeat}>Don't use the same character 3+ times in a row (e.g. AAA, 111)</Rule>
-                <Rule ok={pw.noSequence}>Don't use 3+ characters in order (e.g. ABC, 123)</Rule>
-                <Tip>Don't reuse a password you've used before</Tip>
-                <Tip>Pick something hard to guess</Tip>
-                <Rule ok={pw.noRepeat}>No character repeated 3+ times in a row</Rule>
-                <Rule ok={pw.noSequence}>No 3+ characters in sequence (e.g. abc, 123)</Rule>
-              </div>
+              <PasswordField
+                label="Password"
+                value={password}
+                onChange={setPassword}
+                autoComplete="new-password"
+                describedBy="signup-password-rules"
+              />
+              <PasswordRules password={password} id="signup-password-rules" />
 
-              <label className="ar-label">First name</label>
-              <input required className="ar-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={{ marginBottom: '1rem' }} />
+              <label className="ar-label" htmlFor="signup-first-name">First name</label>
+              <input id="signup-first-name" required autoComplete="given-name" className="ar-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={{ marginBottom: '1rem' }} />
 
-              <label className="ar-label">Last name</label>
-              <input required className="ar-input" value={lastName} onChange={(e) => setLastName(e.target.value)} style={{ marginBottom: '1rem' }} />
+              <label className="ar-label" htmlFor="signup-last-name">Last name</label>
+              <input id="signup-last-name" required autoComplete="family-name" className="ar-input" value={lastName} onChange={(e) => setLastName(e.target.value)} style={{ marginBottom: '1rem' }} />
 
-              <label className="ar-label">Mobile number</label>
-              <input required className="ar-input" value={mobile} onChange={(e) => setMobile(e.target.value)} style={{ marginBottom: '1.25rem' }} />
+              <label className="ar-label" htmlFor="signup-mobile">Mobile number</label>
+              <input id="signup-mobile" required type="tel" autoComplete="tel" className="ar-input" value={mobile} onChange={(e) => setMobile(e.target.value)} style={{ marginBottom: '1.25rem' }} />
 
               <label className="ar-label">What brings you here? Select all that apply.</label>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
@@ -214,11 +188,6 @@ export default function ClientSignup() {
               </div>
 
               <label className="ar-checkbox-row">
-                <input type="checkbox" checked={keepSignedIn} onChange={(e) => setKeepSignedIn(e.target.checked)} style={{ marginTop: '0.15rem' }} />
-                Keep me signed in on this device
-              </label>
-
-              <label className="ar-checkbox-row">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} style={{ marginTop: '0.15rem' }} />
                 <span>
                   I agree to the <a href="/terms">Terms of Service</a>, and to AnteRoom's use of my
@@ -229,7 +198,7 @@ export default function ClientSignup() {
               <BotCheck key={botKey} checked={botVerified} onChange={setBotVerified} />
 
               {signupError && (
-                <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{signupError}</p>
+                <p role="alert" style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{signupError}</p>
               )}
 
               <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!pwValid || !agreed || !botVerified || submitting}>

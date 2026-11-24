@@ -1,0 +1,50 @@
+# Runs on every pull request and on every push to main.
+#
+# 1. The source checks in tests/smoke.test.mjs (no server needed).
+# 2. A production build, which is the same build Vercel runs, so a change
+#    that would fail to deploy fails here first.
+# 3. The same tests again against that build running on this machine.
+#
+# The build needs the two Supabase values to exist, but nothing here talks
+# to Supabase, so placeholder values are enough. No real keys are used or
+# needed in CI.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Source checks
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Check the running site
+        run: |
+          npm start &
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/robots.txt > /dev/null; then break; fi
+            sleep 2
+          done
+          SMOKE_URL=http://localhost:3000 npm test

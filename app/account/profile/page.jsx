@@ -1,16 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import AccountNav from '../../components/AccountNav';
 import { REASONS } from '../../constants';
 import { supabase } from '../../../lib/supabase';
+import { ensureClientRow } from '../../../lib/ensureClient';
+import { refreshAccount } from '../../../lib/account';
 
 // Friendlier labels than the raw pathway keys stored on the appointment
 // row (sbr, va, cvl, mvl, simple-close) -- keep in sync with PATHWAY_INFO
-// in app/page.jsx if a pathway is ever renamed there.
+// in app/components/Home.jsx if a pathway is ever renamed there.
 const PATHWAY_LABELS = {
   sbr: 'Small Business Restructuring',
   va: 'Voluntary Administration',
@@ -21,6 +23,11 @@ const PATHWAY_LABELS = {
 
 export default function Profile() {
   const router = useRouter();
+  const firstNameId = useId();
+  const lastNameId = useId();
+  const emailId = useId();
+  const mobileId = useId();
+  const reasonsLabelId = useId();
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -43,6 +50,13 @@ export default function Profile() {
       }
 
       setEmail(user.email);
+
+      // Someone who signed in with Google or Apple can arrive with no client
+      // row. Make one first (names seeded from their Google profile) so the
+      // form below opens filled in rather than blank. If it was just made,
+      // the header's cached name needs refreshing too.
+      const ensured = await ensureClientRow(supabase, user);
+      if (ensured.created) refreshAccount();
 
       const [{ data: profile }, { data: appointments }, { data: session }] = await Promise.all([
         // maybeSingle, not single -- a genuinely valid login with no
@@ -93,9 +107,12 @@ export default function Profile() {
       .upsert({ id: user.id, first_name: firstName, last_name: lastName, mobile, reasons }, { onConflict: 'id' });
 
     if (updateError) {
-      setError(updateError.message);
+      console.error('Profile save failed:', updateError);
+      setError('We could not save your changes just now. Please try again.');
     } else {
       setSaved(true);
+      // The header shows your first name, so tell it the name may have changed.
+      refreshAccount();
     }
   }
 
@@ -157,23 +174,23 @@ export default function Profile() {
           )}
 
           <form onSubmit={handleSubmit} style={{ maxWidth: 380 }}>
-            <label className="ar-label">First name</label>
-            <input className="ar-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={{ marginBottom: '1rem' }} />
+            <label className="ar-label" htmlFor={firstNameId}>First name</label>
+            <input id={firstNameId} autoComplete="given-name" className="ar-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} style={{ marginBottom: '1rem' }} />
 
-            <label className="ar-label">Last name</label>
-            <input className="ar-input" value={lastName} onChange={(e) => setLastName(e.target.value)} style={{ marginBottom: '1rem' }} />
+            <label className="ar-label" htmlFor={lastNameId}>Last name</label>
+            <input id={lastNameId} autoComplete="family-name" className="ar-input" value={lastName} onChange={(e) => setLastName(e.target.value)} style={{ marginBottom: '1rem' }} />
 
-            <label className="ar-label">Email</label>
-            <input className="ar-input" value={email} disabled style={{ marginBottom: '0.4rem', opacity: 0.7, cursor: 'not-allowed' }} />
+            <label className="ar-label" htmlFor={emailId}>Email</label>
+            <input id={emailId} className="ar-input" value={email} disabled style={{ marginBottom: '0.4rem', opacity: 0.7, cursor: 'not-allowed' }} />
             <p style={{ fontSize: '0.76rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1rem' }}>
               Your email is fixed on your account. Contact us if it needs to change.
             </p>
 
-            <label className="ar-label">Mobile</label>
-            <input className="ar-input" value={mobile} onChange={(e) => setMobile(e.target.value)} style={{ marginBottom: '1.25rem' }} />
+            <label className="ar-label" htmlFor={mobileId}>Mobile</label>
+            <input id={mobileId} type="tel" autoComplete="tel" className="ar-input" value={mobile} onChange={(e) => setMobile(e.target.value)} style={{ marginBottom: '1.25rem' }} />
 
-            <p className="ar-label">What brings you here?</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
+            <p className="ar-label" id={reasonsLabelId}>What brings you here?</p>
+            <div role="group" aria-labelledby={reasonsLabelId} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
               {REASONS.map((r) => (
                 <label key={r.id} className="ar-checkbox-row" style={{ margin: 0 }}>
                   <input type="checkbox" checked={reasons.includes(r.id)} onChange={() => toggleReason(r.id)} style={{ marginTop: '0.15rem' }} />
@@ -182,10 +199,10 @@ export default function Profile() {
               ))}
             </div>
 
-            {error && <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{error}</p>}
+            {error && <p role="alert" className="ar-error-text">{error}</p>}
 
             <button type="submit" className="ar-btn-primary">Save changes</button>
-            {saved && <span style={{ marginLeft: '0.75rem', fontSize: '0.84rem', color: 'var(--sage)' }}>Saved</span>}
+            <span role="status" style={{ marginLeft: '0.75rem', fontSize: '0.84rem', color: 'var(--sage)' }}>{saved ? 'Saved' : ''}</span>
           </form>
         </div>
       </div>

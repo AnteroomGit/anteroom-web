@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { rateLimit, clientIp, tooMany } from '../../../lib/rateLimit';
 
 // practitioner_leads has no RLS policies granting client access at all
 // (see the schema comment on that table), on purpose -- this route is
@@ -10,11 +11,22 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function GET(request) {
+  // Invitation ids are unguessable, so this only slows down someone
+  // trying ids at random. Generous enough for any real person.
+  const limited = rateLimit(`lead-lookup:${clientIp(request)}`, { limit: 30, windowMs: 60 * 1000 });
+  if (!limited.ok) return tooMany(limited.retryAfter);
+
   const { searchParams } = new URL(request.url);
   const leadId = searchParams.get('leadId');
   if (!leadId) {
     return Response.json({ error: 'Missing leadId' }, { status: 400 });
+  }
+  if (!UUID.test(leadId)) {
+    // Not a valid id, so there is nothing to look up.
+    return Response.json({ valid: false });
   }
 
   const { data: lead, error } = await supabaseAdmin

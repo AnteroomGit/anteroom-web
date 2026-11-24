@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Check, X, Mail, Lock } from 'lucide-react';
+import { Mail, Lock } from 'lucide-react';
 import Footer from '../../components/Footer';
 import Header from '../../components/Header';
 import BotCheck from '../../components/BotCheck';
+import PasswordField from '../../components/PasswordField';
+import PasswordRules from '../../components/PasswordRules';
 import { supabase } from '../../../lib/supabase';
-import { checkPassword, passwordValid } from '../../../lib/password';
+import { passwordValid } from '../../../lib/password';
 
 // Liquidator and SBR Practitioner are collapsed into one category here,
 // since SBR Practitioners must themselves be registered liquidators
@@ -26,24 +28,6 @@ export const SPECIALTIES = [
   'Turnaround / Safe Harbour advice',
   'Members Voluntary Liquidation',
 ];
-
-function Rule({ ok, children }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: ok ? 'var(--sage)' : 'var(--ink-soft)' }}>
-      {ok ? <Check size={16} /> : <X size={16} style={{ opacity: 0.4 }} />} {children}
-    </div>
-  );
-}
-
-// Advisory only -- see lib/password.js for why these two can't be
-// checked client-side the way the four Rule items above can.
-function Tip({ children }) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem', color: 'var(--ink-soft)' }}>
-      <span style={{ width: 13, height: 13, borderRadius: '50%', border: '1.5px solid var(--line)', flexShrink: 0 }} /> {children}
-    </div>
-  );
-}
 
 export default function PractitionerSignup() {
   const [step, setStep] = useState('form');
@@ -103,7 +87,6 @@ export default function PractitionerSignup() {
     loadLead();
   }, []);
 
-  const pw = checkPassword(password);
   const pwValid = passwordValid(password);
 
   function toggleSpecialty(s) {
@@ -139,6 +122,12 @@ export default function PractitionerSignup() {
         emailRedirectTo: `${window.location.origin}/login`,
         data: {
           account_type: 'practitioner',
+          // The invitation. The database only creates a practitioner from
+          // a valid, unclaimed invitation, and takes the name and
+          // registration number from it rather than from this form. The
+          // name and number are still sent so the older database rules
+          // (before the v67 migration is run) keep working.
+          lead_id: leadId,
           name,
           firm,
           phone,
@@ -151,15 +140,16 @@ export default function PractitionerSignup() {
     });
 
     if (error) {
-      // A duplicate-registration-number failure surfaces here as a raw
-      // Postgres constraint error, from the unique constraint on
-      // practitioners.registration_number -- caught and given the
-      // plain-language message this whole flow is supposed to show,
-      // rather than a database error leaking through.
+      // The database refuses a sign-up that does not carry a valid,
+      // unused invitation, and Supabase reports any refusal like that as
+      // the generic "Database error saving new user". A duplicate
+      // registration number used to surface as raw Postgres text; that
+      // case is still recognised in case the older rules are in place.
       const isDuplicateRegNumber = /duplicate key|unique constraint/i.test(error.message) && /registration_number/i.test(error.message);
+      const isRefusedByDatabase = /database error saving new user/i.test(error.message);
       setSignupError(
-        isDuplicateRegNumber
-          ? 'This registration number has already been used to create an account.'
+        isDuplicateRegNumber || isRefusedByDatabase
+          ? "We couldn't create an account from this invitation. The link may already have been used. Please get in touch and we'll sort it out."
           : error.message.includes('already registered')
           ? 'An account with that email already exists. Try logging in instead.'
           : error.message
@@ -221,7 +211,8 @@ export default function PractitionerSignup() {
               {leadState === 'claimed'
                 ? 'This invitation link has already been used to create an account.'
                 : 'AnteRoom\u2019s practitioner network is currently by invitation only. If we\u2019ve spoken and you\u2019re expecting a link, check your email.'}
-              {' '}Otherwise, get in touch via <a href="/contact" style={{ color: 'var(--brand)' }}>Contact</a>.
+              {' '}Otherwise, you can <a href="/contact?topic=practitioner" style={{ color: 'var(--brand)' }}>request an invitation</a>{' '}
+              or read <a href="/for-practitioners" style={{ color: 'var(--brand)' }}>how AnteRoom works for practitioners</a>.
             </p>
           </div>
         </div>
@@ -250,17 +241,17 @@ export default function PractitionerSignup() {
             </div>
 
             <form onSubmit={handleSubmit} className="ar-auth-card">
-              <label className="ar-label">Full name</label>
-              <input disabled className="ar-input" value={name} style={{ marginBottom: '0.35rem', opacity: 0.7 }} />
+              <label className="ar-label" htmlFor="signup-name">Full name</label>
+              <input id="signup-name" disabled className="ar-input" value={name} style={{ marginBottom: '0.35rem', opacity: 0.7 }} />
               <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1rem' }}>
                 Confirmed on our call. <a href="/contact" style={{ color: 'var(--brand)' }}>Contact</a> if this needs correcting.
               </p>
 
-              <label className="ar-label">Firm</label>
-              <input required className="ar-input" value={firm} onChange={(e) => setFirm(e.target.value)} style={{ marginBottom: '1rem' }} />
+              <label className="ar-label" htmlFor="signup-firm">Firm</label>
+              <input id="signup-firm" required autoComplete="organization" className="ar-input" value={firm} onChange={(e) => setFirm(e.target.value)} style={{ marginBottom: '1rem' }} />
 
-              <label className="ar-label">Phone</label>
-              <input className="ar-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ marginBottom: '1rem' }} placeholder="Optional, but needed if you'd rather directors call" />
+              <label className="ar-label" htmlFor="signup-phone">Phone</label>
+              <input id="signup-phone" autoComplete="tel" className="ar-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={{ marginBottom: '1rem' }} placeholder="Optional, but needed if you'd rather directors call" />
 
               <label className="ar-label">If a director wants to reach out, you'd prefer...</label>
               <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.25rem' }}>
@@ -276,28 +267,26 @@ export default function PractitionerSignup() {
                 ))}
               </div>
 
-              <label className="ar-label">Email</label>
-              <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
+              <label className="ar-label" htmlFor="signup-email">Email</label>
+              <input id="signup-email" required type="email" autoComplete="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
 
-              <label className="ar-label">Password</label>
-              <input required type="password" className="ar-input" value={password} onChange={(e) => setPassword(e.target.value)} style={{ marginBottom: '0.5rem' }} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '1.1rem' }}>
-                <Rule ok={pw.length}>8 or more characters</Rule>
-                <Rule ok={pw.letterNumber}>At least 1 letter and 1 number</Rule>
-                <Rule ok={pw.noRepeat}>Don't use the same character 3+ times in a row (e.g. AAA, 111)</Rule>
-                <Rule ok={pw.noSequence}>Don't use 3+ characters in order (e.g. ABC, 123)</Rule>
-                <Tip>Don't reuse a password you've used before</Tip>
-                <Tip>Pick something hard to guess</Tip>
-              </div>
+              <PasswordField
+                label="Password"
+                value={password}
+                onChange={setPassword}
+                autoComplete="new-password"
+                describedBy="practitioner-password-rules"
+              />
+              <PasswordRules password={password} id="practitioner-password-rules" />
 
-              <label className="ar-label">Professional category</label>
-              <select required className="ar-select" value={category} onChange={(e) => setCategory(e.target.value)} style={{ marginBottom: '1rem' }}>
+              <label className="ar-label" htmlFor="signup-category">Professional category</label>
+              <select id="signup-category" required className="ar-select" value={category} onChange={(e) => setCategory(e.target.value)} style={{ marginBottom: '1rem' }}>
                 <option value="">Select one</option>
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
 
-              <label className="ar-label">ASIC Registered Liquidator number</label>
-              <input disabled className="ar-input" value={regNumber} style={{ marginBottom: '0.35rem', opacity: 0.7 }} />
+              <label className="ar-label" htmlFor="signup-reg">ASIC Registered Liquidator number</label>
+              <input id="signup-reg" disabled className="ar-input" value={regNumber} style={{ marginBottom: '0.35rem', opacity: 0.7 }} />
               <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1.25rem' }}>
                 Confirmed against ASIC's register on our call.
               </p>
@@ -323,7 +312,7 @@ export default function PractitionerSignup() {
               <BotCheck key={botKey} checked={botVerified} onChange={setBotVerified} />
 
               {signupError && (
-                <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{signupError}</p>
+                <p role="alert" style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{signupError}</p>
               )}
 
               <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!pwValid || !agreed || !botVerified || submitting}>

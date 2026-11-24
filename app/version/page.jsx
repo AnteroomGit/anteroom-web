@@ -1,6 +1,9 @@
 import { BUILD_STAMP, BUILD_TIME } from '../../lib/build';
+import { privateMeta } from '../../lib/meta';
 
-export const metadata = { title: 'Build version' };
+// Not for search engines: this page only exists so anyone can check which
+// release is live.
+export const metadata = privateMeta('Build version');
 
 export default function Version() {
   return (

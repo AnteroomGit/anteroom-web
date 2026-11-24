@@ -1,70 +1,119 @@
 # AnteRoom
 
-Real Next.js project version of the homepage prototype — same component, same
-Karst fonts, but the fonts are now loaded as real files in `/public/fonts`
-instead of the base64-embedded hack used inside the chat artifact.
+A free triage tool for Australian company directors facing ATO debt,
+Director Penalty Notices and statutory demands, with an introduction to a
+verified registered liquidator. Practitioners fund it. Directors never pay.
 
-## 1. Run it locally
+Built with Next.js 14 (App Router), Supabase (sign-in and database), and
+hosted on Vercel at anteroom.com.au.
 
-You'll need [Node.js](https://nodejs.org) installed (LTS version is fine).
+## Running it on your computer
+
+You need [Node.js](https://nodejs.org) (the LTS version is fine).
 
 ```bash
-cd anteroom-web
 npm install
+cp .env.local.example .env.local   # then fill in the values
 npm run dev
 ```
 
-Open http://localhost:3000 — you should see the real site running on your
-own machine.
+Open http://localhost:3000.
 
-## 2. Push it to GitHub
+## Where things live
 
-If you don't already have a repo for this:
+| What | Where |
+| --- | --- |
+| Homepage and the whole triage flow | `app/components/Home.jsx` (`app/page.jsx` is a thin server wrapper so search engines get the real page) |
+| Page titles, descriptions and share previews | `lib/meta.js`, `lib/site.js`, and each page's `metadata` |
+| Facts used in several places (email address, response-time promise, site address) | `lib/site.js` |
+| Free period end date and monthly price | `lib/pricing.js` (the price stays blank until you decide; the end date is hidden by the page itself once the day has passed) |
+| Triage questions and results | `lib/triageQuestions.js` and `app/constants.js`. Change these with care. |
+| Database setup and changes | `supabase-schema.sql` and `supabase-migrations/` |
+| Release label | `lib/build.js` |
+
+## What is real and what is not
+
+- Practitioners shown to directors are real rows in the `practitioners` table
+  with `verified = true`. There is no sample data.
+- Practitioners join by invitation only. An invitation is a row in
+  `practitioner_leads` and a link of the form
+  `/signup/practitioner?lead=<id>`.
+- A consultation "booking" is a request. The date and time a director picks
+  are a preference, not a diary slot, and nothing is booked until the
+  practitioner confirms with them. Practitioners are not emailed about new
+  requests yet, so they see them in their dashboard.
+- Files cannot be sent through AnteRoom yet. The request screen says so. Do
+  not add an upload box until storage, access rules and a privacy review exist.
+- The contact form and the "tell me when someone is listed" form save to the
+  `contact_messages` table. Waitlist rows start with `[Waitlist]`. If
+  `RESEND_API_KEY` is set you are also emailed. Someone has to read that table.
+- Rate limiting is best effort and per server instance (`lib/rateLimit.js`).
+  It slows down abuse. It is not a guarantee.
+
+## Settings (environment variables)
+
+Every setting is listed, with what it does, in `.env.local.example`. In Vercel
+add them under Project, Settings, Environment Variables, then redeploy: a new
+value only takes effect on the next deployment. Missing optional settings are
+safe: the feature turns off or falls back to a default instead of breaking.
+
+Never paste a secret into a chat, a commit or a screenshot. If one ever is,
+rotate it (make a new one and delete the old one) the same day.
+
+## Checking your work
 
 ```bash
-git init
-git add .
-git commit -m "Initial AnteRoom site"
+npm test
 ```
 
-Then create a new empty repository on github.com (no README, no .gitignore —
-you already have one), and follow the "push an existing repository" commands
-it shows you, something like:
+This runs `tests/smoke.test.mjs` with Node's built-in test runner. It needs
+nothing installed and takes about a second. It checks, among other things,
+that no page contains an em or en dash, that the cookie banner and the
+removed claims have not come back, that every public page has its own title
+and description, and that the security headers are set.
+
+Against a running copy of the site (for example a preview link, or
+`npm run build && npm start`):
 
 ```bash
-git remote add origin https://github.com/<your-username>/anteroom.git
-git branch -M main
-git push -u origin main
+SMOKE_URL=http://localhost:3000 npm test
 ```
 
-## 3. Deploy on Vercel
+The same checks run on every pull request (`.github/workflows/ci.yml`). They
+cannot sign in, so still click through log in, the triage, a request, and
+change password on the preview link before you merge.
 
-Same flow as Chumb:
+## Releasing a change
 
-1. Go to vercel.com, log in (GitHub login is easiest).
-2. Click **Add New → Project**.
-3. Select the `anteroom` repo you just pushed.
-4. Vercel auto-detects Next.js — leave the defaults, click **Deploy**.
-5. In a minute or two you'll get a live URL like `anteroom.vercel.app`.
+Do not push straight to `main`. Pushing to `main` puts the change in front of
+real people within minutes.
 
-## 4. Connect anteroom.com.au
+1. Make a branch: `git checkout -b my-change`.
+2. Commit and push it: `git push -u origin my-change`.
+3. Vercel builds that branch on its own address (a "Preview"). Open the
+   pull request on GitHub and click the Preview link Vercel adds to it.
+4. On the preview, work through the checklist in the pull request template.
+   Open `/version` and check it shows the number you expect.
+5. If the change needs a database change, run it in the Supabase SQL editor
+   only after the code that goes with it is live, unless the SQL file says
+   otherwise at the top. Every migration has a rollback file beside it.
+6. Merge the pull request. Vercel deploys `main` to the live site.
+7. If something is wrong, open the project in Vercel, find the last good
+   deployment under Deployments, and choose Promote to Production. That undoes
+   a code change in seconds. Database changes need their rollback file.
+8. Bump `lib/build.js` with each release so `/version` and the `data-build`
+   attribute on the page (right-click, Inspect) tell you which release is live.
 
-Once the domain registration itself is sorted (the ASIC business name issue
-from earlier, separate from this):
+## Setting up from scratch
 
-1. In the Vercel project, go to **Settings → Domains**.
-2. Add `anteroom.com.au`.
-3. Vercel will show you DNS records (usually an A record or CNAME) to add.
-4. Add those records with whoever you registered the domain through — this
-   part happens on the domain registrar's site, not Vercel's.
-5. DNS changes can take anywhere from a few minutes to a few hours to
-   propagate.
-
-## What's placeholder vs. real
-
-- The six practitioner listings in `app/page.jsx` are example data — replace
-  the `PRACTITIONERS` array once real practitioners are signed up.
-- The document upload in the booking flow captures file **names** into
-  component state for the UI — it does not upload or store anything. Wiring
-  up real, secure file storage is separate backend work, not something this
-  front-end alone can do.
+1. Put the code in a GitHub repository.
+2. In Vercel choose Add New, Project, pick the repository, and leave the
+   defaults (Vercel detects Next.js). Add the settings above, then Deploy.
+3. To use anteroom.com.au, go to the project's Settings, Domains, add the
+   domain, and add the DNS records Vercel shows at your domain registrar.
+4. In Supabase, run `supabase-schema.sql` once on a new project. On an
+   existing project run only the files in `supabase-migrations/` that you have
+   not run yet.
+5. In Supabase, Authentication, URL Configuration, add the live site's
+   `/reset-password` address (both the www and non-www forms) to the
+   Redirect URLs, or the "Forgot password" email link will be refused.

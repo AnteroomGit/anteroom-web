@@ -7,7 +7,8 @@ import Footer from '../../components/Footer';
 import PractitionerAccountNav from '../../components/PractitionerAccountNav';
 import AddressAutocomplete from '../../components/AddressAutocomplete';
 import { supabase } from '../../../lib/supabase';
-import { PractitionerCard } from '../../page';
+import { refreshAccount } from '../../../lib/account';
+import { PractitionerCard } from '../../components/Home';
 import { SPECIALTIES } from '../../signup/practitioner/page';
 
 export default function PractitionerProfile() {
@@ -77,8 +78,14 @@ export default function PractitionerProfile() {
       { onConflict: 'id' }
     );
 
-    if (saveError) setError(saveError.message);
-    else setSaved(true);
+    if (saveError) {
+      console.error('Practitioner profile save failed:', saveError);
+      setError('We could not save your profile just now. Please try again.');
+    } else {
+      setSaved(true);
+      // The header shows your name, so tell it the name may have changed.
+      refreshAccount();
+    }
   }
 
   if (loading) {
@@ -100,7 +107,7 @@ export default function PractitionerProfile() {
   const initials = (name || '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?';
   const previewPractitioner = {
     name: name || 'Your name', firm: firm || 'Your firm', title: practitionerType || 'Category not set',
-    verified, suburb: address || 'Address not set', tags, next: 'This week',
+    verified, suburb: address || 'Address not set', tags,
     avatar_url: avatarUrl, initials, contact_preference: contactPreference,
   };
 

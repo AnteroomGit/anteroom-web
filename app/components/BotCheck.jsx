@@ -11,7 +11,7 @@ export default function BotCheck({ checked, onChange }) {
 
   if (!siteKey) {
     return (
-      <p style={{ fontSize: '0.78rem', color: 'var(--clay)', marginBottom: '1.1rem' }}>
+      <p style={{ fontSize: '0.78rem', color: 'var(--clay)', marginBottom: '1.1rem', overflowWrap: 'anywhere' }}>
         Bot check not configured. Add NEXT_PUBLIC_TURNSTILE_SITE_KEY to enable it.
       </p>
     );

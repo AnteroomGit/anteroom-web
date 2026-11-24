@@ -1,7 +1,12 @@
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import { pageMeta } from '../../lib/meta';
 
-export const metadata = { title: 'About | AnteRoom' };
+export const metadata = pageMeta({
+  title: 'Why AnteRoom exists',
+  description: 'Why AnteRoom was built: a free, plain-English first stop for company directors who have received an ATO notice, before they need to call a professional.',
+  path: '/about',
+});
 
 export default function About() {
   return (
@@ -29,9 +34,9 @@ export default function About() {
         <p>
           A free, fast, honest first stop. AnteRoom asks a few short questions, tells you
           plainly what your situation means and how urgent it is and, if it&apos;s time to talk
-          to someone, connects you with a verified liquidator, restructuring practitioner,
-          accountant, or lawyer near you, with your situation already summarised so the
-          conversation doesn&apos;t start from zero.
+          to someone, lets you request a consultation with a verified registered liquidator,
+          with your situation already summarised so the conversation doesn&apos;t start from
+          zero.
         </p>
         <p>
           AnteRoom isn&apos;t a replacement for any of those professionals, and it doesn&apos;t give

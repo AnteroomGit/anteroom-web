@@ -1,7 +1,12 @@
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { pageMeta } from '../../lib/meta';
 
-export const metadata = { title: 'How We Work | AnteRoom' };
+export const metadata = pageMeta({
+  title: 'How we work',
+  description: 'How AnteRoom is funded, how the practitioner list is put together, what verified means, and our conflict of interest policy. Directors never pay.',
+  path: '/how-we-work',
+});
 
 export default function HowWeWork() {
   return (

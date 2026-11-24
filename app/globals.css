@@ -153,6 +153,16 @@ html, body { margin: 0; padding: 0; height: 100%; }
   background: var(--paper-raised);
 }
 .ar-nav-link { font-size: 0.88rem; color: var(--ink-soft); text-decoration: none; }
+.ar-nav { display: flex; gap: 1.25rem; align-items: center; }
+/* On a phone there is no room for two links beside the logo: they wrapped
+   onto three lines. The practitioner link stays in the footer and in the
+   banner on the homepage, and the header keeps the one most people need. */
+@media (max-width: 560px) {
+  .ar-header { padding: 0.75rem 1rem; flex-wrap: wrap; row-gap: 0.35rem; }
+  .ar-nav { gap: 1rem; }
+  .ar-nav-link { white-space: nowrap; }
+  .ar-nav-secondary { display: none; }
+}
 
 /* Replaces the previous top strip, which used the exact typographic
    treatment (tracked-out ALL-CAPS eyebrow label) flagged directly as
@@ -342,8 +352,8 @@ html, body { margin: 0; padding: 0; height: 100%; }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Deliberate motion, scoped to the one place it's earning its keep — the
-   quiz advancing from one question to the next — rather than applied
+/* Deliberate motion, scoped to the one place it's earning its keep: the
+   quiz advancing from one question to the next, rather than applied
    blanket across every section on every page. */
 .ar-quiz-step { animation: ar-step-in 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 @keyframes ar-step-in {
@@ -361,7 +371,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
 
 .ar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
 
-/* Result banners deliberately don't use .ar-card — a full bordered box
+/* Result banners deliberately don't use .ar-card. A full bordered box
    with a pill inside it was exactly the "boxes stacked on boxes" pattern
    worth removing. Just a meaningful colour accent and real typographic
    weight, closer to an editorial callout than a UI widget. */
@@ -419,12 +429,6 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-slot { border: 1.5px solid var(--line); border-radius: 10px; padding: 0.6rem; text-align: center; cursor: pointer; font-size: 0.86rem; }
 .ar-slot:hover { border-color: var(--brand); background: var(--brand-tint); }
 .ar-slot.active { background: var(--brand); border-color: var(--brand); color: #fff; }
-
-.ar-dropzone {
-  border: 1.5px dashed var(--line); border-radius: 12px; padding: 1.5rem; text-align: center;
-  cursor: pointer; background: var(--paper);
-}
-.ar-dropzone:hover { border-color: var(--brand); }
 
 .ar-input, .ar-select, .ar-textarea {
   width: 100%; border: 1.5px solid var(--line); border-radius: 10px; padding: 0.6rem 0.75rem;
@@ -523,12 +527,6 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-modal-title { font-family: var(--font-karst, Georgia), sans-serif; font-weight: 800; font-size: 1.05rem; margin: 0 0 0.4rem; }
 .ar-modal-text { font-size: 0.88rem; color: var(--ink-soft); margin: 0; line-height: 1.5; }
 
-.ar-page-transition { animation: ar-page-fade 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
-@keyframes ar-page-fade {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
 /* --- Milestone 1 additions: static pages, footer, forms --- */
 .ar-footer-main {
   border-top: 1px solid var(--line); background: var(--paper-raised);
@@ -590,7 +588,7 @@ html, body { margin: 0; padding: 0; height: 100%; }
   .ar-footer-grid { grid-template-columns: 1fr 1fr; }
 }
 
-/* --- Account section, help, 404, cookie banner --- */
+/* --- Account section, help, 404 --- */
 .ar-account-layout { max-width: 1280px; margin: 0 auto; padding: var(--space-9) var(--space-5); display: grid; grid-template-columns: 220px 1fr; gap: var(--space-6); }
 /* The exact gap the last pass missed: every account and practitioner
    page heading routes through this wrapper, not .ar-section, so fixing
@@ -606,25 +604,131 @@ html, body { margin: 0; padding: 0; height: 100%; }
 .ar-account-nav a.active, .ar-account-nav a:hover, .ar-account-nav button:hover { background: var(--brand-tint); color: var(--brand); }
 .ar-account-nav .logout { color: var(--clay); margin-top: 0.75rem; }
 
-.ar-faq-item { border-bottom: 1px solid var(--line); padding: 1rem 0; cursor: pointer; }
-.ar-faq-item h3 { margin: 0; font-size: 0.94rem; font-weight: 300; display: flex; justify-content: space-between; align-items: center; }
-.ar-faq-item p { font-size: 0.86rem; color: var(--ink-soft); margin: 0.6rem 0 0; line-height: 1.55; }
-
 .ar-404 { max-width: 480px; margin: 4rem auto; padding: 0 1.5rem; text-align: center; }
-
-.ar-cookie-banner {
-  position: fixed; bottom: 0; left: 0; right: 0; background: #392061; color: #fff;
-  padding: 1rem 1.5rem; display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
-  z-index: 50; font-size: 0.84rem;  
-}
-.ar-cookie-banner a { color: #fff; text-decoration: underline; }
-.ar-cookie-btn {
-  background: #fff; color: #392061; border: none; border-radius: 8px; padding: 0.5rem 1.1rem;
-  font-size: 0.84rem; cursor: pointer;
-}
-.ar-cookie-btn.ghost { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.4); }
 
 @media (max-width: 700px) {
   .ar-account-layout { grid-template-columns: 1fr; }
   .ar-account-nav { flex-direction: row; overflow-x: auto; }
 }
+
+/* =====================================================================
+   v67 additions
+   ===================================================================== */
+
+/* Links styled as buttons. `.ar-root a` colours every link purple and is
+   more specific than the button classes, so an <a class="ar-btn-primary">
+   came out as purple text on a purple button. This puts the intended
+   colours back. */
+.ar-root a.ar-btn-primary, .ar-root a.ar-btn-primary:hover,
+.ar-root a.ar-hero-cta, .ar-root a.ar-hero-cta:hover { color: #fff; text-decoration: none; }
+
+/* Text for screen readers only. */
+.ar-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* Lets keyboard users jump past the header. Hidden until it has focus. */
+.ar-skip-link {
+  position: absolute; left: 0.75rem; top: -4rem; z-index: 200;
+  background: var(--brand); padding: 0.6rem 1rem; border-radius: var(--radius-sm);
+  font-size: 0.9rem; text-decoration: none;
+}
+.ar-root a.ar-skip-link, .ar-root a.ar-skip-link:hover { color: #fff; }
+.ar-skip-link:focus { top: 0.75rem; }
+
+/* "Log out" is a button but should read like the links beside it. */
+.ar-nav-button { background: none; border: none; padding: 0; cursor: pointer; }
+
+/* Summary/details focus ring (the global one covers links and inputs). */
+.ar-root summary:focus-visible { outline: 2.5px solid var(--brand); outline-offset: 2px; border-radius: var(--radius-sm); }
+
+/* Password field, rules list and messages, shared by every password form. */
+.ar-pw-labelrow { display: flex; justify-content: space-between; align-items: baseline; }
+.ar-pw-wrap { position: relative; }
+.ar-pw-input { padding-right: 4.2rem; }
+.ar-pw-toggle {
+  position: absolute; right: 0.35rem; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; padding: 0.4rem 0.6rem;
+  font-size: 0.78rem; color: var(--ink-soft); border-radius: var(--radius-sm);
+}
+.ar-pw-toggle:hover { color: var(--brand); }
+.ar-pw-rules { list-style: none; margin: 0.5rem 0 1.2rem; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.ar-pw-rules li { display: flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--ink-soft); }
+.ar-pw-rules li.ok { color: var(--sage); }
+.ar-pw-rules svg { flex-shrink: 0; }
+.ar-pw-rules .ar-pw-x { opacity: 0.4; }
+.ar-pw-dot { width: 13px; height: 13px; margin: 0 1.5px; border-radius: 50%; border: 1.5px solid var(--line); flex-shrink: 0; }
+.ar-error-text { color: var(--clay); font-size: 0.84rem; margin: 0 0 1rem; }
+.ar-success-text { color: var(--sage); font-size: 0.86rem; margin: 0; }
+
+/* A field people never see. Bots that fill in every field give themselves away. */
+.ar-hp { position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+
+/* Email capture when no practitioner is listed yet. */
+.ar-notify-form { display: flex; flex-direction: column; gap: 0.9rem; max-width: 380px; margin: 0 auto; text-align: left; }
+
+/* Confirmation dialog. */
+.ar-modal-actions { display: flex; gap: 0.6rem; margin-top: 1.25rem; }
+.ar-modal-actions > button { flex: 1; }
+.ar-modal-error { margin: 0.75rem 0 0; }
+.ar-btn-primary.ar-btn-danger { background: var(--clay); }
+.ar-btn-primary.ar-btn-danger:hover { background: #8A382A; }
+
+/* FAQ: native <details>, so every answer is in the page. */
+.ar-faq { border-bottom: 1px solid var(--line); }
+.ar-faq summary {
+  list-style: none; cursor: pointer; display: flex; justify-content: space-between;
+  align-items: center; gap: 1rem; padding: 1rem 0;
+  font-family: var(--font-karst, Georgia), sans-serif; font-weight: 300; font-size: 0.94rem; color: var(--ink);
+}
+.ar-faq summary::-webkit-details-marker { display: none; }
+.ar-faq summary::after {
+  content: ''; width: 0.5rem; height: 0.5rem; flex-shrink: 0; margin-top: -0.2rem;
+  border-right: 2px solid var(--ink-soft); border-bottom: 2px solid var(--ink-soft);
+  transform: rotate(45deg); transition: transform 0.15s ease;
+}
+.ar-faq[open] summary::after { transform: rotate(-135deg); margin-top: 0.2rem; }
+.ar-prose .ar-faq p { font-size: 0.86rem; color: var(--ink-soft); margin: 0 0 1rem; line-height: 1.55; }
+
+/* Homepage. The page is rendered on the server so crawlers and slow phones
+   see the real content. For a visitor who looks signed in, a small script
+   in layout.jsx adds this class before the first paint so the marketing
+   sections stay hidden until the account check has decided whether to
+   redirect them (practitioners) or show their last result. Anonymous
+   visitors never get the class. */
+html.ar-session-pending .ar-hero,
+html.ar-session-pending .ar-home-section,
+html.ar-session-pending .ar-trust-row,
+html.ar-session-pending .ar-homepage-result-preview,
+html.ar-session-pending .ar-practitioner-banner { visibility: hidden; }
+
+/* Practitioner page. */
+.ar-pro-hero-inner { max-width: 1080px; margin: 0 auto; position: relative; z-index: 1; }
+.ar-pro-hero .ar-display { max-width: 760px; margin: 0 0 1.25rem; }
+.ar-pro-hero .ar-hero-sub { max-width: 640px; }
+.ar-pro-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem; }
+.ar-pro-link { font-size: 0.9rem; }
+/* width: 100% because .ar-section is a flex item with auto side margins,
+   which would otherwise shrink each section to its own content and leave
+   every heading with a different left edge. */
+.ar-pro-section {
+  width: 100%; box-sizing: border-box; max-width: none;
+  /* The same left edge as the hero above and the footer below: 1.5rem on a
+     phone, and the edge of a centred 1080px column on a wide screen. */
+  padding: var(--space-7) max(1.5rem, calc((100% - 1080px) / 2));
+}
+.ar-pro-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-4); }
+.ar-pro-card-title { margin: 0; }
+.ar-pro-card-text { margin: 0; font-size: 0.88rem; color: var(--ink-soft); line-height: 1.6; }
+.ar-pro-cost, .ar-pro-body { max-width: 680px; }
+.ar-pro-cost p, p.ar-pro-body { font-size: 0.94rem; line-height: 1.65; color: var(--ink); margin: 0 0 0.9rem; }
+.ar-pro-steps { max-width: 680px; margin: 0; padding-left: 1.25rem; display: flex; flex-direction: column; gap: 0.9rem; font-size: 0.94rem; line-height: 1.6; }
+.ar-pro-example-note { font-size: 0.84rem; color: var(--ink-soft); margin: 0 0 var(--space-3); }
+.ar-pro-example { max-width: 360px; border-style: dashed; }
+.ar-pro-example-button {
+  background: var(--brand); color: #fff; border-radius: var(--radius-md); padding: 0.65rem;
+  text-align: center; font-family: var(--font-karst, Georgia), sans-serif; font-weight: 800;
+  font-size: 0.9rem; opacity: 0.55;
+}
+.ar-pro-footnote { text-align: center; font-size: 0.84rem; color: var(--ink-soft); margin: 1rem 1.5rem 2rem; }

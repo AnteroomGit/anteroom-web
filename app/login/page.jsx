@@ -1,18 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
+import PasswordField from '../components/PasswordField';
 import { GoogleIcon, AppleIcon } from '../components/OAuthIcons';
 import { supabase } from '../../lib/supabase';
 
-// Small inline icons rather than an image request -- no network access
-// needed, and these are standard enough marks that a plain SVG reads
-// correctly at this size without needing the official brand asset.
+// Apple sign-in is not set up yet, so its button stays hidden until it is.
+// Set NEXT_PUBLIC_ENABLE_APPLE_SIGNIN=true in Vercel once Apple works.
+const APPLE_ENABLED = process.env.NEXT_PUBLIC_ENABLE_APPLE_SIGNIN === 'true';
 
 export default function Login() {
   const router = useRouter();
+  const emailId = useId();
+  const resetEmailId = useId();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState(null);
@@ -20,6 +23,16 @@ export default function Login() {
   const [showReset, setShowReset] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   const [resetLoading, setResetLoading] = useState(false);
+
+  // The "this link has expired" page sends people here with ?reset=1 so
+  // they land straight on the reset form.
+  useEffect(() => {
+    try {
+      if (new URLSearchParams(window.location.search).get('reset') === '1') setShowReset(true);
+    } catch {
+      // No address to read; the normal login form is fine.
+    }
+  }, []);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -78,28 +91,43 @@ export default function Login() {
     <div className="ar-root">
       <Header />
       <div className="ar-form-page">
-        <h1 className="ar-h1" style={{ marginBottom: '1.5rem' }}>Log in</h1>
+        <h1 className="ar-h1" style={{ marginBottom: '1.5rem' }}>{showReset ? 'Reset your password' : 'Log in'}</h1>
 
         <div className="ar-auth-card">
-          <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('google')} style={{ marginBottom: '0.6rem' }}>
-            <GoogleIcon /> Continue with Google
-          </button>
-          <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('apple')}>
-            <AppleIcon /> Continue with Apple
-          </button>
+          {!showReset && (
+            <>
+              <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('google')} style={{ marginBottom: APPLE_ENABLED ? '0.6rem' : 0 }}>
+                <GoogleIcon /> Continue with Google
+              </button>
+              {APPLE_ENABLED && (
+                <button type="button" className="ar-oauth-btn" onClick={() => handleOAuth('apple')}>
+                  <AppleIcon /> Continue with Apple
+                </button>
+              )}
 
-          <div className="ar-oauth-divider">or</div>
+              <div className="ar-oauth-divider">or</div>
+            </>
+          )}
 
           {showReset ? (
             resetSent ? (
-              <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)' }}>
-                If an account exists for <strong>{email}</strong>, a reset link is on its way.
-              </p>
+              <div role="status">
+                <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
+                  If an account exists for <strong>{email}</strong>, a reset link is on its way.
+                  It can take a minute, and it&apos;s worth checking your junk folder.
+                </p>
+                <button type="button" className="ar-btn-ghost" style={{ width: '100%' }} onClick={() => { setShowReset(false); setResetSent(false); setError(null); }}>
+                  Back to log in
+                </button>
+              </div>
             ) : (
               <form onSubmit={handleReset}>
-                <label className="ar-label">Email</label>
-                <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
-                {error && <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{error}</p>}
+                <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', lineHeight: 1.6, margin: '0 0 1rem' }}>
+                  Enter your email and we&apos;ll send you a link to choose a new password.
+                </p>
+                <label className="ar-label" htmlFor={resetEmailId}>Email</label>
+                <input id={resetEmailId} required type="email" autoComplete="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
+                {error && <p role="alert" className="ar-error-text">{error}</p>}
                 <button type="submit" className="ar-btn-primary" style={{ width: '100%', marginBottom: '0.75rem' }} disabled={resetLoading}>
                   {resetLoading ? 'Sending...' : 'Send reset link'}
                 </button>
@@ -110,18 +138,24 @@ export default function Login() {
             )
           ) : (
             <form onSubmit={handleSubmit}>
-              <label className="ar-label">Email</label>
-              <input required type="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
+              <label className="ar-label" htmlFor={emailId}>Email</label>
+              <input id={emailId} required type="email" autoComplete="email" className="ar-input" value={email} onChange={(e) => setEmail(e.target.value)} style={{ marginBottom: '1rem' }} />
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                <label className="ar-label">Password</label>
-                <button type="button" onClick={() => { setShowReset(true); setError(null); }} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: '0.8rem', cursor: 'pointer', padding: 0 }}>
-                  Forgot password?
-                </button>
+              <div style={{ marginBottom: '1.25rem' }}>
+                <PasswordField
+                  label="Password"
+                  value={password}
+                  onChange={setPassword}
+                  autoComplete="current-password"
+                  labelExtra={
+                    <button type="button" onClick={() => { setShowReset(true); setError(null); }} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: '0.8rem', cursor: 'pointer', padding: 0 }}>
+                      Forgot password?
+                    </button>
+                  }
+                />
               </div>
-              <input required type="password" className="ar-input" value={password} onChange={(e) => setPassword(e.target.value)} style={{ marginBottom: '1.25rem' }} />
 
-              {error && <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{error}</p>}
+              {error && <p role="alert" className="ar-error-text">{error}</p>}
 
               <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={loading}>
                 {loading ? 'Logging in...' : 'Log in'}
@@ -131,10 +165,10 @@ export default function Login() {
         </div>
 
         <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '1.5rem' }}>
-          Don't have an account? <a href="/signup/client" style={{ color: 'var(--brand)' }}>Sign up</a>
+          Don&apos;t have an account? <a href="/signup/client" style={{ color: 'var(--brand)' }}>Sign up</a>
         </p>
         <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '0.5rem' }}>
-          Listing a practice? <a href="/signup/practitioner" style={{ color: 'var(--brand)' }}>Sign up as a practitioner</a>
+          A registered liquidator? <a href="/for-practitioners" style={{ color: 'var(--brand)' }}>See how AnteRoom works for practitioners</a>
         </p>
       </div>
       <Footer />

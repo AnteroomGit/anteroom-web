@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { rateLimit, clientIp, tooMany } from '../../../lib/rateLimit';
 
 // Deleting an auth.users row needs the service role -- there's no way
 // for a logged-in user's own session to delete their own auth account
@@ -12,6 +13,9 @@ const supabaseAdmin = createClient(
 );
 
 export async function POST(request) {
+  const limited = rateLimit(`delete-account:${clientIp(request)}`, { limit: 5, windowMs: 60 * 60 * 1000 });
+  if (!limited.ok) return tooMany(limited.retryAfter);
+
   try {
     const { accessToken } = await request.json();
     if (!accessToken) {
@@ -42,6 +46,8 @@ export async function POST(request) {
     return Response.json({ success: true });
   } catch (err) {
     console.error('delete-account error:', err);
-    return Response.json({ error: err.message || 'Could not delete account' }, { status: 500 });
+    // The real error is in the server log. The visitor gets a plain
+    // message rather than whatever the database said.
+    return Response.json({ error: 'We could not delete your account. Please try again, or contact us.' }, { status: 500 });
   }
 }
