@@ -89,18 +89,18 @@ export default function AddressAutocomplete({ value, onChange, placeholder }) {
       {open && (results.length > 0 || loading) && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 20,
-          background: '#fff', border: '1px solid var(--line)', borderRadius: 10,
-          marginTop: '0.3rem', boxShadow: '0 6px 18px rgba(0,0,0,0.08)', overflow: 'hidden',
+          background: '#fff', border: '1px solid var(--line)', borderRadius: 'var(--radius-md)',
+          marginTop: '0.3rem', boxShadow: 'var(--shadow-pop)', overflow: 'hidden',
         }}>
           {loading && (
-            <div style={{ padding: '0.6rem 0.8rem', fontSize: '0.82rem', color: 'var(--ink-soft)' }}>Searching...</div>
+            <div style={{ padding: '0.6rem 0.8rem', fontSize: 'var(--text-sm)', color: 'var(--ink-soft)' }}>Searching...</div>
           )}
           {results.map((r) => (
             <div
               key={r.place_id}
               onClick={() => handleSelect(r)}
               style={{
-                padding: '0.6rem 0.8rem', fontSize: '0.84rem', cursor: 'pointer',
+                padding: '0.6rem 0.8rem', fontSize: 'var(--text-sm)', cursor: 'pointer',
                 display: 'flex', gap: '0.5rem', alignItems: 'flex-start',
                 borderBottom: '1px solid var(--line)',
               }}

@@ -155,7 +155,7 @@ export default function Profile() {
                   Notice: {latestAppointment.notice_type}{latestAppointment.notice_date ? ` (dated ${latestAppointment.notice_date})` : ''}
                 </p>
               )}
-              <p style={{ fontSize: '0.82rem', marginTop: '0.6rem' }}>
+              <p style={{ fontSize: 'var(--text-sm)', marginTop: '0.6rem' }}>
                 <a href="/account/appointments" style={{ color: 'var(--brand)' }}>View your appointments</a>
                 {' · '}
                 <a href="/?start=1" style={{ color: 'var(--brand)' }}>Run the check again</a>
@@ -182,7 +182,7 @@ export default function Profile() {
 
             <label className="ar-label" htmlFor={emailId}>Email</label>
             <input id={emailId} className="ar-input" value={email} disabled style={{ marginBottom: '0.4rem', opacity: 0.7, cursor: 'not-allowed' }} />
-            <p style={{ fontSize: '0.76rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1rem' }}>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1rem' }}>
               Your email is fixed on your account. Contact us if it needs to change.
             </p>
 
@@ -202,7 +202,7 @@ export default function Profile() {
             {error && <p role="alert" className="ar-error-text">{error}</p>}
 
             <button type="submit" className="ar-btn-primary">Save changes</button>
-            <span role="status" style={{ marginLeft: '0.75rem', fontSize: '0.84rem', color: 'var(--sage)' }}>{saved ? 'Saved' : ''}</span>
+            <span role="status" style={{ marginLeft: '0.75rem', fontSize: 'var(--text-sm)', color: 'var(--sage)' }}>{saved ? 'Saved' : ''}</span>
           </form>
         </div>
       </div>

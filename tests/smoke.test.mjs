@@ -47,9 +47,12 @@ test('the build stamp looks like a release label', () => {
 });
 
 test('no em or en dashes in any page, component, shared setting or stylesheet', () => {
-  const checked = [...sourceFiles, ...walk('lib'), 'app/globals.css', 'README.md', '.env.local.example'];
-  const offenders = checked.filter((f) => /[\u2013\u2014]/.test(read(f)));
-  assert.deepEqual(offenders, [], `Use a comma, colon or full stop instead in: ${offenders.join(', ')}`);
+  const checked = [...sourceFiles, ...walk('lib'), 'app/globals.css', 'README.md', '.env.local.example', 'DESIGN.md'];
+  // The character itself, plus the ways of writing it that still show up on the page:
+  // a \u2013 style escape in a string, or an HTML entity.
+  const dash = /[\u2013\u2014]|\\u\{?(2013|2014)\}?|&(ndash|mdash);|&#(8211|8212|x2013|x2014);/i;
+  const offenders = checked.filter((f) => existsSync(join(root, f)) && dash.test(read(f)));
+  assert.deepEqual(offenders, [], `Use a comma, colon, "to" or a full stop instead in: ${offenders.join(', ')}`);
 });
 
 test('the cookie banner is gone and stays gone', () => {
@@ -192,7 +195,7 @@ test('the homepage is real HTML before any script runs', live, async () => {
   assert.equal(status, 200);
   assert.match(headers.get('content-type'), /text\/html/);
   const html = decode(text);
-  assert.ok(html.includes("Don't wait"), 'the hero headline should be in the first response');
+  assert.ok(html.includes('Find out where you stand'), 'the hero headline should be in the first response');
   assert.ok(html.includes('Start the free check'), 'the main button should be in the first response');
   assert.equal(titleOf(text), siteConst('HOME_TITLE'));
   assert.match(text, /rel="canonical"/);

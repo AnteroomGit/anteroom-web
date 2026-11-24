@@ -4,7 +4,7 @@ import { useEffect, useId, useState } from 'react';
 import Footer from '../components/Footer';
 import Header from '../components/Header';
 import BotCheck from '../components/BotCheck';
-import { CONTACT_EMAIL, CONTACT_RESPONSE_PROMISE } from '../../lib/site';
+import { CONTACT_EMAIL, CONTACT_PHONE, CONTACT_RESPONSE_PROMISE } from '../../lib/site';
 
 // Used when someone arrives from "Request an invitation" on the
 // practitioner page (/contact?topic=practitioner). They can edit it.
@@ -74,11 +74,12 @@ export default function Contact() {
       <Header />
       <div className="ar-form-page">
         <h1 className="ar-h1" style={{ marginBottom: '0.4rem' }}>Get in touch</h1>
-        <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '0.5rem' }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '0.5rem' }}>
           Director, practitioner, or press: send a short message and we&apos;ll get back to you.{' '}
           {CONTACT_RESPONSE_PROMISE}
+          {CONTACT_PHONE ? <> Prefer to talk? Call {CONTACT_PHONE}.</> : null}
         </p>
-        <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
           AnteRoom isn&apos;t an emergency service. If a notice deadline is close, speak to a
           registered liquidator or your accountant now rather than waiting for a reply.
         </p>

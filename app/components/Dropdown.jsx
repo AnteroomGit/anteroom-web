@@ -36,8 +36,8 @@ export default function Dropdown({ value, onChange, options, placeholder }) {
         <div
           style={{
             position: 'absolute', top: 'calc(100% + 8px)', left: 0, right: 0, zIndex: 40,
-            background: 'var(--paper-raised)', border: '1.5px solid var(--line)', borderRadius: 12,
-            boxShadow: '0 8px 24px rgba(33,21,48,0.12)', overflow: 'hidden', minWidth: 220,
+            background: 'var(--paper-raised)', border: '1px solid var(--line-strong)', borderRadius: 'var(--radius-md)',
+            boxShadow: 'var(--shadow-pop)', overflow: 'hidden', minWidth: 220,
           }}
         >
           {options.map((o) => (
@@ -45,7 +45,7 @@ export default function Dropdown({ value, onChange, options, placeholder }) {
               key={o.value || o.label}
               onClick={() => { onChange(o.value); setOpen(false); }}
               style={{
-                padding: '0.65rem 0.9rem', fontSize: '0.92rem', cursor: 'pointer',
+                padding: '0.65rem 0.9rem', fontSize: 'var(--text-base)', cursor: 'pointer',
                 background: o.value === value ? 'var(--brand-tint)' : 'transparent',
                 color: o.value === value ? 'var(--brand)' : 'var(--ink)',
               }}

@@ -116,7 +116,7 @@ export default function ResetPassword() {
         {state === 'invalid' && (
           <div className="ar-card" style={{ padding: '2rem 1.5rem' }}>
             <h1 className="ar-h2" style={{ margin: 0 }}>This link has expired</h1>
-            <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', lineHeight: 1.6, margin: '0.5rem 0 1rem' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', lineHeight: 1.6, margin: '0.5rem 0 1rem' }}>
               Password reset links only work once, and only for a short time. We can email you a
               new one.
             </p>
@@ -129,7 +129,7 @@ export default function ResetPassword() {
         {state === 'ready' && (
           <>
             <h1 className="ar-h1" style={{ marginBottom: '0.3rem' }}>Set a new password</h1>
-            <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
               Choose a password you haven&apos;t used here before.
             </p>
             <form onSubmit={handleSubmit} className="ar-auth-card">
@@ -152,7 +152,7 @@ export default function ResetPassword() {
         {state === 'done' && (
           <div className="ar-card" style={{ padding: '2rem 1.5rem' }}>
             <h1 className="ar-h2" style={{ margin: 0 }}>Password updated</h1>
-            <p role="status" style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', lineHeight: 1.6, margin: '0.5rem 0 1rem' }}>
+            <p role="status" style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', lineHeight: 1.6, margin: '0.5rem 0 1rem' }}>
               You&apos;re logged in with your new password. Any other devices that were logged in
               have been signed out.
             </p>

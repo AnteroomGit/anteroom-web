@@ -2,25 +2,13 @@
 
 import { useState, useEffect, useId, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Search,
-  MapPin,
-  ShieldCheck,
-  Clock,
-  FileText,
-  Check,
-  Mail,
-  AlertTriangle,
-  Wallet,
-  Banknote,
-  Archive,
-  TrendingDown,
-} from 'lucide-react';
+import { Search, MapPin, ShieldCheck, Clock, Check } from 'lucide-react';
 import Footer from './Footer';
 import Header from './Header';
 import Dropdown from './Dropdown';
 import NotifyForm from './NotifyForm';
 import { REASONS } from '../constants';
+import { GUIDES } from '../../lib/guides';
 import { supabase } from '../../lib/supabase';
 import { ensureClientRow } from '../../lib/ensureClient';
 import { refreshAccount } from '../../lib/account';
@@ -44,12 +32,12 @@ const NOTICE_OPTIONS = ['Director Penalty Notice', 'Garnishee notice', 'Statutor
 
 
 const QUICK_LINKS = [
-  { label: 'Director Penalty Notice', category: 'ato', icon: Mail },
-  { label: 'Statutory demand', category: 'ato', icon: AlertTriangle },
-  { label: "Can't pay super", category: 'money', icon: Wallet },
-  { label: 'Garnishee notice', category: 'ato', icon: Banknote },
-  { label: 'Voluntary deregistration', category: 'close', icon: Archive },
-  { label: 'Worried about cash flow', category: 'money', icon: TrendingDown },
+  { label: 'Director Penalty Notice', category: 'ato' },
+  { label: 'Statutory demand', category: 'ato' },
+  { label: 'Garnishee notice', category: 'ato' },
+  { label: "Can't pay super", category: 'money' },
+  { label: 'Worried about cash flow', category: 'money' },
+  { label: 'Voluntary deregistration', category: 'close' },
 ];
 
 /* ---------------------------------------------------------------
@@ -88,7 +76,7 @@ const TRIAGE = {
     question: 'How long has super been behind?',
     options: [
       { label: 'Under 2 weeks', value: 'short', next: 'worried-2' },
-      { label: '2\u20136 weeks', value: 'medium', next: 'scale-check' },
+      { label: '2 to 6 weeks', value: 'medium', next: 'scale-check' },
       { label: 'More than 6 weeks', value: 'long', next: 'scale-check' },
     ],
   },
@@ -163,8 +151,8 @@ const TRIAGE = {
     question: 'Roughly what are the company’s assets worth?',
     options: [
       { label: 'Under $1,000', value: 'under1000', next: 'route-after-assets' },
-      { label: '$1,000\u2013$10,000', value: '1kto10k', next: 'route-after-assets' },
-      { label: '$10,000\u2013$100,000', value: '10kto100k', next: 'route-after-assets' },
+      { label: '$1,000 to $10,000', value: '1kto10k', next: 'route-after-assets' },
+      { label: '$10,000 to $100,000', value: '10kto100k', next: 'route-after-assets' },
       { label: 'Over $100,000', value: 'over100k', next: 'route-after-assets' },
     ],
   },
@@ -241,7 +229,7 @@ function getResult(a) {
     else noticeKey = 'noticeUnsure';
 
     const pathwayKey = getPathwayKey(a);
-    return { notice: NOTICE_INFO[noticeKey], pathway: pathwayKey ? PATHWAY_INFO[pathwayKey] : null, pathwayKey };
+    return { notice: NOTICE_INFO[noticeKey], noticeKey, pathway: pathwayKey ? PATHWAY_INFO[pathwayKey] : null, pathwayKey };
   }
 
   // Close branch
@@ -352,96 +340,43 @@ export function PractitionerCard({ p, onBook }) {
         {p.avatar_url ? (
           <img
             src={p.avatar_url} alt={p.name}
-            style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+            style={{ width: 46, height: 46, borderRadius: 'var(--radius-md)', objectFit: 'cover', flexShrink: 0 }}
             onError={(e) => { e.target.style.display = 'none'; }}
           />
         ) : (
           <div className="ar-avatar">{p.initials}</div>
         )}
-        <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-            <span style={{ fontWeight: 300, fontSize: '0.98rem' }}>{p.name}</span>
-            {p.verified && <ShieldCheck size={17} role="img" aria-label="Verified" style={{ color: 'var(--sage)' }} />}
-          </div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>{p.title}</div>
-          <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>{p.firm}</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontWeight: 700, fontSize: 'var(--text-md)', lineHeight: 1.25 }}>{p.name}</div>
+          {p.verified && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', color: 'var(--sage)', fontSize: 'var(--text-xs)', fontWeight: 600, marginTop: '0.1rem' }}>
+              <ShieldCheck size={15} aria-hidden="true" /> Verified
+            </div>
+          )}
+          <div style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginTop: '0.3rem' }}>{p.title}</div>
+          <div style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)' }}>{p.firm}</div>
           {p.contact_preference && p.contact_preference !== 'either' && (
-            <div style={{ fontSize: '0.78rem', color: 'var(--brand)', marginTop: '0.15rem' }}>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--brand)', marginTop: '0.2rem' }}>
               Prefers {p.contact_preference === 'call' ? 'a call' : 'email'} first
             </div>
           )}
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--ink-soft)' }}>
-        <MapPin size={16} aria-hidden="true" /> {p.suburb}
-      </div>
-      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-        {p.tags.map((t) => <span key={t} className="ar-tag">{t}</span>)}
-      </div>
-      {p.next && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.82rem', color: 'var(--brand)' }}>
-          <Clock size={16} aria-hidden="true" /> Next available: {p.next}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', borderTop: '1px solid var(--line)', paddingTop: '0.6rem', marginTop: '0.2rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: 'var(--text-sm)', color: 'var(--ink-soft)' }}>
+          <MapPin size={16} aria-hidden="true" /> {p.suburb}
         </div>
-      )}
-      <button className="ar-btn-primary" onClick={() => onBook(p)}>Request consultation</button>
+        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+          {p.tags.map((t) => <span key={t} className="ar-tag">{t}</span>)}
+        </div>
+        {p.next && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: 'var(--text-sm)', color: 'var(--brand)' }}>
+            <Clock size={16} aria-hidden="true" /> Next available: {p.next}
+          </div>
+        )}
+      </div>
+      <button className="ar-btn-primary ar-card-action" onClick={() => onBook(p)}>Request a consultation</button>
     </div>
-  );
-}
-
-/* ---------------------------------------------------------------
-   Hero dot pattern -- grid of circles anchored to the top-right
-   corner. Radius and opacity both scale with distance from that
-   corner (eased, not linear) so it reads as texture belonging to
-   the corner rather than a tiled, uniform pattern.
---------------------------------------------------------------- */
-function HeroDotPattern() {
-  const cols = 16;
-  const rows = 16;
-  const spacing = 22;
-  const width = cols * spacing;
-  const height = rows * spacing;
-  const maxDist = Math.sqrt(width * width + height * height);
-
-  const minRadius = 0.6;
-  const maxRadius = 3.2;
-  const maxOpacity = 0.55;
-  const ease = 1.6;
-
-  const circles = [];
-  for (let row = 0; row < rows; row++) {
-    for (let col = 0; col < cols; col++) {
-      const cx = col * spacing + spacing / 2;
-      const cy = row * spacing + spacing / 2;
-      const dx = width - cx; // distance from right edge
-      const dy = cy;         // distance from top edge
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const t = Math.max(0, 1 - dist / maxDist);
-      const tEased = Math.pow(t, ease);
-      const opacity = tEased * maxOpacity;
-      if (opacity < 0.012) continue; // skip essentially invisible dots
-      const radius = minRadius + tEased * (maxRadius - minRadius);
-      circles.push(
-        <circle
-          key={`${row}-${col}`}
-          cx={cx}
-          cy={cy}
-          r={radius.toFixed(2)}
-          fill="var(--brand)"
-          opacity={opacity.toFixed(3)}
-        />
-      );
-    }
-  }
-
-  return (
-    <svg
-      className="ar-hero-dots"
-      viewBox={`0 0 ${width} ${height}`}
-      preserveAspectRatio="xMaxYMin slice"
-      aria-hidden="true"
-    >
-      {circles}
-    </svg>
   );
 }
 
@@ -452,109 +387,151 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
   return (
     <>
       <div className="ar-hero">
-        <HeroDotPattern />
         <div className="ar-hero-grid">
           <div className="ar-hero-inner">
             {firstName ? (
               <>
-                <h1 className="ar-hero-headline">Welcome back,<br />{firstName}.</h1>
+                <h1 className="ar-hero-headline">Welcome back, {firstName}.</h1>
                 <p className="ar-hero-sub">
-                  Ready to see what your situation means? The same free, two-minute check as
-                  before, plainly explained, connecting you with the right verified
-                  professional. Funded by practitioners,{' '}
-                  <a href="/how-we-work" style={{ color: 'var(--brand)' }}>never by you</a>.
+                  It is the same free, two-minute check as before, in plain English. Funded by
+                  practitioners, <a href="/how-we-work">never by you</a>.
                 </p>
               </>
             ) : (
               <>
-                <h1 className="ar-hero-headline">Don&apos;t wait<br />for the knock.</h1>
+                <h1 className="ar-hero-headline">Got a Director Penalty Notice or ATO debt? Find out where you stand.</h1>
                 <p className="ar-hero-sub">
-                  A free, two-minute check that tells you plainly what your situation means, and connects
-                  you with the right verified professional, already briefed, before you speak. Funded
-                  by practitioners, <a href="/how-we-work" style={{ color: 'var(--brand)' }}>never by you</a>.
+                  Answer a few questions and get a plain-English read on your situation. If you want
+                  to talk to someone, you can ask a verified registered liquidator for a
+                  consultation, and they will already have your answers. Funded by practitioners,{' '}
+                  <a href="/how-we-work">never by you</a>.
                 </p>
               </>
             )}
             <button className="ar-hero-cta" onClick={onStart}>
-              {firstName ? 'Answer the questions' : 'Start the free check'} <Search size={19} />
+              {firstName ? 'Answer the questions' : 'Start the free check'} <span aria-hidden="true">&rarr;</span>
             </button>
+            {!firstName && <p className="ar-hero-meta">Free for directors. About two minutes. No account needed.</p>}
 
             <details className="ar-secondary-search">
-            <summary>Already know who you&apos;re looking for? Search directly</summary>
-            <div className="ar-searchbar">
-              <div className="ar-search-field">
-                <Search size={19} style={{ color: 'var(--ink-soft)' }} />
-                <Dropdown
-                  value={reason}
-                  onChange={setReason}
-                  placeholder="What's going on?"
-                  options={REASONS.map((r) => ({ value: r.id, label: r.label }))}
-                />
+              <summary>Already know who you&apos;re looking for? Search directly</summary>
+              <div className="ar-searchbar">
+                <div className="ar-search-field">
+                  <Search size={19} style={{ color: 'var(--ink-soft)' }} />
+                  <Dropdown
+                    value={reason}
+                    onChange={setReason}
+                    placeholder="What's going on?"
+                    options={REASONS.map((r) => ({ value: r.id, label: r.label }))}
+                  />
+                </div>
+                <div className="ar-search-divider" />
+                <div className="ar-search-field">
+                  <MapPin size={19} style={{ color: 'var(--ink-soft)' }} />
+                  <input placeholder="Suburb or postcode" value={location} onChange={(e) => setLocation(e.target.value)} />
+                </div>
+                <button className="ar-search-btn" onClick={onSearch}>
+                  <Search size={18} /> Search
+                </button>
               </div>
-              <div className="ar-search-divider" />
-              <div className="ar-search-field">
-                <MapPin size={19} style={{ color: 'var(--ink-soft)' }} />
-                <input placeholder="Suburb or postcode" value={location} onChange={(e) => setLocation(e.target.value)} />
-              </div>
-              <button className="ar-search-btn" onClick={onSearch}>
-                <Search size={18} /> Search
-              </button>
-            </div>
             </details>
           </div>
 
-          <div className="ar-hero-mockup">
-            <p className="ar-mockup-question">What&apos;s going on?</p>
-            <button className="ar-mockup-option ar-mockup-option-selected" onClick={() => onQuickLink('ato')}>
-              I&apos;ve received something from the ATO
-            </button>
-            <button className="ar-mockup-option" onClick={() => onQuickLink('money')}>
-              I&apos;m worried about my money
-            </button>
-            <button className="ar-mockup-option" onClick={() => onQuickLink('close')}>
-              I want to close my business
-            </button>
+          <div className="ar-situations">
+            <h2 className="ar-situations-title">What&apos;s going on?</h2>
+            {QUICK_LINKS.map((q) => (
+              <button key={q.label} className="ar-situation" onClick={() => onQuickLink(q.category)}>
+                {q.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
 
-      <div className="ar-section ar-home-section">
-        <h2>Common reasons people come here</h2>
-        <div className="ar-reason-grid">
-          {QUICK_LINKS.map((q) => {
-            const Icon = q.icon;
-            return (
-              <button key={q.label} className="ar-reason-card" onClick={() => onQuickLink(q.category)}>
-                <div className="ar-reason-icon"><Icon size={26} /></div>
-                <span>{q.label}</span>
-              </button>
-            );
-          })}
+      <div className="ar-band ar-band-paper ar-home-band">
+        <div className="ar-wrap">
+          <div className="ar-row">
+            <div className="ar-row-head"><h2>How it works</h2></div>
+            <ol className="ar-steps">
+              <li>
+                <div>
+                  <h3>Answer a few questions</h3>
+                  <p>One tap each, about two minutes. You do not need an account to see your result.</p>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <h3>Read your result</h3>
+                  <p>
+                    You get a plain-English read of your notice, the deadline that applies and the
+                    option that usually fits. It is general information, not advice.
+                  </p>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <h3>Ask for a consultation if you want one</h3>
+                  <p>
+                    Choose a verified registered liquidator and send a request. They see your answers
+                    first, so you do not start from zero.
+                  </p>
+                </div>
+              </li>
+            </ol>
+          </div>
         </div>
       </div>
 
-      <div className="ar-trust-row">
-        <div className="ar-trust-item">
-          <ShieldCheck size={24} />
-          <p>Every practitioner is registered and verified</p>
-        </div>
-        <div className="ar-trust-item">
-          <Clock size={24} />
-          <p>Request a consultation online, no phone call needed</p>
-        </div>
-        <div className="ar-trust-item">
-          <FileText size={24} />
-          <p>Your answers reach them first, so your first meeting isn&apos;t a cold start</p>
+      <div className="ar-band ar-band-white ar-home-band">
+        <div className="ar-wrap">
+          <div className="ar-row">
+            <div className="ar-row-head"><h2>What you should know</h2></div>
+            <dl className="ar-facts">
+              <div>
+                <dt>It is free for you</dt>
+                <dd>
+                  Directors never pay AnteRoom. Practitioners pay a flat membership fee that does not
+                  depend on how many directors they meet, so nobody can buy a better place in your
+                  results. <a href="/how-we-work">How we work</a>
+                </dd>
+              </div>
+              <div>
+                <dt>Liquidators are checked</dt>
+                <dd>
+                  Each one is checked against ASIC&apos;s register of registered liquidators before their
+                  profile appears. Verified means the registration is real. It does not mean AnteRoom
+                  vouches for their advice.
+                </dd>
+              </div>
+              <div>
+                <dt>Your answers go with you</dt>
+                <dd>
+                  If you ask for a consultation, the liquidator sees your answers and a short summary
+                  first. Nothing is sent until you ask.
+                </dd>
+              </div>
+              <div>
+                <dt>It is not advice</dt>
+                <dd>
+                  AnteRoom gives general information. It cannot tell you whether your company is
+                  insolvent or what to do about it. A liquidator, accountant or lawyer can.
+                </dd>
+              </div>
+            </dl>
+          </div>
         </div>
       </div>
 
-      <div className="ar-homepage-result-preview">
+      <div className="ar-homepage-result-preview ar-dark">
         <div className="ar-result-preview-inner">
           <div>
-            <p className="ar-result-preview-label">What you actually get</p>
-            <h2>Two minutes of questions. A real answer, not a form to fill in and forget.</h2>
+            <h2>What the check tells you</h2>
+            <p>
+              A plain-English read of your notice, the deadline that applies and the option that
+              usually fits. This is an example, not a real result.
+            </p>
           </div>
-          <div className="ar-result-banner ar-result-banner-on-dark" style={{ maxWidth: 460 }}>
+          <div className="ar-result-banner-on-dark">
             <span className="ar-result-label" style={{ color: 'var(--brand)' }}>Example result</span>
             <p className="ar-result-title">Small Business Restructuring may be a strong option</p>
             <p className="ar-result-text">
@@ -562,6 +539,30 @@ function HomeScreen({ onStart, reason, setReason, location, setLocation, onSearc
               pathway is likely available. Here&apos;s a verified practitioner who can walk you
               through it.
             </p>
+          </div>
+        </div>
+      </div>
+
+      <div className="ar-band ar-band-paper ar-home-band">
+        <div className="ar-wrap">
+          <div className="ar-row">
+            <div className="ar-row-head">
+              <h2>Guides</h2>
+              <p>Plain-English explainers for directors dealing with the ATO, with sources.</p>
+            </div>
+            <div>
+              <ul className="ar-guides">
+                {GUIDES.map((g) => (
+                  <li key={g.slug}>
+                    <a href={`/guides/${g.slug}`}>
+                      <span className="ar-guides-title">{g.title}</span>
+                      <span className="ar-guides-desc">{g.description}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+              <a className="ar-more-link" href="/guides">All guides</a>
+            </div>
           </div>
         </div>
       </div>
@@ -586,7 +587,7 @@ function ReasonSelectScreen({ onPick, onBack }) {
   return (
     <div className="ar-section ar-quiz-step" style={{ maxWidth: 480 }}>
       <button className="ar-btn-ghost" style={{ marginBottom: '1.25rem' }} onClick={onBack}>&larr; Back</button>
-      <h2 style={{ marginBottom: '1.1rem', fontFamily: 'Karst, sans-serif', fontWeight: 800 }}>What&apos;s going on?</h2>
+      <h2 style={{ marginBottom: '1.1rem' }}>What&apos;s going on?</h2>
       <div className="ar-chip-row" style={{ flexDirection: 'column' }}>
         {REASONS.map((r) => (
           <button key={r.id} className="ar-chip" onClick={() => onPick(r.id)}>
@@ -612,8 +613,8 @@ function TriageScreen({ step, onAnswer, onBack, progress }) {
     <div className="ar-section ar-quiz-step" style={{ maxWidth: 480 }}>
       <button className="ar-btn-ghost" style={{ marginBottom: '1rem' }} onClick={onBack}>&larr; Back</button>
       <ProgressBar progress={progress} />
-      <h2 style={{ marginBottom: '0.3rem', fontFamily: 'Karst, sans-serif', fontWeight: 800 }}>{q.question}</h2>
-      {q.subtext && <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1.1rem' }}>{q.subtext}</p>}
+      <h2 style={{ marginBottom: '0.3rem' }}>{q.question}</h2>
+      {q.subtext && <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1.1rem' }}>{q.subtext}</p>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: q.subtext ? 0 : '1.1rem' }}>
         {q.options.map((opt) => (
           <button key={opt.value} className="ar-chip" onClick={() => onAnswer(step, opt)}>
@@ -634,7 +635,7 @@ function CompactChoice({ label, options, value, onChange }) {
           <button
             key={opt.value} type="button" onClick={() => onChange(opt.value)}
             className={`ar-chip ${value === opt.value ? 'active' : ''}`}
-            style={{ borderRadius: 999, fontSize: '0.86rem' }}
+            style={{ fontSize: 'var(--text-sm)' }}
           >
             {opt.label}
           </button>
@@ -657,7 +658,7 @@ function ContextScreen({ onAnswer, onBack, progress }) {
     <div className="ar-section ar-quiz-step" style={{ maxWidth: 480 }}>
       <button className="ar-btn-ghost" style={{ marginBottom: '1rem' }} onClick={onBack}>&larr; Back</button>
       <ProgressBar progress={progress} />
-      <h2 style={{ marginBottom: '1.25rem', fontFamily: 'Karst, sans-serif', fontWeight: 800 }}>A few more quick details</h2>
+      <h2 style={{ marginBottom: '1.25rem' }}>A few more quick details</h2>
 
       <CompactChoice
         label="Do you personally owe the company money, or does the company owe you?"
@@ -673,9 +674,9 @@ function ContextScreen({ onAnswer, onBack, progress }) {
         label="Roughly how many people or businesses does the company owe money to?"
         value={creditorCount} onChange={setCreditorCount}
         options={[
-          { label: '1\u20132', value: 'few' },
-          { label: '3\u201310', value: 'some' },
-          { label: '10+', value: 'many' },
+          { label: '1 or 2', value: 'few' },
+          { label: '3 to 10', value: 'some' },
+          { label: 'More than 10', value: 'many' },
         ]}
       />
       <CompactChoice
@@ -708,11 +709,11 @@ function DeadlineCalculator({ days }) {
   }
   return (
     <div className="ar-card" style={{ marginTop: '0.9rem' }}>
-      <p style={{ fontWeight: 300, fontSize: '0.88rem', margin: '0 0 0.5rem' }}>See exactly how many days you have left</p>
+      <p style={{ fontWeight: 600, fontSize: 'var(--text-sm)', margin: '0 0 0.5rem' }}>See exactly how many days you have left</p>
       <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
         <input type="date" className="ar-input" style={{ maxWidth: 180 }} value={dateStr} onChange={(e) => setDateStr(e.target.value)} />
         {remaining !== null && (
-          <span style={{ fontWeight: 300, color: remaining <= 5 ? 'var(--clay)' : 'var(--brand)' }}>
+          <span style={{ fontWeight: 600, color: remaining <= 5 ? 'var(--clay)' : 'var(--brand)' }}>
             {remaining > 0 ? `${remaining} days left` : 'Window may have passed. Get advice today'}
           </span>
         )}
@@ -721,13 +722,29 @@ function DeadlineCalculator({ days }) {
   );
 }
 
+// The guides that explain what a result is about, so someone who has just been
+// told what they have received can read the detail before they decide anything.
+// At most three, and the checklist for the first conversation is always last.
+function guidesForResult(result) {
+  if (!result) return [];
+  const slugs = [];
+  const key = result.noticeKey || '';
+  if (key.startsWith('dpn')) slugs.push('director-penalty-notice');
+  if (key === 'statutory') slugs.push('statutory-demand');
+  if (result.pathwayKey === 'sbr') slugs.push('small-business-restructuring');
+  if (result.pathwayKey === 'va' || result.pathwayKey === 'cvl') slugs.push('what-a-liquidator-does');
+  slugs.push('before-you-speak-to-a-liquidator');
+  return [...new Set(slugs)].slice(0, 3).map((slug) => GUIDES.find((g) => g.slug === slug)).filter(Boolean);
+}
+
 function ResultsScreen({ type, setType, onBook, result, returning, onStartNew, practitioners }) {
   const [view, setView] = useState('list');
   const filtered = type === 'All' ? practitioners : practitioners.filter((p) => p.type === type);
+  const guideLinks = guidesForResult(result);
   return (
     <div className="ar-section ar-results-reveal">
       {returning && (
-        <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', marginBottom: '1rem' }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '1rem' }}>
           These are your answers from last time.{' '}
           <a href="#" onClick={(e) => { e.preventDefault(); onStartNew(); }} style={{ color: 'var(--brand)' }}>
             Start a new check
@@ -762,7 +779,7 @@ function ResultsScreen({ type, setType, onBook, result, returning, onStartNew, p
       )}
 
       {result && (
-        <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', lineHeight: 1.5, marginBottom: '1.75rem' }}>
+        <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', lineHeight: 1.5, marginBottom: '1.75rem' }}>
           This assessment is general information only and is not financial, legal, accounting or
           insolvency advice. It does not determine whether your company is insolvent or recommend
           that you enter any particular insolvency process. You should obtain independent
@@ -770,7 +787,18 @@ function ResultsScreen({ type, setType, onBook, result, returning, onStartNew, p
         </p>
       )}
 
-      <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginBottom: '1.25rem' }}>
+      {guideLinks.length > 0 && (
+        <div className="ar-result-guides">
+          <p className="ar-label">Read more</p>
+          <ul>
+            {guideLinks.map((g) => (
+              <li key={g.slug}><a href={`/guides/${g.slug}`}>{g.title}</a></li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', marginBottom: '1.25rem' }}>
         These are the verified practitioners currently in our network. Where someone appears in
         this list is never affected by what they pay.{' '}
         <a href="/how-we-work" style={{ color: 'var(--brand)' }}>How we work</a>
@@ -790,16 +818,16 @@ function ResultsScreen({ type, setType, onBook, result, returning, onStartNew, p
 
       {filtered.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem 1.5rem' }}>
-          <p style={{ fontWeight: 800, fontFamily: 'Karst, sans-serif', fontSize: '1.05rem', margin: '0 0 0.6rem' }}>
+          <p style={{ fontWeight: 700, fontSize: 'var(--text-md)', margin: '0 0 0.6rem' }}>
             We&apos;re onboarding verified practitioners in Victoria right now
           </p>
-          <p style={{ fontSize: '0.9rem', color: 'var(--ink-soft)', margin: '0 auto 1.5rem', maxWidth: 420 }}>
+          <p style={{ fontSize: 'var(--text-base)', color: 'var(--ink-soft)', margin: '0 auto 1.5rem', maxWidth: 420 }}>
             AnteRoom is early. Your triage result above is genuine, but there isn&apos;t a practitioner
             to request a consultation with in this category yet. Leave your email and we&apos;ll
             write to you when someone verified is listed.
           </p>
           <NotifyForm />
-          <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', margin: '1.75rem auto 0', maxWidth: 420, lineHeight: 1.55 }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', margin: '1.75rem auto 0', maxWidth: 420, lineHeight: 1.55 }}>
             While you wait, ASIC publishes free guidance for directors in financial difficulty:{' '}
             <a
               href="https://www.asic.gov.au/regulatory-resources/insolvency/insolvency-for-directors"
@@ -847,7 +875,7 @@ function BookingScreen({ practitioner, onConfirm, onBack, restored }) {
       <button className="ar-btn-ghost" style={{ marginBottom: '1rem' }} onClick={onBack}>&larr; Back to results</button>
       {restored && (
         <div className="ar-card" style={{ marginBottom: '1rem', borderLeft: '3px solid var(--sage)' }}>
-          <p style={{ margin: 0, fontSize: '0.86rem' }}>
+          <p style={{ margin: 0, fontSize: 'var(--text-sm)' }}>
             Welcome back. Your earlier answers are still here. Just pick a preferred time to continue.
           </p>
         </div>
@@ -856,12 +884,12 @@ function BookingScreen({ practitioner, onConfirm, onBack, restored }) {
         <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
           <div className="ar-avatar">{practitioner.initials}</div>
           <div>
-            <div style={{ fontWeight: 300 }}>{practitioner.name}</div>
-            <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>{practitioner.title}, {practitioner.firm}</div>
+            <div style={{ fontWeight: 600 }}>{practitioner.name}</div>
+            <div style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)' }}>{practitioner.title}, {practitioner.firm}</div>
           </div>
         </div>
       </div>
-      <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', margin: '0 0 1.25rem', lineHeight: 1.55 }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', margin: '0 0 1.25rem', lineHeight: 1.55 }}>
         Tell us when you would like to talk. This is a preference only. {practitioner.name} will
         contact you to confirm a time, and nothing is booked until they do.
       </p>
@@ -919,7 +947,7 @@ function PortalScreen({ practitioner, onDone, onBack }) {
     <div className="ar-section" style={{ maxWidth: 560 }}>
       <button className="ar-btn-ghost" style={{ marginBottom: '1rem' }} onClick={onBack}>&larr; Back</button>
       <h2>Before your consultation</h2>
-      <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '-0.6rem', marginBottom: '1.25rem' }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginTop: '-0.6rem', marginBottom: '1.25rem' }}>
         Adding this now means {practitioner.name.split(' ')[0]} can review your situation before you meet, rather than starting cold.
       </p>
 
@@ -941,7 +969,7 @@ function PortalScreen({ practitioner, onDone, onBack }) {
           screen and never sent anything, so it is gone until uploads are
           real. The text says so rather than hinting at it. */}
       <p className="ar-label">Documents</p>
-      <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', margin: '0 0 1rem', lineHeight: 1.55 }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', margin: '0 0 1rem', lineHeight: 1.55 }}>
         AnteRoom can&apos;t send files to a practitioner yet. Keep your notice and any recent
         financial statements handy to show them when you speak.
       </p>
@@ -967,16 +995,16 @@ function ConfirmedScreen({ practitioner, slot, date, onHome }) {
   const when = [formatPreferredDate(date), slot].filter(Boolean).join(' at ');
   return (
     <div className="ar-section" style={{ maxWidth: 480, textAlign: 'center' }}>
-      <div style={{ width: 48, height: 48, borderRadius: 999, background: 'var(--sage-tint)', color: 'var(--sage)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+      <div style={{ width: 48, height: 48, borderRadius: 'var(--radius-md)', background: 'var(--sage-tint)', color: 'var(--sage)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
         <Check size={29} aria-hidden="true" />
       </div>
       <h2>Request sent</h2>
-      <p style={{ fontSize: '0.9rem', color: 'var(--ink-soft)', marginBottom: '1rem', lineHeight: 1.6 }}>
+      <p style={{ fontSize: 'var(--text-base)', color: 'var(--ink-soft)', marginBottom: '1rem', lineHeight: 1.6 }}>
         Your request and answers have gone to {practitioner.name}, {practitioner.firm}.
         {when ? ` You asked for ${when}.` : ''} That is a preference, so nothing is booked until
         they confirm a time with you.
       </p>
-      <p style={{ fontSize: '0.9rem', color: 'var(--ink-soft)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+      <p style={{ fontSize: 'var(--text-base)', color: 'var(--ink-soft)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
         They&apos;ll see it in their AnteRoom dashboard but may not check it straight away. If your
         deadline is close, speak to a registered liquidator or your accountant today as well.
       </p>

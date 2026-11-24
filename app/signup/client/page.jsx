@@ -139,7 +139,7 @@ export default function ClientSignup() {
         {step === 'form' && (
           <>
             <h1 className="ar-h1" style={{ marginBottom: '0.3rem' }}>Create your account</h1>
-            <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
               Keep track of your consultations by creating an account.
             </p>
 
@@ -198,7 +198,7 @@ export default function ClientSignup() {
               <BotCheck key={botKey} checked={botVerified} onChange={setBotVerified} />
 
               {signupError && (
-                <p role="alert" style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{signupError}</p>
+                <p role="alert" style={{ color: 'var(--clay)', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>{signupError}</p>
               )}
 
               <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!pwValid || !agreed || !botVerified || submitting}>
@@ -207,7 +207,7 @@ export default function ClientSignup() {
               </form>
             </div>
 
-            <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '1.25rem' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '1.25rem' }}>
               Already have an account? <a href="/login" style={{ color: 'var(--brand)' }}>Log in</a>
             </p>
           </>
@@ -217,7 +217,7 @@ export default function ClientSignup() {
           <div className="ar-card" style={{ textAlign: 'center', padding: '2rem 1.5rem' }}>
             <Mail size={34} style={{ color: 'var(--brand)', marginBottom: '0.75rem' }} />
             <h2 className="ar-h2" style={{ marginTop: 0 }}>Check your email</h2>
-            <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
               We've sent a real verification link to <strong>{email}</strong>. Click it, then come
               back and log in. Your account is active from that point on.
             </p>
@@ -229,7 +229,7 @@ export default function ClientSignup() {
                 {resent ? 'Email resent' : "Didn't get it? Resend"}
               </button>
               {resendError && (
-                <p style={{ color: 'var(--clay)', fontSize: '0.82rem', marginTop: '0.6rem' }}>
+                <p style={{ color: 'var(--clay)', fontSize: 'var(--text-sm)', marginTop: '0.6rem' }}>
                   Couldn't resend: {resendError}
                 </p>
               )}

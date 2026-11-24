@@ -59,7 +59,7 @@ export default function Header({ confirmBeforeHome, onConfirmedHome }) {
       <div className="ar-header">
         <Link href="/" onClick={handleLogoClick} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'inherit' }}>
           <Image src="/images/logo.svg" alt="AnteRoom" width={30} height={30} priority />
-          <span className="ar-wordmark" style={{ fontSize: '1.05rem' }}>AnteRoom</span>
+          <span className="ar-wordmark" style={{ fontSize: 'var(--text-md)' }}>Ante<span className="ar-wordmark-light">Room</span></span>
           {account?.type === 'practitioner' && <span className="ar-practitioner-badge">Practitioner</span>}
         </Link>
         <nav aria-label="Main" className="ar-nav">
@@ -69,14 +69,16 @@ export default function Header({ confirmBeforeHome, onConfirmedHome }) {
               is, a beat later, revealed to already be logged in. */}
           {!checked ? null : account ? (
             <>
+              <Link className="ar-nav-link ar-nav-secondary" href="/guides">Guides</Link>
               {account.type === 'client' && (
                 <Link className="ar-nav-link ar-nav-secondary" href="/for-practitioners">For practitioners</Link>
               )}
-              <Link className="ar-nav-link" href={account.href}>{account.name}</Link>
+              <Link className="ar-nav-link ar-nav-account" href={account.href}>{account.name}</Link>
               <button type="button" className="ar-nav-link ar-nav-button" onClick={handleLogout}>Log out</button>
             </>
           ) : (
             <>
+              <Link className="ar-nav-link ar-nav-secondary" href="/guides">Guides</Link>
               <Link className="ar-nav-link ar-nav-secondary" href="/for-practitioners">For practitioners</Link>
               <Link className="ar-nav-link" href="/login">Log in / Sign up</Link>
             </>

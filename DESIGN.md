@@ -1,89 +1,112 @@
-# AnteRoom Design System
+# AnteRoom design notes
 
-This documents the design decisions actually made and built into the
-codebase, not an aspirational spec. If code and this file ever
-disagree, that's a bug in one of them worth fixing, not a reason to
-guess which one is "right."
+This describes what is built, not a wish list. If the code and this file
+disagree, one of them is wrong and worth fixing. `app/globals.css` is the
+source of truth for every value below.
 
-## Personality
+## Who it is for
 
-Calm, plain-English, trustworthy. Built for a company director reading
-a Director Penalty Notice, not a SaaS buyer comparing tools. Confident,
-not flashy. Every visual decision gets checked against this before
-anything else: does it make sense for someone in genuine financial
-distress, not just "does it look premium."
+A company director who has just opened a letter from the ATO and is worried.
+Every choice gets checked against that person, not against what looks
+modern. Calm, plain, and obviously run by a real person.
 
-## Explicitly avoided, and why
+## The look in one paragraph
 
-- **Purple-to-blue gradients, glassmorphism, glow effects** — the most
-  recognizable AI-generated-site tells that exist. Also just the wrong
-  emotional register for this audience regardless.
-- **Dark mode as a forced default, neo-brutalism, gamification,
-  cinematic scroll storytelling, bento grids** — all genuinely current
-  trends, all wrong for this specific brief. A trend needs a reason
-  tied to the subject, not just currency.
-- **Fabricated social proof** (customer logos, testimonials) —
-  AnteRoom is pre-launch. Don't fake what isn't real yet.
-- **Identical border-radius and padding on every card regardless of
-  hierarchy** — a stat, a financial briefing, and a full result banner
-  are different kinds of object and should read that way.
-- **Tracked-out ALL-CAPS eyebrow labels** — tried once (the
-  practitioner-mode indicator), correctly flagged as generic, replaced
-  with a left-edge color rail plus a small sentence-case badge instead.
+Pale grey-green paper, near-black text, one deep teal brand colour, flat
+panels with a 1px line, small corners, and a lot of left-aligned text on a
+single column. There are no gradients, no shadows on cards, no glow, no
+stock photos and no icons used as decoration. Structure comes from rules
+(thin lines) and two-column bands, not from rows of identical cards.
 
-## Typography
+## Layout
 
-One family, Karst, used everywhere — see `.ar-root`. Only two real
-weight files exist, 300 and 800; there is no 400/500/600 to fall back
-on, so hierarchy comes from size and letter-spacing, not fabricated
-in-between weights. The scale (`.ar-display`, `.ar-h1` through
-`.ar-h3`, `.ar-body` / `.ar-body-sm`) is defined once in `globals.css`
-and should be reached for before any inline `fontSize` override.
+- One content column, 1080px wide plus side padding. The header, every
+  section, the guide pages, the account pages and the footer all use the
+  same edges so nothing looks inset.
+- `.ar-band` and `.ar-row` make a two-column band: a heading on the left,
+  the detail on the right. `.ar-facts` and `.ar-steps` are ruled lists, not
+  card grids. Use these before reaching for `.ar-card`.
+- `.ar-card` is for a thing a person acts on (a practitioner, a form
+  panel). It is a flex column so a button can sit at the bottom with
+  `.ar-card-action`.
+- One dark teal band per page at most. Two make the page feel like a
+  template.
+- Guides use `GuideLayout`: article on the left, a free check box and the
+  list of other guides on the right.
 
-## Color
+## Type
 
-Defined once as CSS custom properties on `.ar-root`: `--paper` (page
-background), `--ink` / `--ink-soft` (text), `--brand` / `--brand-dark`
-/ `--brand-tint` (the one primary accent), and three semantic
-accents — `--clay` (errors, destructive actions), `--sage` (success,
-verified), `--amber` (pending, awaiting action). These are meanings,
-not decoration — a new use of clay/sage/amber should map to one of
-those three meanings, not just "needed a color here."
+- Public Sans for everything: 400 body, 500 labels, 600 headings and
+  buttons, 700 emphasis.
+- Karst (only the 300 and 800 files exist) is for the homepage headline,
+  big numbers and the wordmark. Nothing else. It has no in-between weights,
+  so never use it for body text or fake a weight.
+- `html { font-size: 120% }` on purpose, so 1rem is 19.2px and the text is
+  comfortable to read. Do not change it without checking every page.
+- Eight sizes only: `--text-xs`, `--text-sm`, `--text-base`, `--text-md`,
+  `--text-lg`, `--text-xl`, `--text-2xl`, `--text-hero`. Use a token rather
+  than writing a new size.
 
-## Spacing
+## Colour
 
-A real base-8 scale, `--space-1` (4px) through `--space-10` (128px).
-Related content stays inside `--space-6` (32px); a genuine section
-break starts at `--space-7` (48px) or above. Always reach for a token
-over a hand-picked rem value.
+Defined once on `.ar-root`.
 
-## Radius
+- Surfaces: `--paper` (page), `--paper-raised` (panels, inputs).
+- Text: `--ink`, `--ink-soft`. Lines: `--line`, `--line-strong`.
+- Brand: `--brand`, `--brand-dark`, `--brand-tint`, `--on-dark` (text on
+  the dark band).
+- Meaning colours, never decoration: `--clay` is an error or something
+  destructive, `--amber` is waiting, `--sage` is success or verified. Each
+  has a `-tint` for backgrounds.
 
-Three steps, tied to hierarchy, not one flat number everywhere:
-`--radius-sm` (8px — tags, chips, inputs), `--radius-md` (12px —
-standard cards, buttons), `--radius-lg` (20px — the few genuine
-centerpieces: hero, modal, a revealed result).
+## Spacing and corners
+
+- `--space-1` (4px at base) to `--space-10`. Use a token, not a hand-picked
+  number. Related things sit within `--space-5`; a new section starts at
+  `--space-7` or more.
+- Corners are 4px for controls and tags, 6px for panels, 8px for dialogs.
+  One system, not a different radius on every element.
+- The only shadow is `--shadow-pop`, for dropdowns and dialogs.
 
 ## Components
 
-Currently a CSS-class system (`.ar-card`, `.ar-btn-primary`,
-`.ar-btn-ghost`, `.ar-stat-card`, `.ar-status-bar`, etc.) in
-`globals.css`, not extracted React components. That's a real,
-legitimate next architectural step, not yet done — worth its own
-dedicated pass rather than a rushed retrofit.
+All plain CSS classes in `globals.css`: buttons (`.ar-btn-primary`,
+`.ar-btn-ghost`), form parts (`.ar-input`, `.ar-label`,
+`.ar-checkbox-row`), `.ar-tag`, `.ar-hero` with `.ar-keyfacts`,
+`.ar-cta-band`, `.ar-result-banner`, `.ar-sources`, `.ar-founder`, and the
+account and practitioner layouts. The practitioner area has a thin teal bar
+down the left edge (`.ar-practitioner-rail`) and a small "Practitioner"
+badge in the header so a practitioner always knows where they are.
 
 ## Motion
 
-Deliberately sparse. Exactly one orchestrated moment exists
-(`.ar-results-reveal`, on the triage results screen) rather than a
-generic fade-in on every section. Add motion only where it responds to
-something the person actually did or where it marks a genuine
-emotional peak, not as page-load decoration. Respect
-`prefers-reduced-motion`.
+Almost none. The results screen fades in once and quiz steps slide in. Both
+switch off for people who ask their device for reduced motion. Do not add
+page-load animation.
 
-## Process
+## Things we do not do
 
-Before touching UI: check this file. After a visible change: actually
-render it (a static preview with the real CSS file, or the real app)
-and look at it before calling it done — code that compiles is not the
-same as code that looks like the plan.
+- Purple or blue gradients, glass effects, glows, bento grids, stock photos
+  of people shaking hands.
+- Fake social proof: no logos, testimonials or user counts we cannot back
+  up. The practitioner profile example is labelled as an example.
+- Controls that do nothing. A switch, a toggle or a "coming soon" setting
+  that saves nothing is worse than no setting. The notifications page used
+  to have these and now just says what actually happens.
+- Facts we have not checked. Every guide lists its sources and the date it
+  was last checked, and the dates, dollar amounts and deadlines come from
+  the ATO, ASIC, the Federal Court or legislation. Update the date when you
+  re-check, not before.
+- Em dashes and en dashes anywhere in the copy or code. Use a comma, colon,
+  full stop or the word "to". `npm test` fails if one appears, including as
+  a `\u` escape or an HTML entity.
+- Naming or implying a firm that has not agreed to be involved, or that is
+  excluded from the network.
+
+## Before you ship a change
+
+1. Look at it. Render the page at desktop and phone width. Code that
+   compiles is not the same as a page that looks right.
+2. Run `npm test`.
+3. Bump `BUILD_STAMP` in `lib/build.js` so the live page shows which version
+   is running.

@@ -168,22 +168,22 @@ export default function PractitionerAppointments() {
         <PractitionerAccountNav active="appointments" />
         <div style={{ maxWidth: 720 }}>
         <h2>Your appointments</h2>
-        <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '-0.5rem', marginBottom: '1.25rem' }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginTop: '-0.5rem', marginBottom: '1.25rem' }}>
           Keeping this updated means our monthly check-in is quick, not a guessing game.
         </p>
 
         {appointments.length === 0 && (
-          <p style={{ color: 'var(--ink-soft)', fontSize: '0.9rem' }}>No referrals yet.</p>
+          <p style={{ color: 'var(--ink-soft)', fontSize: 'var(--text-base)' }}>No referrals yet.</p>
         )}
 
         {genError && (
-          <p style={{ color: 'var(--clay)', fontSize: '0.86rem', marginBottom: '1rem' }}>{genError}</p>
+          <p style={{ color: 'var(--clay)', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>{genError}</p>
         )}
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
           {groups.map((group) => (
             <div key={group.key}>
-              <p style={{ fontWeight: 700, fontFamily: 'Karst, sans-serif', fontSize: '0.92rem', color: 'var(--brand)', marginBottom: '0.6rem' }}>
+              <p style={{ fontWeight: 700, fontSize: 'var(--text-base)', color: 'var(--brand)', marginBottom: '0.6rem' }}>
                 {group.label}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
@@ -197,8 +197,8 @@ export default function PractitionerAppointments() {
                   onClick={() => setExpanded(isOpen ? null : a.id)}
                 >
                   <div>
-                    <div style={{ fontWeight: 300 }}>{name || 'Client'}</div>
-                    <div style={{ fontSize: '0.84rem', color: 'var(--ink-soft)' }}>
+                    <div style={{ fontWeight: 600 }}>{name || 'Client'}</div>
+                    <div style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)' }}>
                       {a.triage_summary || 'No summary recorded'}, {a.slot_time}
                     </div>
                   </div>
@@ -215,7 +215,7 @@ export default function PractitionerAppointments() {
                 </div>
 
                 {isOpen && (
-                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--line)', fontSize: '0.86rem' }}>
+                  <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--line)', fontSize: 'var(--text-sm)' }}>
                     {a.notice_type && <p><strong>Notice:</strong> {a.notice_type}{a.notice_date ? ` (dated ${a.notice_date})` : ''}</p>}
                     {a.notes && <p><strong>Notes from client:</strong> {a.notes}</p>}
 
@@ -244,22 +244,22 @@ export default function PractitionerAppointments() {
                     </div>
 
                     {reportError && (
-                      <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{reportError}</p>
+                      <p style={{ color: 'var(--clay)', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>{reportError}</p>
                     )}
 
                     {a.financial_report && (
-                      <div style={{ marginBottom: '1rem', padding: '0.9rem', background: 'var(--paper)', borderRadius: 10 }}>
-                        <div style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginBottom: '0.5rem' }}>
+                      <div style={{ marginBottom: '1rem', padding: '0.9rem', background: 'var(--paper)', borderRadius: 'var(--radius-md)' }}>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', marginBottom: '0.5rem' }}>
                           Financial briefing, from their connected {a.financial_report.provider === 'xero' ? 'Xero' : a.financial_report.provider === 'myob' ? 'MYOB' : 'Manager.io'} account.
                           Background reading only, not a substitute for your own review of the full books.
                         </div>
-                        <div style={{ fontSize: '0.88rem', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{a.financial_report.text}</div>
+                        <div style={{ fontSize: 'var(--text-sm)', whiteSpace: 'pre-wrap', lineHeight: 1.6 }}>{a.financial_report.text}</div>
                       </div>
                     )}
 
                     <div style={{ marginBottom: '1rem' }}>
-                      <p style={{ fontWeight: 300, marginBottom: '0.3rem' }}>Your private notes</p>
-                      <p style={{ fontSize: '0.76rem', color: 'var(--ink-soft)', marginBottom: '0.4rem' }}>
+                      <p style={{ fontWeight: 600, marginBottom: '0.3rem' }}>Your private notes</p>
+                      <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', marginBottom: '0.4rem' }}>
                         Only you can see this. Never shown to the client.
                       </p>
                       <textarea
@@ -279,10 +279,10 @@ export default function PractitionerAppointments() {
                       </button>
                     </div>
 
-                    <p style={{ fontWeight: 300, marginTop: '0.75rem', marginBottom: '0.4rem' }}>Full triage answers</p>
+                    <p style={{ fontWeight: 600, marginTop: '0.75rem', marginBottom: '0.4rem' }}>Full triage answers</p>
                     <pre style={{
-                      background: 'var(--paper)', padding: '0.75rem', borderRadius: 8,
-                      fontSize: '0.78rem', overflowX: 'auto', whiteSpace: 'pre-wrap',
+                      background: 'var(--paper)', padding: '0.75rem', borderRadius: 'var(--radius-md)',
+                      fontSize: 'var(--text-xs)', overflowX: 'auto', whiteSpace: 'pre-wrap',
                     }}>
                       {JSON.stringify(a.triage_answers, null, 2)}
                     </pre>

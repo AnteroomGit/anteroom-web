@@ -63,14 +63,14 @@ export default function Answers() {
         <AccountNav active="answers" />
         <div>
           <h2 className="ar-h2" style={{ marginTop: 0 }}>Your answers</h2>
-          <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '-0.5rem', marginBottom: '1.25rem' }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginTop: '-0.5rem', marginBottom: '1.25rem' }}>
             Exactly what you told us, question by question.
           </p>
 
           {entries.length === 0 ? (
             <div className="ar-card">
               <p style={{ margin: 0 }}>You haven't completed the check yet.</p>
-              <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '0.3rem' }}>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginTop: '0.3rem' }}>
                 <a href="/?start=1" style={{ color: 'var(--brand)' }}>Answer the questions</a> to see them here afterward.
               </p>
             </div>
@@ -78,10 +78,10 @@ export default function Answers() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {entries.map(([key, value]) => (
                 <div key={key} className="ar-card">
-                  <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', marginBottom: '0.25rem' }}>
+                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '0.25rem' }}>
                     {getQuestionText(key)}
                   </div>
-                  <div style={{ fontWeight: 300 }}>{getAnswerLabel(key, value)}</div>
+                  <div style={{ fontWeight: 600 }}>{getAnswerLabel(key, value)}</div>
                 </div>
               ))}
             </div>

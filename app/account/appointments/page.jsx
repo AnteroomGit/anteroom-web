@@ -56,8 +56,8 @@ export default function Appointments() {
             <div className="ar-card" style={{ marginBottom: '1rem', borderColor: 'var(--brand)' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
                 <div>
-                  <div style={{ fontWeight: 300 }}>Want your practitioner to walk in already knowing your numbers?</div>
-                  <div style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', marginTop: '0.2rem' }}>
+                  <div style={{ fontWeight: 600 }}>Want your practitioner to walk in already knowing your numbers?</div>
+                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginTop: '0.2rem' }}>
                     Connect Xero, MYOB, or Manager.io and they'll have a clear financial picture ready before you sit down. Optional, and only shared with a practitioner you actually book with.
                   </div>
                 </div>
@@ -73,7 +73,7 @@ export default function Appointments() {
           ) : appointments.length === 0 ? (
             <div className="ar-card">
               <p style={{ margin: 0 }}>No appointments yet.</p>
-              <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '0.3rem' }}>
+              <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginTop: '0.3rem' }}>
                 <a href="/?start=1" style={{ color: 'var(--brand)' }}>Answer the questions</a> to get matched with a practitioner and book one.
               </p>
             </div>
@@ -84,10 +84,10 @@ export default function Appointments() {
                 return (
                   <div key={a.id} className="ar-card" style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
-                      <div style={{ fontWeight: 300 }}>
+                      <div style={{ fontWeight: 600 }}>
                         {a.practitioners?.name || 'Practitioner'}{a.practitioners?.firm ? `, ${a.practitioners.firm}` : ''}
                       </div>
-                      <div style={{ fontSize: '0.84rem', color: 'var(--ink-soft)' }}>
+                      <div style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)' }}>
                         {a.appointment_date
                           ? new Date(a.appointment_date + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
                           : 'Date not on file'}{a.slot_time ? `, ${a.slot_time}` : ''}

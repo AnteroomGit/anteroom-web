@@ -11,7 +11,7 @@ import { supabase } from '../../../lib/supabase';
 const PROVIDERS = [
   { id: 'xero', name: 'Xero', blurb: 'Connects with one click, and disconnects the same way.' },
   { id: 'myob', name: 'MYOB', blurb: 'Connects with one click, and disconnects the same way.' },
-  { id: 'manager', name: 'Manager.io', blurb: 'Paste in your business subdomain and an API key generated from inside your own Manager.io account (Settings \u2192 API keys).' },
+  { id: 'manager', name: 'Manager.io', blurb: 'Paste in your business subdomain and an API key generated from inside your own Manager.io account (Settings, then API keys).' },
 ];
 
 export default function Integrations() {
@@ -116,13 +116,13 @@ export default function Integrations() {
         <AccountNav active="integrations" />
         <div>
           <h2 className="ar-h2" style={{ marginTop: 0 }}>Accounting software</h2>
-          <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '-0.5rem', marginBottom: '1.25rem' }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginTop: '-0.5rem', marginBottom: '1.25rem' }}>
             Connect your books so your practitioner has a clear financial picture before your first meeting, rather than starting from scratch. This is entirely optional, and only ever shared with a practitioner you actually book an appointment with.
           </p>
 
           {notice && (
             <p style={{
-              fontSize: '0.86rem', marginBottom: '1.25rem',
+              fontSize: 'var(--text-sm)', marginBottom: '1.25rem',
               color: notice.type === 'success' ? 'var(--sage)' : 'var(--clay)',
             }}>
               {notice.text}
@@ -136,7 +136,7 @@ export default function Integrations() {
                 <div key={p.id} className="ar-card">
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div>
-                      <div style={{ fontWeight: 300, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         {p.name}
                         {conn && (
                           <span className="ar-tag" style={{ color: 'var(--sage)', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -144,7 +144,7 @@ export default function Integrations() {
                           </span>
                         )}
                       </div>
-                      <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', marginTop: '0.2rem' }}>
+                      <div style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginTop: '0.2rem' }}>
                         {conn ? `Connected as ${conn.org_name || p.name}` : p.blurb}
                       </div>
                     </div>
@@ -181,11 +181,11 @@ export default function Integrations() {
                       <div>
                         <label className="ar-label">API key</label>
                         <input
-                          className="ar-input" type="password" placeholder="Generated from Settings \u2192 API keys in Manager.io"
+                          className="ar-input" type="password" placeholder="From Settings, then API keys, in Manager.io"
                           value={managerKey} onChange={(e) => setManagerKey(e.target.value)}
                         />
                       </div>
-                      {managerError && <p style={{ color: 'var(--clay)', fontSize: '0.82rem', margin: 0 }}>{managerError}</p>}
+                      {managerError && <p style={{ color: 'var(--clay)', fontSize: 'var(--text-sm)', margin: 0 }}>{managerError}</p>}
                       <button className="ar-btn-primary" style={{ width: 'auto', alignSelf: 'flex-start' }} disabled={managerBusy || !managerSubdomain || !managerKey}>
                         {managerBusy ? 'Connecting...' : 'Connect Manager.io'}
                       </button>

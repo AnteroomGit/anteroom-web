@@ -18,8 +18,8 @@ export default function Security() {
           <ChangePasswordForm />
 
           <div className="ar-card" style={{ maxWidth: 480, marginBottom: '1.5rem' }}>
-            <p style={{ fontWeight: 300, margin: 0 }}>Your data</p>
-            <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
+            <p style={{ fontWeight: 600, margin: 0 }}>Your data</p>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
               You can request a copy of the information we hold about you at any time through our{' '}
               <a href="/contact" style={{ color: 'var(--brand)' }}>Contact page</a>.
             </p>

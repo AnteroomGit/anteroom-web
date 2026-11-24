@@ -78,7 +78,7 @@ export default function PractitionerDashboard() {
           <h2 className="ar-h2" style={{ marginTop: 0, marginBottom: '0.2rem' }}>
             {name ? `Welcome back, ${name.split(' ')[0]}` : 'Dashboard'}
           </h2>
-          <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
             The state of your practice on AnteRoom, at a glance.
           </p>
 
@@ -96,7 +96,7 @@ export default function PractitionerDashboard() {
                 {verified
                   ? <ShieldCheck size={26} style={{ color: 'var(--sage)' }} />
                   : <ShieldAlert size={26} style={{ color: 'var(--amber)' }} />}
-                <span className="ar-stat-number" style={{ fontSize: '1.1rem', color: verified ? 'var(--brand)' : 'var(--amber)' }}>
+                <span className="ar-stat-number" style={{ fontSize: 'var(--text-md)', color: verified ? 'var(--brand)' : 'var(--amber)' }}>
                   {verified ? 'Verified' : 'Pending'}
                 </span>
               </div>
@@ -147,29 +147,29 @@ export default function PractitionerDashboard() {
               <div className="ar-card" style={{ marginBottom: '1.25rem', padding: 0, gap: 0 }}>
                 <div style={{ padding: 'var(--space-5) var(--space-5) var(--space-4)' }}>
                   <p style={{ fontWeight: 600, margin: '0 0 0.2rem' }}>Get your profile ready</p>
-                  <p style={{ fontSize: '0.82rem', color: 'var(--ink-soft)', marginBottom: '0.75rem' }}>
+                  <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '0.75rem' }}>
                     A fuller profile is more likely to get picked when a director's comparing options.
                   </p>
-                  <div style={{ height: 6, background: 'var(--line)', borderRadius: 999, overflow: 'hidden' }}>
+                  <div style={{ height: 6, background: 'var(--line)', borderRadius: 'var(--radius-sm)', overflow: 'hidden' }}>
                     <div style={{ height: '100%', width: `${(doneCount / items.length) * 100}%`, background: 'var(--brand)', transition: 'width 200ms ease' }} />
                   </div>
-                  <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', margin: '0.4rem 0 0' }}>{doneCount} of {items.length} completed</p>
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', margin: '0.4rem 0 0' }}>{doneCount} of {items.length} completed</p>
                 </div>
                 {items.map((item) => {
                   const Icon = item.icon;
                   const done = profileChecklist[item.key];
                   return (
                     <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.9rem var(--space-5)', borderTop: '1px solid var(--line)' }}>
-                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: done ? 'var(--sage-tint)' : 'var(--brand-tint)', color: done ? 'var(--sage)' : 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-md)', background: done ? 'var(--sage-tint)' : 'var(--brand-tint)', color: done ? 'var(--sage)' : 'var(--brand)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <Icon size={19} />
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, fontSize: '0.9rem', textDecoration: done ? 'line-through' : 'none', color: done ? 'var(--ink-soft)' : 'var(--ink)' }}>{item.label}</div>
-                        <div style={{ fontSize: '0.8rem', color: 'var(--ink-soft)' }}>{item.sub}</div>
+                        <div style={{ fontWeight: 600, fontSize: 'var(--text-base)', textDecoration: done ? 'line-through' : 'none', color: done ? 'var(--ink-soft)' : 'var(--ink)' }}>{item.label}</div>
+                        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)' }}>{item.sub}</div>
                       </div>
                       {done
                         ? <CheckCircle2 size={24} style={{ color: 'var(--sage)', flexShrink: 0 }} />
-                        : <a href="/practitioner/profile" className="ar-btn-ghost" style={{ width: 'auto', padding: '0.4rem 0.9rem', fontSize: '0.82rem', textDecoration: 'none' }}>Add</a>}
+                        : <a href="/practitioner/profile" className="ar-btn-ghost" style={{ width: 'auto', padding: '0.4rem 0.9rem', fontSize: 'var(--text-sm)', textDecoration: 'none' }}>Add</a>}
                     </div>
                   );
                 })}
@@ -178,17 +178,17 @@ export default function PractitionerDashboard() {
           })()}
 
           <div className="ar-card" style={{ marginBottom: '1.25rem' }}>
-            <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', fontWeight: 600, margin: '0 0 0.6rem' }}>
+            <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', fontWeight: 600, margin: '0 0 0.6rem' }}>
               Next up
             </p>
             {nextAppointment ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                 <CalendarClock size={22} style={{ color: 'var(--brand)' }} />
                 <div>
-                  <div style={{ fontWeight: 300 }}>
+                  <div style={{ fontWeight: 600 }}>
                     {nextAppointment.clients?.first_name || 'Client'} {nextAppointment.clients?.last_name || ''}
                   </div>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--ink-soft)' }}>
+                  <div style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)' }}>
                     {nextAppointment.appointment_date
                       ? new Date(nextAppointment.appointment_date + 'T00:00:00').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' })
                       : 'Date not on file'}{nextAppointment.slot_time ? `, ${nextAppointment.slot_time}` : ''}
@@ -196,7 +196,7 @@ export default function PractitionerDashboard() {
                 </div>
               </div>
             ) : (
-              <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--ink-soft)' }}>Nothing booked yet.</p>
+              <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--ink-soft)' }}>Nothing booked yet.</p>
             )}
           </div>
 

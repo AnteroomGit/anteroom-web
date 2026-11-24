@@ -112,7 +112,7 @@ export default function Login() {
           {showReset ? (
             resetSent ? (
               <div role="status">
-                <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', lineHeight: 1.6 }}>
                   If an account exists for <strong>{email}</strong>, a reset link is on its way.
                   It can take a minute, and it&apos;s worth checking your junk folder.
                 </p>
@@ -122,7 +122,7 @@ export default function Login() {
               </div>
             ) : (
               <form onSubmit={handleReset}>
-                <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', lineHeight: 1.6, margin: '0 0 1rem' }}>
+                <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', lineHeight: 1.6, margin: '0 0 1rem' }}>
                   Enter your email and we&apos;ll send you a link to choose a new password.
                 </p>
                 <label className="ar-label" htmlFor={resetEmailId}>Email</label>
@@ -148,7 +148,7 @@ export default function Login() {
                   onChange={setPassword}
                   autoComplete="current-password"
                   labelExtra={
-                    <button type="button" onClick={() => { setShowReset(true); setError(null); }} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: '0.8rem', cursor: 'pointer', padding: 0 }}>
+                    <button type="button" onClick={() => { setShowReset(true); setError(null); }} style={{ background: 'none', border: 'none', color: 'var(--brand)', fontSize: 'var(--text-xs)', cursor: 'pointer', padding: 0 }}>
                       Forgot password?
                     </button>
                   }
@@ -164,10 +164,10 @@ export default function Login() {
           )}
         </div>
 
-        <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '1.5rem' }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '1.5rem' }}>
           Don&apos;t have an account? <a href="/signup/client" style={{ color: 'var(--brand)' }}>Sign up</a>
         </p>
-        <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '0.5rem' }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '0.5rem' }}>
           A registered liquidator? <a href="/for-practitioners" style={{ color: 'var(--brand)' }}>See how AnteRoom works for practitioners</a>
         </p>
       </div>

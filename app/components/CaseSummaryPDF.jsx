@@ -1,20 +1,20 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
-  page: { padding: 40, fontSize: 10, fontFamily: 'Helvetica', color: '#211530' },
-  header: { marginBottom: 20, borderBottom: '2px solid #392061', paddingBottom: 12 },
-  wordmark: { fontSize: 16, fontFamily: 'Helvetica-Bold', color: '#392061' },
-  tagline: { fontSize: 8, color: '#6B5F7A', marginTop: 2 },
+  page: { padding: 40, fontSize: 10, fontFamily: 'Helvetica', color: '#172120' },
+  header: { marginBottom: 20, borderBottom: '2px solid #0E4A4D', paddingBottom: 12 },
+  wordmark: { fontSize: 16, fontFamily: 'Helvetica-Bold', color: '#0E4A4D' },
+  tagline: { fontSize: 8, color: '#4A5654', marginTop: 2 },
   title: { fontSize: 13, fontFamily: 'Helvetica-Bold', marginTop: 16, marginBottom: 4 },
-  meta: { fontSize: 9, color: '#6B5F7A', marginBottom: 16 },
-  sectionTitle: { fontSize: 11, fontFamily: 'Helvetica-Bold', marginTop: 16, marginBottom: 6, color: '#392061' },
+  meta: { fontSize: 9, color: '#4A5654', marginBottom: 16 },
+  sectionTitle: { fontSize: 11, fontFamily: 'Helvetica-Bold', marginTop: 16, marginBottom: 6, color: '#0E4A4D' },
   paragraph: { fontSize: 10, lineHeight: 1.5, marginBottom: 8 },
   row: { flexDirection: 'row', marginBottom: 4 },
-  label: { width: 160, color: '#6B5F7A' },
+  label: { width: 160, color: '#4A5654' },
   value: { flex: 1 },
   disclaimer: {
-    marginTop: 24, paddingTop: 12, borderTop: '1px solid #D9CDE3',
-    fontSize: 8, color: '#6B5F7A', lineHeight: 1.4,
+    marginTop: 24, paddingTop: 12, borderTop: '1px solid #CDD5D3',
+    fontSize: 8, color: '#4A5654', lineHeight: 1.4,
   },
 });
 

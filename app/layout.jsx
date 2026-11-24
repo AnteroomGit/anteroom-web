@@ -6,10 +6,10 @@ import { SHARE_IMAGE } from '../lib/meta';
 import { BUILD_STAMP } from '../lib/build';
 import { PRE_PAINT_SCRIPT } from '../lib/sessionHint';
 
-// Karst stays for headlines, buttons and key numbers only -- see
-// DESIGN.md. Loaded via next/font/local so both weights are preloaded
-// with no flash of fallback text, rather than the manual @font-face
-// this replaces.
+// Karst is the display face: the homepage headline, big numbers and the
+// wordmark only. Everything else is Public Sans (see DESIGN.md). Loaded via
+// next/font/local so both weights are preloaded with no flash of fallback
+// text, rather than a manual @font-face.
 const karst = localFont({
   src: [
     { path: '../public/fonts/karst-light.ttf', weight: '300', style: 'normal' },
@@ -19,18 +19,14 @@ const karst = localFont({
   display: 'swap',
 });
 
-// The actual root-cause fix for "everything is either whisper-thin or
-// shouting-bold": Karst only has 300 and 800 as real files, nothing
-// between, which is why body text and labels have been stuck on 300
-// this whole time. Public Sans was designed specifically for
-// institutional/official-communication legibility (it's the typeface
-// behind the US Web Design System), has a real 400/500/600 range, and
-// isn't one of the fonts that's become an AI-generated-site default
-// (Inter, Space Grotesk, Poppins, Manrope) -- a deliberate choice, not
-// just "a font with more weights."
+// Karst only has 300 and 800 as real files, nothing in between, so it
+// cannot carry body text or labels. Public Sans was designed for
+// institutional, official-communication legibility, and it has a real
+// 400 to 700 range, so body text, labels, buttons and headings below the
+// page title all use true weights instead of a faked one.
 const publicSans = Public_Sans({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-body',
   display: 'swap',
 });
@@ -77,6 +73,18 @@ export default function RootLayout({ children }) {
         {/* Runs before the first paint. See lib/sessionHint.js. */}
         <script dangerouslySetInnerHTML={{ __html: PRE_PAINT_SCRIPT }} />
         {children}
+        {/* Vercel Web Analytics: counts page views, with no cookies. It only
+            records anything once Web Analytics is switched on for the
+            project in the Vercel dashboard (Analytics tab); until then the
+            script address simply does not exist and nothing is sent. It is
+            served from our own domain, so the content security policy
+            already allows it. The privacy policy describes it. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: 'window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };',
+          }}
+        />
+        <script defer src="/_vercel/insights/script.js" />
       </body>
     </html>
   );

@@ -13,16 +13,16 @@ export default function GlobalError({ error, reset }) {
 
   return (
     <html lang="en-AU">
-      <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif', color: '#362B4A', background: '#EFE9F4' }}>
+      <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif', color: '#172120', background: '#F3F5F4' }}>
         <div style={{ maxWidth: 480, margin: '4rem auto', padding: '0 1.5rem', textAlign: 'center' }}>
-          <h1 style={{ fontSize: '1.5rem', margin: '0 0 0.75rem' }}>Something went wrong on our side</h1>
-          <p style={{ fontSize: '0.95rem', lineHeight: 1.6, margin: '0 0 1.5rem', color: '#6B5F7A' }}>
+          <h1 style={{ fontSize: 'var(--text-xl)', margin: '0 0 0.75rem' }}>Something went wrong on our side</h1>
+          <p style={{ fontSize: 'var(--text-base)', lineHeight: 1.6, margin: '0 0 1.5rem', color: '#4A5654' }}>
             Please try again. If it keeps happening, email {CONTACT_EMAIL} and tell us what you were doing.
           </p>
           <button
             type="button"
             onClick={() => reset()}
-            style={{ background: '#392061', color: '#fff', border: 'none', borderRadius: 10, padding: '0.7rem 1.4rem', fontSize: '0.95rem', cursor: 'pointer' }}
+            style={{ background: '#0E4A4D', color: '#fff', border: 'none', borderRadius: 'var(--radius-md)', padding: '0.7rem 1.4rem', fontSize: 'var(--text-base)', cursor: 'pointer' }}
           >
             Try again
           </button>

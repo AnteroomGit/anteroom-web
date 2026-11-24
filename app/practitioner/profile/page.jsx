@@ -118,19 +118,19 @@ export default function PractitionerProfile() {
         <PractitionerAccountNav active="profile" />
         <div>
           <h2 className="ar-h2" style={{ marginTop: 0 }}>Your profile</h2>
-          <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginTop: '-0.5rem', marginBottom: '1.25rem' }}>
+          <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginTop: '-0.5rem', marginBottom: '1.25rem' }}>
             This is what directors see when your profile appears in search results.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '560px 1fr', gap: '2rem', alignItems: 'start' }}>
+          <div className="ar-profile-grid">
             <div className="ar-card">
               <p className="ar-tag" style={{ color: verified ? 'var(--sage)' : 'var(--amber)', marginBottom: '0.5rem', display: 'inline-block' }}>
                 {verified ? 'Verified' : 'Awaiting verification'}
               </p>
-              <div style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', marginBottom: '1.25rem', lineHeight: 1.6 }}>
+              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '1.25rem', lineHeight: 1.6 }}>
                 <div><strong>Category on file:</strong> {practitionerType || 'Not set'}</div>
                 <div><strong>Registration number on file:</strong> {registrationNumber || 'Not set'}</div>
-                <div style={{ fontSize: '0.78rem', marginTop: '0.3rem' }}>
+                <div style={{ fontSize: 'var(--text-xs)', marginTop: '0.3rem' }}>
                   Need to correct either of these? Get in touch via <a href="/contact" style={{ color: 'var(--brand)' }}>Contact</a> rather than editing directly, since both are checked against ASIC before verification.
                 </div>
               </div>
@@ -150,7 +150,7 @@ export default function PractitionerProfile() {
                   value={address}
                   onChange={({ address: a, lat: newLat, lng: newLng }) => { setAddress(a); if (newLat) setLat(newLat); if (newLng) setLng(newLng); }}
                 />
-                <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', margin: '0.35rem 0 1rem' }}>
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', margin: '0.35rem 0 1rem' }}>
                   Moved firms? Just search and select the new address here. It updates the moment you save.
                 </p>
 
@@ -162,9 +162,9 @@ export default function PractitionerProfile() {
                   {[
                     { value: 'email', label: 'Email' },
                     { value: 'call', label: 'A call' },
-                    { value: 'either', label: 'Either is fine' },
+                    { value: 'either', label: 'Either' },
                   ].map((opt) => (
-                    <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', margin: 0, flex: 1, justifyContent: 'center', fontSize: '0.86rem', border: '1px solid var(--line)', borderRadius: 8, padding: '0.5rem', background: contactPreference === opt.value ? 'var(--brand-tint)' : 'transparent' }}>
+                    <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', margin: 0, flex: '1 1 auto', justifyContent: 'center', whiteSpace: 'nowrap', fontSize: 'var(--text-sm)', border: '1px solid var(--line)', borderRadius: 'var(--radius-md)', padding: '0.5rem 0.4rem', background: contactPreference === opt.value ? 'var(--brand-tint)' : 'transparent' }}>
                       <input type="radio" name="contactPreference" value={opt.value} checked={contactPreference === opt.value} onChange={() => setContactPreference(opt.value)} />
                       {opt.label}
                     </label>
@@ -174,7 +174,7 @@ export default function PractitionerProfile() {
                 <label className="ar-label">Specialties</label>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '1rem' }}>
                   {SPECIALTIES.map((s) => (
-                    <label key={s} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem' }}>
+                    <label key={s} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: 'var(--text-sm)' }}>
                       <input type="checkbox" checked={tags.includes(s)} onChange={() => toggleTag(s)} />
                       {s}
                     </label>
@@ -187,19 +187,19 @@ export default function PractitionerProfile() {
                   placeholder="Link to a photo you already host (LinkedIn, your firm's site, etc.)"
                   style={{ marginBottom: '0.35rem' }}
                 />
-                <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', margin: '0 0 1.25rem' }}>
+                <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', margin: '0 0 1.25rem' }}>
                   A real photo beats initials. Paste a direct image link for now; a proper upload is on the list for later.
                 </p>
 
-                {error && <p style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{error}</p>}
+                {error && <p style={{ color: 'var(--clay)', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>{error}</p>}
 
                 <button type="submit" className="ar-btn-primary">Save profile</button>
-                {saved && <span style={{ marginLeft: '0.75rem', fontSize: '0.84rem', color: 'var(--sage)' }}>Saved</span>}
+                {saved && <span style={{ marginLeft: '0.75rem', fontSize: 'var(--text-sm)', color: 'var(--sage)' }}>Saved</span>}
               </form>
             </div>
 
-            <div style={{ position: 'sticky', top: '1.5rem' }}>
-              <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', fontWeight: 600, marginBottom: '0.5rem' }}>
+            <div className="ar-profile-preview">
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', fontWeight: 600, marginBottom: '0.5rem' }}>
                 Live preview
               </p>
               <PractitionerCard p={previewPractitioner} onBook={() => {}} />

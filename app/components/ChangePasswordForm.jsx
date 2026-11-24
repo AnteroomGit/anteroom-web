@@ -137,12 +137,12 @@ export default function ChangePasswordForm() {
   }
 
   if (status === 'loading') {
-    return <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginBottom: '2.5rem' }}>Loading...</p>;
+    return <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '2.5rem' }}>Loading...</p>;
   }
 
   if (status === 'signed-out') {
     return (
-      <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', marginBottom: '2.5rem' }}>
+      <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '2.5rem' }}>
         You need to be logged in to change your password. <a href="/login">Log in</a>
       </p>
     );
@@ -152,7 +152,7 @@ export default function ChangePasswordForm() {
     return (
       <div style={{ maxWidth: 420, marginBottom: '2.5rem' }}>
         <h3 style={{ margin: '0 0 0.4rem' }}>Password</h3>
-        <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', lineHeight: 1.6, margin: '0 0 1rem' }}>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', lineHeight: 1.6, margin: '0 0 1rem' }}>
           It looks like you signed in with Google or Apple, so there may be no AnteRoom password
           to change. If you would also like to log in with an email and password, we can email{' '}
           {email ? <strong>{email}</strong> : 'you'} a link to set one.

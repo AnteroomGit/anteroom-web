@@ -39,8 +39,8 @@ export default function DeleteAccount({ cardText, dialogText }) {
   return (
     <>
       <div className="ar-card" style={{ maxWidth: 480, borderColor: 'var(--clay)' }}>
-        <p style={{ fontWeight: 300, margin: 0 }}>Delete your account</p>
-        <p style={{ fontSize: '0.86rem', color: 'var(--ink-soft)', lineHeight: 1.6 }}>{cardText}</p>
+        <p style={{ fontWeight: 600, margin: 0 }}>Delete your account</p>
+        <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', lineHeight: 1.6 }}>{cardText}</p>
         <button
           type="button"
           className="ar-btn-ghost"

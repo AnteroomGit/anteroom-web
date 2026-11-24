@@ -7,7 +7,7 @@ export const metadata = privateMeta('Build version');
 
 export default function Version() {
   return (
-    <div style={{ padding: '2rem', fontFamily: 'monospace', fontSize: '0.9rem' }}>
+    <div style={{ padding: '2rem', fontFamily: 'monospace', fontSize: 'var(--text-base)' }}>
       <p>build: {BUILD_STAMP}</p>
       <p>time: {BUILD_TIME}</p>
     </div>

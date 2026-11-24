@@ -207,7 +207,7 @@ export default function PractitionerSignup() {
           <div className="ar-card" style={{ textAlign: 'center', padding: '2rem 1.5rem' }}>
             <Lock size={34} style={{ color: 'var(--brand)', marginBottom: '0.75rem' }} />
             <h2 className="ar-h2" style={{ marginTop: 0 }}>Invitation only, for now</h2>
-            <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)' }}>
               {leadState === 'claimed'
                 ? 'This invitation link has already been used to create an account.'
                 : 'AnteRoom\u2019s practitioner network is currently by invitation only. If we\u2019ve spoken and you\u2019re expecting a link, check your email.'}
@@ -228,12 +228,12 @@ export default function PractitionerSignup() {
         {step === 'form' && (
           <>
             <h1 className="ar-h1" style={{ marginBottom: '0.4rem' }}>List your practice</h1>
-            <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
               Set up your login below. Your name and registration are already confirmed from our call.
             </p>
 
             <div className="ar-card" style={{ marginBottom: '1.5rem' }}>
-              <p style={{ margin: 0, fontSize: '0.86rem', color: 'var(--ink-soft)' }}>
+              <p style={{ margin: 0, fontSize: 'var(--text-sm)', color: 'var(--ink-soft)' }}>
                 Flat membership fee, no per-referral or success fees, no pay-to-rank. Full detail
                 at <a href="/how-we-work" style={{ color: 'var(--brand)' }}>How We Work</a>, worth
                 reading before you sign up, and something you're welcome to cite in your own DIRRI.
@@ -243,7 +243,7 @@ export default function PractitionerSignup() {
             <form onSubmit={handleSubmit} className="ar-auth-card">
               <label className="ar-label" htmlFor="signup-name">Full name</label>
               <input id="signup-name" disabled className="ar-input" value={name} style={{ marginBottom: '0.35rem', opacity: 0.7 }} />
-              <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1rem' }}>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1rem' }}>
                 Confirmed on our call. <a href="/contact" style={{ color: 'var(--brand)' }}>Contact</a> if this needs correcting.
               </p>
 
@@ -258,9 +258,9 @@ export default function PractitionerSignup() {
                 {[
                   { value: 'email', label: 'Email' },
                   { value: 'call', label: 'A call' },
-                  { value: 'either', label: 'Either is fine' },
+                  { value: 'either', label: 'Either' },
                 ].map((opt) => (
-                  <label key={opt.value} className="ar-checkbox-row" style={{ margin: 0, flex: 1, justifyContent: 'center', border: '1px solid var(--line)', borderRadius: 8, padding: '0.5rem', background: contactPreference === opt.value ? 'var(--brand-tint)' : 'transparent' }}>
+                  <label key={opt.value} className="ar-checkbox-row" style={{ margin: 0, flex: '1 1 auto', justifyContent: 'center', alignItems: 'center', whiteSpace: 'nowrap', border: '1px solid var(--line)', borderRadius: 'var(--radius-md)', padding: '0.5rem 0.4rem', background: contactPreference === opt.value ? 'var(--brand-tint)' : 'transparent' }}>
                     <input type="radio" name="contactPreference" value={opt.value} checked={contactPreference === opt.value} onChange={() => setContactPreference(opt.value)} />
                     {opt.label}
                   </label>
@@ -287,7 +287,7 @@ export default function PractitionerSignup() {
 
               <label className="ar-label" htmlFor="signup-reg">ASIC Registered Liquidator number</label>
               <input id="signup-reg" disabled className="ar-input" value={regNumber} style={{ marginBottom: '0.35rem', opacity: 0.7 }} />
-              <p style={{ fontSize: '0.78rem', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1.25rem' }}>
+              <p style={{ fontSize: 'var(--text-xs)', color: 'var(--ink-soft)', marginTop: 0, marginBottom: '1.25rem' }}>
                 Confirmed against ASIC's register on our call.
               </p>
 
@@ -312,7 +312,7 @@ export default function PractitionerSignup() {
               <BotCheck key={botKey} checked={botVerified} onChange={setBotVerified} />
 
               {signupError && (
-                <p role="alert" style={{ color: 'var(--clay)', fontSize: '0.84rem', marginBottom: '1rem' }}>{signupError}</p>
+                <p role="alert" style={{ color: 'var(--clay)', fontSize: 'var(--text-sm)', marginBottom: '1rem' }}>{signupError}</p>
               )}
 
               <button type="submit" className="ar-btn-primary" style={{ width: '100%' }} disabled={!pwValid || !agreed || !botVerified || submitting}>
@@ -320,7 +320,7 @@ export default function PractitionerSignup() {
               </button>
             </form>
 
-            <p style={{ fontSize: '0.84rem', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '1.25rem' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', textAlign: 'center', marginTop: '1.25rem' }}>
               Already have an account? <a href="/login" style={{ color: 'var(--brand)' }}>Log in</a>
             </p>
           </>
@@ -330,7 +330,7 @@ export default function PractitionerSignup() {
           <div className="ar-card" style={{ textAlign: 'center', padding: '2rem 1.5rem' }}>
             <Mail size={34} style={{ color: 'var(--brand)', marginBottom: '0.75rem' }} />
             <h2 className="ar-h2" style={{ marginTop: 0 }}>Check your email</h2>
-            <p style={{ fontSize: '0.88rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
+            <p style={{ fontSize: 'var(--text-sm)', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
               We've sent a real verification link to <strong>{email}</strong>. Click it, then log
               in.{' '}
               {autoVerified
@@ -345,7 +345,7 @@ export default function PractitionerSignup() {
                 {resent ? 'Email resent' : "Didn't get it? Resend"}
               </button>
               {resendError && (
-                <p style={{ color: 'var(--clay)', fontSize: '0.82rem', marginTop: '0.6rem' }}>
+                <p style={{ color: 'var(--clay)', fontSize: 'var(--text-sm)', marginTop: '0.6rem' }}>
                   Couldn't resend: {resendError}
                 </p>
               )}

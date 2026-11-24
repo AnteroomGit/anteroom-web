@@ -7,7 +7,7 @@ export default function NotFound() {
       <Header />
       <div className="ar-404">
         <h1 className="ar-h1">Page not found</h1>
-        <p style={{ fontSize: '0.9rem', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
+        <p style={{ fontSize: 'var(--text-base)', color: 'var(--ink-soft)', marginBottom: '1.5rem' }}>
           That page doesn&apos;t exist. It may have moved.
         </p>
         <a href="/" className="ar-btn-primary" style={{ display: 'inline-block', textDecoration: 'none' }}>Back to AnteRoom</a>

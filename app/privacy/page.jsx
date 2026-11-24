@@ -14,7 +14,7 @@ export default function Privacy() {
       <Header />
       <div className="ar-prose">
         <h1>Privacy Policy</h1>
-        <p className="muted">Last updated: 15 October 2026</p>
+        <p className="muted">Last updated: 24 November 2026</p>
 
         <p>
           This policy explains what personal information AnteRoom collects, why, how it's used
@@ -114,8 +114,9 @@ export default function Privacy() {
         <h3>Automatically, from using the site</h3>
         <p>
           Like most websites, we use cookies and similar browser storage for essential site
-          functionality (such as keeping you logged in). We don't currently use advertising
-          cookies or analytics tools on the site. See the Cookies section below.
+          functionality (such as keeping you logged in). We don't use advertising cookies. We
+          count visits to the site with Vercel Web Analytics, which doesn't use cookies. See
+          the Cookies section below.
         </p>
 
         <h2>4. How your information is used and disclosed</h2>
@@ -225,10 +226,13 @@ export default function Privacy() {
         <p>
           We use essential cookies and similar browser storage needed for the site to function,
           such as keeping you logged in and holding your triage answers in your browser until
-          you choose to submit them. We don't currently use cookies to track you or to measure
-          how the site is used. If that changes, we'll update this policy first. You can
-          control or clear cookies and site data through your browser settings, though this may
-          affect how the site works.
+          you choose to submit them. We don't use cookies to track you. To see how many people
+          visit and which pages they use, we use Vercel Web Analytics. It doesn't use cookies
+          and doesn't follow you to other sites. It records the page visited, the site you
+          came from, and general details such as your country, device and browser. It counts
+          visitors with an anonymous identifier that resets every day, so it can't tell who you
+          are. You can control or clear cookies and site data through your browser settings,
+          though this may affect how the site works.
         </p>
 
         <h2>11. Your rights: access, correction, and deletion</h2>
